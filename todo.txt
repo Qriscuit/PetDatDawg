@@ -1,0 +1,16 @@
+always on top - boolean
+doggo click through [hot key activetable -> Alt + `]
+tray icon for the game
+doggo transparency
+dog scale - float
+ui scale - float
+
+current number of pets
+current dog - options
+
+when click on dog, dog stops and a little animaiton of it very lightly squashing plays, cause a gloved hand will appear on top of it as if its petting the dog, after which a single heart with a "+1" written on top of it appears and floats up to disappear adding a single "pet" to your infinite counter of pets
+
+when click held on dog, dog stop, shows menu with the previously mentioned thingies
+
+dog barks lightly when clicked, randomly chosen out of 3 audio files, 
+
