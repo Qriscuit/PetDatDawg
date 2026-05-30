@@ -1,10 +1,12 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 public partial class DesktopPet : Node2D
 {
 	private const string DogTexturePath = "res://Sprites/Doggo.png";
+	private const string HeartTexturePath = "res://Sprites/PetzHeart.png";
 	private const string FallbackTexturePath = "res://icon.svg";
 	private const string StatusWindowScenePath = "res://StatusWindow.tscn";
 
@@ -16,12 +18,16 @@ public partial class DesktopPet : Node2D
 	private const int OverlayPadding = 28;
 	private const float LayoutRefreshSeconds = 1.0f;
 	private const float InvisibleDogAlphaThreshold = 0.01f;
+	private const float HeartLifetimeSeconds = 0.8f;
+	private const float HeartRiseDistance = 34.0f;
+	private const int MaxActiveHearts = 8;
 
 	private static int MainWindowId => (int)DisplayServer.MainWindowId;
 
 	private Node2D _footAnchor = null!;
 	private Node2D _visualRoot = null!;
 	private Sprite2D _dogSprite = null!;
+	private Texture2D? _heartTexture;
 
 	private Vector2 _visibleDogSize = new(128.0f, 128.0f);
 	private Rect2 _visibleDogLocalRect = new(-64.0f, -64.0f, 128.0f, 128.0f);
@@ -45,6 +51,22 @@ public partial class DesktopPet : Node2D
 	private bool _authStarted;
 	private bool _lastAlwaysOnTop = PetSettings.DefaultAlwaysOnTop;
 	private float _lastDogScale = PetSettings.DefaultDogScale;
+	private readonly List<FloatingHeart> _floatingHearts = new();
+
+	private sealed class FloatingHeart
+	{
+		public FloatingHeart(Sprite2D sprite, Vector2 startPosition, Vector2 endPosition)
+		{
+			Sprite = sprite;
+			StartPosition = startPosition;
+			EndPosition = endPosition;
+		}
+
+		public Sprite2D Sprite { get; }
+		public Vector2 StartPosition { get; }
+		public Vector2 EndPosition { get; }
+		public float Age { get; set; }
+	}
 
 	public override void _Ready()
 	{
@@ -72,6 +94,7 @@ public partial class DesktopPet : Node2D
 
 		ConfigureOverlayWindow();
 		ConfigureDogSprite();
+		ConfigureHeartTexture();
 		MoveOverlayToBottom(force: true);
 
 		_walkX = _windowSize.X * 0.5f;
@@ -92,6 +115,7 @@ public partial class DesktopPet : Node2D
 
 		StepDog(deltaF);
 		AnimateDog();
+		UpdateFloatingHearts(deltaF);
 		UpdateDogMouseRegion();
 		TickBackend(delta);
 		UpdateStatusWindow();
@@ -105,7 +129,12 @@ public partial class DesktopPet : Node2D
 			return;
 		}
 
-		if (inputEvent is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } mouseButton)
+		if (inputEvent is not InputEventMouseButton { Pressed: true } mouseButton)
+		{
+			return;
+		}
+
+		if (mouseButton.ButtonIndex is not MouseButton.Left and not MouseButton.Right)
 		{
 			return;
 		}
@@ -115,7 +144,16 @@ public partial class DesktopPet : Node2D
 			return;
 		}
 
-		_backend.EnqueuePetGrant(Guid.NewGuid());
+		if (mouseButton.ButtonIndex == MouseButton.Left)
+		{
+			_backend.EnqueuePetGrant(Guid.NewGuid());
+			SpawnFloatingHeart();
+		}
+		else
+		{
+			OpenStatusWindow();
+		}
+
 		GetViewport().SetInputAsHandled();
 	}
 
@@ -134,6 +172,11 @@ public partial class DesktopPet : Node2D
 
 		_statusWindow?.QueueFree();
 		_statusWindow = null;
+		while (_floatingHearts.Count > 0)
+		{
+			RemoveFloatingHeartAt(_floatingHearts.Count - 1);
+		}
+
 		_shutdown.Cancel();
 		DisplayServer.WindowSetFlag(DisplayServer.WindowFlags.MousePassthrough, false, MainWindowId);
 		DisplayServer.WindowSetMousePassthrough(Array.Empty<Vector2>(), MainWindowId);
@@ -206,6 +249,15 @@ public partial class DesktopPet : Node2D
 		ApplyDogSettings(refreshLayout: false);
 	}
 
+	private void ConfigureHeartTexture()
+	{
+		_heartTexture = ResourceLoader.Load<Texture2D>(HeartTexturePath);
+		if (_heartTexture == null)
+		{
+			GD.PushWarning($"Could not load {HeartTexturePath}; pet feedback hearts will be disabled.");
+		}
+	}
+
 	private void MoveOverlayToBottom(bool force)
 	{
 		if (Engine.IsEmbeddedInEditor())
@@ -263,6 +315,62 @@ public partial class DesktopPet : Node2D
 		);
 		_visualRoot.Scale = new Vector2(_direction * _dogScale * squash, _dogScale * stretch);
 		_visualRoot.Rotation = Mathf.Sin(_stepPhase * 0.5f) * 0.035f * _direction;
+	}
+
+	private void SpawnFloatingHeart()
+	{
+		if (_heartTexture == null)
+		{
+			return;
+		}
+
+		while (_floatingHearts.Count >= MaxActiveHearts)
+		{
+			RemoveFloatingHeartAt(0);
+		}
+
+		var xOffset = Mathf.Sin(_stepPhase * 1.37f) * 12.0f;
+		var startPosition = new Vector2(xOffset, -_visibleDogSize.Y - 16.0f);
+		var endPosition = startPosition + new Vector2(0.0f, -HeartRiseDistance);
+		var sprite = new Sprite2D
+		{
+			Texture = _heartTexture,
+			Centered = true,
+			Position = startPosition,
+			Scale = Vector2.One * 0.82f,
+			ZIndex = 20,
+			Modulate = Colors.White
+		};
+
+		_footAnchor.AddChild(sprite);
+		_floatingHearts.Add(new FloatingHeart(sprite, startPosition, endPosition));
+	}
+
+	private void UpdateFloatingHearts(float delta)
+	{
+		for (var index = _floatingHearts.Count - 1; index >= 0; index--)
+		{
+			var heart = _floatingHearts[index];
+			heart.Age += delta;
+
+			var progress = Mathf.Clamp(heart.Age / HeartLifetimeSeconds, 0.0f, 1.0f);
+			var easedProgress = 1.0f - Mathf.Pow(1.0f - progress, 2.0f);
+			heart.Sprite.Position = heart.StartPosition.Lerp(heart.EndPosition, easedProgress);
+			heart.Sprite.Scale = Vector2.One * Mathf.Lerp(0.82f, 1.02f, easedProgress);
+			heart.Sprite.Modulate = new Color(1.0f, 1.0f, 1.0f, 1.0f - progress);
+
+			if (progress >= 1.0f)
+			{
+				RemoveFloatingHeartAt(index);
+			}
+		}
+	}
+
+	private void RemoveFloatingHeartAt(int index)
+	{
+		var heart = _floatingHearts[index];
+		_floatingHearts.RemoveAt(index);
+		heart.Sprite.QueueFree();
 	}
 
 	private void TickBackend(double delta)

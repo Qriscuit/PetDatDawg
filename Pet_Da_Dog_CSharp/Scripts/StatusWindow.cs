@@ -13,14 +13,32 @@ public partial class StatusWindow : Window
 	private static readonly Color TextColor = Color.FromHtml("#152033");
 	private static readonly Color MutedTextColor = Color.FromHtml("#657386");
 	private static readonly Color AccentColor = Color.FromHtml("#2f6fdd");
+	private const string AccessoriesTabTitle = "Accessories";
+	private const string DiscoveriesTabTitle = "Discoveries";
+	private const string SettingsTabTitle = "Settings";
+	private const int PlaceholderTileCount = 16;
+
+	private enum StatusTab
+	{
+		Accessories,
+		Discoveries,
+		Settings
+	}
 
 	private PetSettings? _settings;
 	private bool _refreshingControls;
+	private StatusTab _activeTab = StatusTab.Accessories;
 
 	private Label? _petsValueLabel;
 	private Label? _pendingLabel;
 	private Label? _backendStatusLabel;
 	private Label? _steamStatusLabel;
+	private Button? _accessoriesTabButton;
+	private Button? _discoveriesTabButton;
+	private Button? _settingsTabButton;
+	private Control? _accessoriesPage;
+	private Control? _discoveriesPage;
+	private Control? _settingsPage;
 	private CheckBox? _alwaysOnTopCheck;
 	private CheckBox? _dogClickThroughCheck;
 	private HSlider? _dogTransparencySlider;
@@ -94,15 +112,16 @@ public partial class StatusWindow : Window
 		if (_petsValueLabel != null)
 		{
 			_petsValueLabel.Text = confirmedPets.HasValue
-				? confirmedPets.Value.ToString("N0", CultureInfo.InvariantCulture)
-				: "Syncing...";
+				? $"Pets: {confirmedPets.Value.ToString("N0", CultureInfo.InvariantCulture)}"
+				: "Pets: Syncing...";
 		}
 
 		if (_pendingLabel != null)
 		{
+			_pendingLabel.Visible = pendingGrantCount > 0;
 			_pendingLabel.Text = pendingGrantCount > 0
-				? $"Pending grants: {pendingGrantCount}"
-				: "No pending grants";
+				? $"Pending: {pendingGrantCount}"
+				: string.Empty;
 		}
 
 		if (_backendStatusLabel != null)
@@ -130,34 +149,192 @@ public partial class StatusWindow : Window
 		margin.AddThemeConstantOverride("margin_bottom", 18);
 		background.AddChild(margin);
 
-		var scroll = new ScrollContainer();
-		scroll.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
-		margin.AddChild(scroll);
-
 		var root = new VBoxContainer();
 		root.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		root.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		root.AddThemeConstantOverride("separation", 12);
-		scroll.AddChild(root);
+		margin.AddChild(root);
 
-		var title = CreateLabel("Pet Da Dog", TextColor, 22);
-		root.AddChild(title);
-
-		root.AddChild(CreatePetsPanel());
-		root.AddChild(CreateConnectionPanel());
-		root.AddChild(CreateSettingsPanel());
+		root.AddChild(CreateTopBar());
+		root.AddChild(CreateTabPages());
 	}
 
-	private Control CreatePetsPanel()
+	private Control CreateTopBar()
 	{
-		var (panel, content) = CreatePanel();
-		AddSectionTitle(content, "Pets");
-		content.AddChild(CreateValueRow("Current pets", out _petsValueLabel, "Syncing..."));
-		_pendingLabel = CreateLabel("No pending grants", MutedTextColor);
-		content.AddChild(_pendingLabel);
-		return panel;
+		var row = new HBoxContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			CustomMinimumSize = new Vector2(0, 44)
+		};
+		row.AddThemeConstantOverride("separation", 12);
+
+		var tabs = new HBoxContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter
+		};
+		tabs.AddThemeConstantOverride("separation", 8);
+
+		_accessoriesTabButton = CreateTabButton(AccessoriesTabTitle, StatusTab.Accessories);
+		_discoveriesTabButton = CreateTabButton(DiscoveriesTabTitle, StatusTab.Discoveries);
+		_settingsTabButton = CreateTabButton(SettingsTabTitle, StatusTab.Settings);
+
+		tabs.AddChild(_accessoriesTabButton);
+		tabs.AddChild(_discoveriesTabButton);
+		tabs.AddChild(_settingsTabButton);
+		row.AddChild(tabs);
+
+		var pets = new VBoxContainer
+		{
+			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
+			CustomMinimumSize = new Vector2(148, 0)
+		};
+		pets.AddThemeConstantOverride("separation", 1);
+
+		_petsValueLabel = CreateLabel("Pets: Syncing...", TextColor, 16);
+		_petsValueLabel.HorizontalAlignment = HorizontalAlignment.Right;
+		pets.AddChild(_petsValueLabel);
+
+		_pendingLabel = CreateLabel(string.Empty, MutedTextColor, 12);
+		_pendingLabel.HorizontalAlignment = HorizontalAlignment.Right;
+		_pendingLabel.Visible = false;
+		pets.AddChild(_pendingLabel);
+
+		row.AddChild(pets);
+
+		return row;
+	}
+
+	private Control CreateTabPages()
+	{
+		var pages = new VBoxContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill
+		};
+
+		_accessoriesPage = CreateTilePage("Accessory");
+		_discoveriesPage = CreateTilePage("Discovery");
+		_settingsPage = CreateSettingsTab();
+
+		pages.AddChild(_accessoriesPage);
+		pages.AddChild(_discoveriesPage);
+		pages.AddChild(_settingsPage);
+
+		SetActiveTab(_activeTab);
+		return pages;
+	}
+
+	private Control CreateTilePage(string tilePrefix)
+	{
+		var scroll = CreateScrollPage(out var content);
+		var grid = new GridContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			Columns = 4
+		};
+		grid.AddThemeConstantOverride("h_separation", 10);
+		grid.AddThemeConstantOverride("v_separation", 10);
+
+		for (var index = 1; index <= PlaceholderTileCount; index++)
+		{
+			grid.AddChild(CreateTileButton($"{tilePrefix} {index:00}"));
+		}
+
+		content.AddChild(grid);
+
+		return scroll;
+	}
+
+	private Control CreateSettingsTab()
+	{
+		var scroll = CreateScrollPage(out var content);
+		content.AddChild(CreateConnectionPanel());
+		content.AddChild(CreateSettingsPanel());
+		return scroll;
+	}
+
+	private static ScrollContainer CreateScrollPage(out VBoxContainer content)
+	{
+		var scroll = new ScrollContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
+		};
+
+		content = new VBoxContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill
+		};
+		content.AddThemeConstantOverride("separation", 12);
+		scroll.AddChild(content);
+
+		return scroll;
+	}
+
+	private static Button CreateTileButton(string text)
+	{
+		var button = new Button
+		{
+			Text = text,
+			CustomMinimumSize = new Vector2(96, 96),
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+		};
+		StyleButton(button);
+		return button;
+	}
+
+	private Button CreateTabButton(string text, StatusTab tab)
+	{
+		var button = new Button
+		{
+			Text = text,
+			ToggleMode = true,
+			CustomMinimumSize = new Vector2(118, 36)
+		};
+		StyleButton(button);
+		button.Pressed += () => SetActiveTab(tab);
+		return button;
+	}
+
+	private void SetActiveTab(StatusTab tab)
+	{
+		_activeTab = tab;
+		var accessoriesSelected = tab == StatusTab.Accessories;
+		var discoveriesSelected = tab == StatusTab.Discoveries;
+		var settingsSelected = tab == StatusTab.Settings;
+
+		if (_accessoriesTabButton != null)
+		{
+			_accessoriesTabButton.ButtonPressed = accessoriesSelected;
+		}
+
+		if (_discoveriesTabButton != null)
+		{
+			_discoveriesTabButton.ButtonPressed = discoveriesSelected;
+		}
+
+		if (_settingsTabButton != null)
+		{
+			_settingsTabButton.ButtonPressed = settingsSelected;
+		}
+
+		if (_accessoriesPage != null)
+		{
+			_accessoriesPage.Visible = accessoriesSelected;
+		}
+
+		if (_discoveriesPage != null)
+		{
+			_discoveriesPage.Visible = discoveriesSelected;
+		}
+
+		if (_settingsPage != null)
+		{
+			_settingsPage.Visible = settingsSelected;
+		}
 	}
 
 	private Control CreateConnectionPanel()
@@ -307,6 +484,20 @@ public partial class StatusWindow : Window
 		checkBox.AddThemeColorOverride("font_disabled_color", MutedTextColor);
 		checkBox.AddThemeFontSizeOverride("font_size", 14);
 		return checkBox;
+	}
+
+	private static void StyleButton(Button button)
+	{
+		button.AddThemeColorOverride("font_color", TextColor);
+		button.AddThemeColorOverride("font_hover_color", TextColor);
+		button.AddThemeColorOverride("font_pressed_color", TextColor);
+		button.AddThemeColorOverride("font_focus_color", TextColor);
+		button.AddThemeColorOverride("font_disabled_color", MutedTextColor);
+		button.AddThemeFontSizeOverride("font_size", 14);
+		button.AddThemeStyleboxOverride("normal", CreateStyleBox(PanelColor, BorderColor, 1, 6));
+		button.AddThemeStyleboxOverride("hover", CreateStyleBox(Color.FromHtml("#eef4ff"), AccentColor, 1, 6));
+		button.AddThemeStyleboxOverride("pressed", CreateStyleBox(Color.FromHtml("#dceaff"), AccentColor, 1, 6));
+		button.AddThemeStyleboxOverride("focus", CreateStyleBox(Color.FromHtml("#ffffff"), AccentColor, 1, 6));
 	}
 
 	private Control CreateSliderBlock(

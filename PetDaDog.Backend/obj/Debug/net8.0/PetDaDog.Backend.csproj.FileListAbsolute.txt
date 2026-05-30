@@ -21,3 +21,4 @@ S:\CodexProjects\PetDaDog\PetDaDog.Backend\obj\Debug\net8.0\refint\PetDaDog.Back
 S:\CodexProjects\PetDaDog\PetDaDog.Backend\obj\Debug\net8.0\PetDaDog.Backend.pdb
 S:\CodexProjects\PetDaDog\PetDaDog.Backend\obj\Debug\net8.0\PetDaDog.Backend.genruntimeconfig.cache
 S:\CodexProjects\PetDaDog\PetDaDog.Backend\obj\Debug\net8.0\ref\PetDaDog.Backend.dll
+S:\CodexProjects\PetDaDog\PetDaDog.Backend\obj\Debug\net8.0\PetDaDog.Backend.sourcelink.json

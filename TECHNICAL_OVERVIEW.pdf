@@ -1,0 +1,295 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Courier >> >>
+endobj
+4 0 obj
+<< /Length 14550 >>
+stream
+BT /F2 15.00 Tf 32.00 760.00 Td (Pet Da Dog Technical Overview) Tj ET
+BT /F1 7.10 Tf 32.00 741.00 Td (Compact reference for the current code flow, project structure, Steam pipeline, and) Tj ET
+BT /F1 7.10 Tf 32.00 732.50 Td (safety boundaries.) Tj ET
+BT /F2 9.20 Tf 32.00 719.00 Td (1. Code Flow Chart) Tj ET
+BT /F3 5.50 Tf 32.00 708.00 Td (APP START) Tj ET
+BT /F3 5.50 Tf 32.00 701.20 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 694.40 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 687.60 Td (Godot reads project.godot) Tj ET
+BT /F3 5.50 Tf 32.00 680.80 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 674.00 Td (  +--> Autoload: PetSettings) Tj ET
+BT /F3 5.50 Tf 32.00 667.20 Td (  |       loads user://pet_settings.cfg) Tj ET
+BT /F3 5.50 Tf 32.00 660.40 Td (  |       stores local UI/dog preferences only) Tj ET
+BT /F3 5.50 Tf 32.00 653.60 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 646.80 Td (  +--> Autoload: NativeWindowBridge) Tj ET
+BT /F3 5.50 Tf 32.00 640.00 Td (  |       applies Win32 overlay styles) Tj ET
+BT /F3 5.50 Tf 32.00 633.20 Td (  |       installs tray menu and Alt+` hotkey) Tj ET
+BT /F3 5.50 Tf 32.00 626.40 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 619.60 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 612.80 Td (Godot loads Main.tscn) Tj ET
+BT /F3 5.50 Tf 32.00 606.00 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 599.20 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 592.40 Td (DesktopPet._Ready\(\)) Tj ET
+BT /F3 5.50 Tf 32.00 585.60 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 578.80 Td (  +--> gets FootAnchor/VisualRoot/PetSprite) Tj ET
+BT /F3 5.50 Tf 32.00 572.00 Td (  +--> connects NativeWindowBridge signals) Tj ET
+BT /F3 5.50 Tf 32.00 565.20 Td (  +--> configures transparent borderless overlay window) Tj ET
+BT /F3 5.50 Tf 32.00 558.40 Td (  +--> initializes SteamIntegration) Tj ET
+BT /F3 5.50 Tf 32.00 551.60 Td (  +--> starts BackendPetClient authentication if Steam is ready) Tj ET
+BT /F3 5.50 Tf 32.00 544.80 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 538.00 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 531.20 Td (DesktopPet._Process\(delta\), every frame) Tj ET
+BT /F3 5.50 Tf 32.00 524.40 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 517.60 Td (  +--> moves dog left/right) Tj ET
+BT /F3 5.50 Tf 32.00 510.80 Td (  +--> adds hop animation) Tj ET
+BT /F3 5.50 Tf 32.00 504.00 Td (  +--> applies dog scale and transparency settings) Tj ET
+BT /F3 5.50 Tf 32.00 497.20 Td (  +--> updates mouse passthrough polygon around visible dog) Tj ET
+BT /F3 5.50 Tf 32.00 490.40 Td (  +--> runs Steam callbacks) Tj ET
+BT /F3 5.50 Tf 32.00 483.60 Td (  +--> retries pending backend pet grants) Tj ET
+BT /F3 5.50 Tf 32.00 476.80 Td (  +--> refreshes StatusWindow text if it is open) Tj ET
+BT /F3 5.50 Tf 32.00 467.00 Td (DOG CLICK TO STEAM-AUTHORITATIVE PETS) Tj ET
+BT /F3 5.50 Tf 32.00 460.20 Td () Tj ET
+BT /F3 5.50 Tf 32.00 453.40 Td (User left-clicks dog) Tj ET
+BT /F3 5.50 Tf 32.00 446.60 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 439.80 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 433.00 Td (DesktopPet._Input\(\)) Tj ET
+BT /F3 5.50 Tf 32.00 426.20 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 419.40 Td (  +--> reject if click-through is enabled) Tj ET
+BT /F3 5.50 Tf 32.00 412.60 Td (  +--> reject if transparency <= 0.01) Tj ET
+BT /F3 5.50 Tf 32.00 405.80 Td (  +--> reject if click is outside current dog bounds) Tj ET
+BT /F3 5.50 Tf 32.00 399.00 Td (  +--> reject if clicked texture pixel is transparent) Tj ET
+BT /F3 5.50 Tf 32.00 392.20 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 385.40 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 378.60 Td (BackendPetClient.EnqueuePetGrant\(Guid\)) Tj ET
+BT /F3 5.50 Tf 32.00 371.80 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 365.00 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 358.20 Td (SteamIntegration.GetAuthTicketForWebApi\("petdadog-backend"\)) Tj ET
+BT /F3 5.50 Tf 32.00 351.40 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 344.60 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 337.80 Td (POST /v1/auth/steam) Tj ET
+BT /F3 5.50 Tf 32.00 331.00 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 324.20 Td (  +--> backend calls Steam AuthenticateUserTicket) Tj ET
+BT /F3 5.50 Tf 32.00 317.40 Td (  +--> backend returns signed short-lived session token) Tj ET
+BT /F3 5.50 Tf 32.00 310.60 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 303.80 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 297.00 Td (POST /v1/pets/grant) Tj ET
+BT /F3 5.50 Tf 32.00 290.20 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 283.40 Td (  +--> backend derives Steam requestid from SteamID + clientEventId) Tj ET
+BT /F3 5.50 Tf 32.00 276.60 Td (  +--> backend calls Steam Inventory AddItem) Tj ET
+BT /F3 5.50 Tf 32.00 269.80 Td (  +--> duplicate requestid replays without double-granting) Tj ET
+BT /F3 5.50 Tf 32.00 263.00 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 256.20 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 249.40 Td (GET /v1/pets) Tj ET
+BT /F3 5.50 Tf 32.00 242.60 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 235.80 Td (  +--> backend calls Steam Inventory GetInventory) Tj ET
+BT /F3 5.50 Tf 32.00 229.00 Td (  +--> backend sums configured Pets itemdef quantity) Tj ET
+BT /F3 5.50 Tf 32.00 222.20 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 215.40 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 208.60 Td (Client receives confirmed pets total) Tj ET
+BT /F3 5.50 Tf 32.00 201.80 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 195.00 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 188.20 Td (StatusWindow displays backend-confirmed pets) Tj ET
+BT /F3 5.50 Tf 32.00 178.40 Td (TRAY, STATUS WINDOW, AND SETTINGS) Tj ET
+BT /F3 5.50 Tf 32.00 171.60 Td () Tj ET
+BT /F3 5.50 Tf 32.00 164.80 Td (Windows tray icon click) Tj ET
+BT /F3 5.50 Tf 32.00 158.00 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 151.20 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 144.40 Td (NativeWindowBridge popup menu) Tj ET
+BT /F3 5.50 Tf 32.00 137.60 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 130.80 Td (  +--> Status) Tj ET
+BT /F3 5.50 Tf 32.00 124.00 Td (  |       emits StatusRequested) Tj ET
+BT /F3 5.50 Tf 32.00 117.20 Td (  |       DesktopPet opens/focuses StatusWindow) Tj ET
+BT /F3 5.50 Tf 32.00 110.40 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 103.60 Td (  +--> Exit Game) Tj ET
+BT /F3 5.50 Tf 32.00 96.80 Td (          calls GetTree\(\).Quit\(\)) Tj ET
+BT /F3 5.50 Tf 32.00 90.00 Td (          DesktopPet disposes Steam/backend clients) Tj ET
+BT /F3 5.50 Tf 32.00 83.20 Td (          NativeWindowBridge removes tray icon) Tj ET
+BT /F3 5.50 Tf 32.00 76.40 Td () Tj ET
+BT /F3 5.50 Tf 32.00 69.60 Td (StatusWindow setting changed) Tj ET
+BT /F3 5.50 Tf 32.00 62.80 Td (  |) Tj ET
+BT /F3 5.50 Tf 32.00 56.00 Td (  v) Tj ET
+BT /F3 5.50 Tf 32.00 49.20 Td (PetSettings setter) Tj ET
+BT /F3 5.50 Tf 32.00 42.40 Td (  |) Tj ET
+BT /F3 5.50 Tf 314.00 760.00 Td (  +--> clamps value) Tj ET
+BT /F3 5.50 Tf 314.00 753.20 Td (  +--> saves user://pet_settings.cfg) Tj ET
+BT /F3 5.50 Tf 314.00 746.40 Td (  +--> emits SettingsChanged) Tj ET
+BT /F3 5.50 Tf 314.00 739.60 Td (  |) Tj ET
+BT /F3 5.50 Tf 314.00 732.80 Td (  v) Tj ET
+BT /F3 5.50 Tf 314.00 726.00 Td (DesktopPet applies visual/input/window effects) Tj ET
+BT /F3 5.50 Tf 314.00 719.20 Td (  |) Tj ET
+BT /F3 5.50 Tf 314.00 712.40 Td (  +--> Always On Top: Godot flag + Win32 z-order) Tj ET
+BT /F3 5.50 Tf 314.00 705.60 Td (  +--> Doggo Click Through: full native passthrough, no pet grants) Tj ET
+BT /F3 5.50 Tf 314.00 698.80 Td (  +--> Transparency 0.0: invisible, passthrough, no pet grants) Tj ET
+BT /F3 5.50 Tf 314.00 692.00 Td (  +--> Dog Scale: recalculates overlay height and dog bounds) Tj ET
+BT /F3 5.50 Tf 314.00 685.20 Td (  +--> UI Scale: resizes StatusWindow UI) Tj ET
+BT /F2 9.20 Tf 314.00 672.40 Td (2. Legend) Tj ET
+BT /F2 6.40 Tf 314.00 661.40 Td (Name | What it is | Main responsibility) Tj ET
+BT /F1 6.40 Tf 314.00 652.90 Td (Godot - Game engine/runtime: Opens the window, loads scenes, calls _Ready, _Process, _Input,) Tj ET
+BT /F1 6.40 Tf 314.00 645.20 Td (and _ExitTree.) Tj ET
+BT /F1 6.40 Tf 314.00 636.90 Td (project.godot - Client project config: Registers autoloads and default window settings.) Tj ET
+BT /F1 6.40 Tf 314.00 628.60 Td (Main.tscn - Main client scene: Contains DesktopPet -> FootAnchor -> VisualRoot -> PetSprite.) Tj ET
+BT /F1 6.40 Tf 314.00 620.30 Td (DesktopPet.cs - Main client controller: Moves/hops the dog, manages overlay size, dog-pixel) Tj ET
+BT /F1 6.40 Tf 314.00 612.60 Td (clicks, status window, Steam ticking, and backend retries.) Tj ET
+BT /F1 6.40 Tf 314.00 604.30 Td (PetSettings.cs - Local settings autoload: Loads/saves user preferences only. It must never) Tj ET
+BT /F1 6.40 Tf 314.00 596.60 Td (save pets or currency totals.) Tj ET
+BT /F1 6.40 Tf 314.00 588.30 Td (NativeWindowBridge.cs - Windows bridge: Uses Win32 APIs for tray menu, no-activate overlay) Tj ET
+BT /F1 6.40 Tf 314.00 580.60 Td (behavior, passthrough styles, topmost state, and Alt+ hotkey.) Tj ET
+BT /F1 6.40 Tf 314.00 572.30 Td (StatusWindow.cs - Godot settings window: Shows confirmed pets, pending grants,) Tj ET
+BT /F1 6.40 Tf 314.00 564.60 Td (backend/Steam status, and editable local dog settings.) Tj ET
+BT /F1 6.40 Tf 314.00 556.30 Td (SteamIntegration.cs - Steamworks.NET wrapper: Initializes Steam, requests Web API auth) Tj ET
+BT /F1 6.40 Tf 314.00 548.60 Td (tickets, runs callbacks, and shuts Steam down.) Tj ET
+BT /F1 6.40 Tf 314.00 540.30 Td (BackendPetClient.cs - Client HTTP queue: Authenticates with the backend, stores pending grant) Tj ET
+BT /F1 6.40 Tf 314.00 532.60 Td (GUIDs in memory, retries failures, and keeps the last confirmed pets total.) Tj ET
+BT /F1 6.40 Tf 314.00 524.30 Td (Program.cs - Backend entrypoint: Defines HTTP routes, validates config, verifies Steam tickets,) Tj ET
+BT /F1 6.40 Tf 314.00 516.60 Td (signs sessions, grants pets, and reads inventory totals.) Tj ET
+BT /F1 6.40 Tf 314.00 508.30 Td (Steam Web API ticket - Client proof of identity: Sent to backend so the backend can verify the) Tj ET
+BT /F1 6.40 Tf 314.00 500.60 Td (local Steam user.) Tj ET
+BT /F1 6.40 Tf 314.00 492.30 Td (Backend session token - Temporary API auth: HMAC-signed token issued after Steam ticket) Tj ET
+BT /F1 6.40 Tf 314.00 484.60 Td (validation.) Tj ET
+BT /F1 6.40 Tf 314.00 476.30 Td (Steam Inventory - Currency authority: Stores the real Pets item quantity. The client only) Tj ET
+BT /F1 6.40 Tf 314.00 468.60 Td (displays totals returned through the backend.) Tj ET
+BT /F1 6.40 Tf 314.00 460.30 Td (Steam publisher key - Backend secret: Required for Inventory Web API calls. It must never be) Tj ET
+BT /F1 6.40 Tf 314.00 452.60 Td (included in the Godot client.) Tj ET
+BT /F1 6.40 Tf 314.00 444.30 Td (clientEventId - Grant idempotency key: A GUID created per valid click so retries do not) Tj ET
+BT /F1 6.40 Tf 314.00 436.60 Td (double-grant.) Tj ET
+BT /F2 9.20 Tf 314.00 423.30 Td (3. Project Map) Tj ET
+BT /F3 5.50 Tf 314.00 412.30 Td (S:/CodexProjects/PetDaDog) Tj ET
+BT /F3 5.50 Tf 314.00 405.50 Td (  |) Tj ET
+BT /F3 5.50 Tf 314.00 398.70 Td (  +-- AGENTS.md) Tj ET
+BT /F3 5.50 Tf 314.00 391.90 Td (  |     short project rules for future Codex sessions) Tj ET
+BT /F3 5.50 Tf 314.00 385.10 Td (  |) Tj ET
+BT /F3 5.50 Tf 314.00 378.30 Td (  +-- TECHNICAL_OVERVIEW.md) Tj ET
+BT /F3 5.50 Tf 314.00 371.50 Td (  |     this human-readable architecture guide) Tj ET
+BT /F3 5.50 Tf 314.00 364.70 Td (  |) Tj ET
+BT /F3 5.50 Tf 314.00 357.90 Td (  +-- Pet_Da_Dog_CSharp/) Tj ET
+BT /F3 5.50 Tf 314.00 351.10 Td (  |     Godot 4.6.3 C# desktop overlay client) Tj ET
+BT /F3 5.50 Tf 314.00 344.30 Td (  |) Tj ET
+BT /F3 5.50 Tf 314.00 337.50 Td (  |     +-- project.godot) Tj ET
+BT /F3 5.50 Tf 314.00 330.70 Td (  |     +-- Main.tscn) Tj ET
+BT /F3 5.50 Tf 314.00 323.90 Td (  |     +-- StatusWindow.tscn) Tj ET
+BT /F3 5.50 Tf 314.00 317.10 Td (  |     +-- Sprites/Doggo.png) Tj ET
+BT /F3 5.50 Tf 314.00 310.30 Td (  |     +-- Scripts/) Tj ET
+BT /F3 5.50 Tf 314.00 303.50 Td (  |           DesktopPet.cs) Tj ET
+BT /F3 5.50 Tf 314.00 296.70 Td (  |           NativeWindowBridge.cs) Tj ET
+BT /F3 5.50 Tf 314.00 289.90 Td (  |           PetSettings.cs) Tj ET
+BT /F3 5.50 Tf 314.00 283.10 Td (  |           StatusWindow.cs) Tj ET
+BT /F3 5.50 Tf 314.00 276.30 Td (  |           SteamIntegration.cs) Tj ET
+BT /F3 5.50 Tf 314.00 269.50 Td (  |           SteamAppId.cs) Tj ET
+BT /F3 5.50 Tf 314.00 262.70 Td (  |           BackendPetClient.cs) Tj ET
+BT /F3 5.50 Tf 314.00 255.90 Td (  |) Tj ET
+BT /F3 5.50 Tf 314.00 249.10 Td (  +-- PetDaDog.Backend/) Tj ET
+BT /F3 5.50 Tf 314.00 242.30 Td (        ASP.NET Core minimal API backend) Tj ET
+BT /F3 5.50 Tf 314.00 235.50 Td () Tj ET
+BT /F3 5.50 Tf 314.00 228.70 Td (        +-- Program.cs) Tj ET
+BT /F2 9.20 Tf 314.00 215.90 Td (4. Runtime Flow By File) Tj ET
+BT /F1 7.10 Tf 314.00 204.90 Td (project.godot starts the Godot app with transparent window support and loads) Tj ET
+BT /F1 7.10 Tf 314.00 196.40 Td (autoload singletons. PetSettings is available globally as /root/PetSettings, and) Tj ET
+BT /F1 7.10 Tf 314.00 187.90 Td (NativeWindowBridge is available as /root/NativeWindowBridge.) Tj ET
+BT /F1 7.10 Tf 314.00 177.40 Td (Main.tscn creates the visible pet scene. DesktopPet is the root script. The dog sprite) Tj ET
+BT /F1 7.10 Tf 314.00 168.90 Td (sits under FootAnchor/VisualRoot/PetSprite so movement, hopping, scale, and opacity) Tj ET
+BT /F1 7.10 Tf 314.00 160.40 Td (can be applied cleanly without changing unrelated scene nodes.) Tj ET
+BT /F1 7.10 Tf 314.00 149.90 Td (DesktopPet.cs is the central coordinator. On startup it reads settings, configures the) Tj ET
+BT /F1 7.10 Tf 314.00 141.40 Td (desktop overlay, connects tray/hotkey signals, initializes Steam, and starts backend) Tj ET
+BT /F1 7.10 Tf 314.00 132.90 Td (auth. Every frame it moves the dog, updates the click polygon, runs Steam callbacks,) Tj ET
+BT /F1 7.10 Tf 314.00 124.40 Td (retries queued grants, and refreshes the status window.) Tj ET
+BT /F1 7.10 Tf 314.00 113.90 Td (NativeWindowBridge.cs is Windows-specific. It keeps the overlay out of the taskbar,) Tj ET
+BT /F1 7.10 Tf 314.00 105.40 Td (prevents focus stealing, applies HWND_TOPMOST or HWND_NOTOPMOST, toggles) Tj ET
+BT /F1 7.10 Tf 314.00 96.90 Td (WS_EX_TRANSPARENT when the dog should not receive input, owns the tray icon, and) Tj ET
+BT /F1 7.10 Tf 314.00 88.40 Td (turns tray/hotkey events into Godot signals.) Tj ET
+BT /F1 7.10 Tf 314.00 77.90 Td (PetSettings.cs persists local preferences in user://pet_settings.cfg. Settings are) Tj ET
+BT /F1 7.10 Tf 314.00 69.40 Td (saved immediately and broadcast through SettingsChanged. The saved file contains) Tj ET
+BT /F1 7.10 Tf 314.00 60.90 Td (only local preferences: always-on-top, click-through, transparency, dog scale, and UI) Tj ET
+BT /F1 7.10 Tf 314.00 52.40 Td (scale.) Tj ET
+BT /F1 7.10 Tf 314.00 41.90 Td (StatusWindow.cs builds the settings/status UI in code. It displays confirmed pets) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font 3 0 R >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 6019 >>
+stream
+BT /F1 7.10 Tf 32.00 760.00 Td (from the backend, pending in-memory grants, backend status, Steam status, and) Tj ET
+BT /F1 7.10 Tf 32.00 751.50 Td (editable controls. Changes go to PetSettings, not directly to the dog.) Tj ET
+BT /F1 7.10 Tf 32.00 741.00 Td (SteamIntegration.cs wraps Steamworks.NET. It uses PDD_STEAM_APP_ID or) Tj ET
+BT /F1 7.10 Tf 32.00 732.50 Td (steam_appid.txt, calls SteamAPI.Init, requests a Web API ticket for petdadog-backend,) Tj ET
+BT /F1 7.10 Tf 32.00 724.00 Td (runs callbacks every frame, and calls SteamAPI.Shutdown on exit.) Tj ET
+BT /F1 7.10 Tf 32.00 713.50 Td (BackendPetClient.cs is intentionally non-authoritative. It queues click grants in) Tj ET
+BT /F1 7.10 Tf 32.00 705.00 Td (memory, authenticates with the backend using a Steam ticket, posts grants, retries) Tj ET
+BT /F1 7.10 Tf 32.00 696.50 Td (failures during the current run, and stores only the latest confirmed total returned) Tj ET
+BT /F1 7.10 Tf 32.00 688.00 Td (by the backend.) Tj ET
+BT /F1 7.10 Tf 32.00 677.50 Td (PetDaDog.Backend/Program.cs is the trusted server. It validates required environment) Tj ET
+BT /F1 7.10 Tf 32.00 669.00 Td (variables at startup, exposes /health, /v1/auth/steam, /v1/pets, and /v1/pets/grant,) Tj ET
+BT /F1 7.10 Tf 32.00 660.50 Td (talks to Steam partner APIs with the publisher key, and signs short-lived backend) Tj ET
+BT /F1 7.10 Tf 32.00 652.00 Td (session tokens.) Tj ET
+BT /F2 9.20 Tf 32.00 638.50 Td (5. API And Steam Pipeline) Tj ET
+BT /F1 7.10 Tf 32.00 627.50 Td (Client API calls:) Tj ET
+BT /F2 6.40 Tf 32.00 617.00 Td (Method | Route | Purpose) Tj ET
+BT /F1 6.40 Tf 32.00 608.50 Td (POST - /v1/auth/steam: Exchange Steam Web API ticket for backend session token.) Tj ET
+BT /F1 6.40 Tf 32.00 600.20 Td (GET - /v1/pets: Read backend-confirmed pets total from Steam Inventory.) Tj ET
+BT /F1 6.40 Tf 32.00 591.90 Td (POST - /v1/pets/grant: Grant one pet for one valid dog click.) Tj ET
+BT /F1 7.10 Tf 32.00 581.60 Td (Backend Steam calls:) Tj ET
+BT /F2 6.40 Tf 32.00 571.10 Td (Steam API | Why it is used) Tj ET
+BT /F1 6.40 Tf 32.00 562.60 Td (ISteamUserAuth/AuthenticateUserTicket - Proves the session belongs to a real Steam user.) Tj ET
+BT /F1 6.40 Tf 32.00 554.30 Td (IInventoryService/AddItem - Grants the configured Pets itemdef.) Tj ET
+BT /F1 6.40 Tf 32.00 546.00 Td (IInventoryService/GetInventory - Reads the real inventory quantity used as the pets total.) Tj ET
+BT /F1 7.10 Tf 32.00 535.70 Td (Important rule: the client never decides the final pets total. It only asks for a grant) Tj ET
+BT /F1 7.10 Tf 32.00 527.20 Td (and displays the confirmed number returned through the backend.) Tj ET
+BT /F2 9.20 Tf 32.00 513.70 Td (6. Overlay And Click Rules) Tj ET
+BT /F1 7.10 Tf 32.00 502.70 Td (The overlay is a borderless transparent Godot window. DesktopPet keeps it aligned to) Tj ET
+BT /F1 7.10 Tf 32.00 494.20 Td (the bottom of the usable screen and moves the dog inside that strip. Normal) Tj ET
+BT /F1 7.10 Tf 32.00 485.70 Td (transparent space should pass clicks to whatever app is behind the dog.) Tj ET
+BT /F1 7.10 Tf 32.00 475.20 Td (Click handling has two layers. First, Godot receives clicks only inside the current) Tj ET
+BT /F1 7.10 Tf 32.00 466.70 Td (dog-shaped mouse passthrough polygon. Second, _Input checks the clicked sprite pixel) Tj ET
+BT /F1 7.10 Tf 32.00 458.20 Td (alpha so invisible pixels inside the sprite rectangle do not count.) Tj ET
+BT /F1 7.10 Tf 32.00 447.70 Td (The dog is non-interactive when either setting is true:) Tj ET
+BT /F2 6.40 Tf 32.00 437.20 Td (Condition | Result) Tj ET
+BT /F1 6.40 Tf 32.00 428.70 Td (Doggo Click Through = true - Clicks pass through the dog and no grants are queued.) Tj ET
+BT /F1 6.40 Tf 32.00 420.40 Td (Doggo Transparency <= 0.01 - Dog is invisible, clicks pass through, and no grants are queued.) Tj ET
+BT /F1 7.10 Tf 32.00 410.10 Td (Always On Top is separate from click handling. It controls window stacking only.) Tj ET
+BT /F1 7.10 Tf 32.00 401.60 Td (Turning it off makes the overlay a normal non-topmost window; turning it on) Tj ET
+BT /F1 7.10 Tf 32.00 393.10 Td (restores topmost behavior without resetting dog movement.) Tj ET
+BT /F2 9.20 Tf 32.00 379.60 Td (7. Security Boundary) Tj ET
+BT /F2 6.40 Tf 32.00 368.60 Td (Data | Stored where | Authority) Tj ET
+BT /F1 6.40 Tf 32.00 360.10 Td (Local dog preferences - user://pet_settings.cfg: Client-local only.) Tj ET
+BT /F1 6.40 Tf 32.00 351.80 Td (Pending click grants - Memory only: Temporary client queue.) Tj ET
+BT /F1 6.40 Tf 32.00 343.50 Td (Confirmed pets total - Backend response only: Steam Inventory.) Tj ET
+BT /F1 6.40 Tf 32.00 335.20 Td (Steam publisher key - Backend environment only: Server secret.) Tj ET
+BT /F1 6.40 Tf 32.00 326.90 Td (Backend session token - Client memory: Backend-signed temporary auth.) Tj ET
+BT /F1 7.10 Tf 32.00 316.60 Td (Do not add local pet saves, editable pet totals, client-side publisher keys, or Steam) Tj ET
+BT /F1 7.10 Tf 32.00 308.10 Td (Stats currency. Pets are a Steam Inventory item quantity.) Tj ET
+BT /F2 9.20 Tf 32.00 294.60 Td (8. Build And Smoke Test) Tj ET
+BT /F1 7.10 Tf 32.00 283.60 Td (Build the Godot client from Pet_Da_Dog_CSharp/:) Tj ET
+BT /F3 5.50 Tf 32.00 273.10 Td (dotnet build) Tj ET
+BT /F1 7.10 Tf 32.00 263.30 Td (Build the backend:) Tj ET
+BT /F3 5.50 Tf 32.00 252.80 Td (dotnet build S:\\CodexProjects\\PetDaDog\\PetDaDog.Backend\\PetDaDog.Backend.csproj) Tj ET
+BT /F1 7.10 Tf 32.00 243.00 Td (Smoke test with the known-good Godot 4.6.3 console runtime:) Tj ET
+BT /F3 5.50 Tf 32.00 232.50 Td (& 'W:\\Godot_v4.6.3-stable_mono_win64\\Godot_v4.6.3-stable_mono_win64_console.exe') Tj ET
+BT /F3 5.50 Tf 32.00 225.70 Td ( --path 'S:\\CodexProjects\\PetDaDog\\Pet_Da_Dog_CSharp' --scene 'res://Main.tscn' ) Tj ET
+BT /F3 5.50 Tf 32.00 218.90 Td (--quit-after 5 --no-header) Tj ET
+BT /F1 7.10 Tf 32.00 209.10 Td (Avoid the local Godot 4.6.2 console runtime for this project because it was observed) Tj ET
+BT /F1 7.10 Tf 32.00 200.60 Td (to hang or crash during smoke tests.) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font 3 0 R >> /Contents 6 0 R >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000328 00000 n 
+0000014931 00000 n 
+0000015047 00000 n 
+0000021118 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+21234
+%%EOF
