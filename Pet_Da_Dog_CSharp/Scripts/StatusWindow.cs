@@ -16,7 +16,8 @@ public partial class StatusWindow : Window
 	private const string AccessoriesTabTitle = "Accessories";
 	private const string DiscoveriesTabTitle = "Discoveries";
 	private const string SettingsTabTitle = "Settings";
-	private const int PlaceholderTileCount = 16;
+	private const string DogTileImagePath = "res://Sprites/Doggo.png";
+	private const int PlaceholderTileCount = 50;
 
 	private enum StatusTab
 	{
@@ -24,6 +25,8 @@ public partial class StatusWindow : Window
 		Discoveries,
 		Settings
 	}
+
+	private sealed record TileSpec(string Label, string? ImagePath);
 
 	private PetSettings? _settings;
 	private bool _refreshingControls;
@@ -161,12 +164,18 @@ public partial class StatusWindow : Window
 
 	private Control CreateTopBar()
 	{
+		var header = new VBoxContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+		};
+		header.AddThemeConstantOverride("separation", 6);
+
 		var row = new HBoxContainer
 		{
 			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			CustomMinimumSize = new Vector2(0, 44)
+			CustomMinimumSize = new Vector2(0, 42)
 		};
-		row.AddThemeConstantOverride("separation", 12);
+		row.AddThemeConstantOverride("separation", 10);
 
 		var tabs = new HBoxContainer
 		{
@@ -202,7 +211,32 @@ public partial class StatusWindow : Window
 
 		row.AddChild(pets);
 
-		return row;
+		header.AddChild(row);
+
+		var actionRow = new HBoxContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+		};
+
+		var spacer = new Control
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+		};
+		actionRow.AddChild(spacer);
+
+		var exitButton = new Button
+		{
+			Text = "Exit Game",
+			CustomMinimumSize = new Vector2(112, 32),
+			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter
+		};
+		StyleButton(exitButton);
+		exitButton.Pressed += () => GetTree().Quit();
+		actionRow.AddChild(exitButton);
+
+		header.AddChild(actionRow);
+
+		return header;
 	}
 
 	private Control CreateTabPages()
@@ -236,14 +270,26 @@ public partial class StatusWindow : Window
 		grid.AddThemeConstantOverride("h_separation", 10);
 		grid.AddThemeConstantOverride("v_separation", 10);
 
-		for (var index = 1; index <= PlaceholderTileCount; index++)
+		foreach (var tile in CreateTileSpecs(tilePrefix))
 		{
-			grid.AddChild(CreateTileButton($"{tilePrefix} {index:00}"));
+			grid.AddChild(CreateTileButton(tile));
 		}
 
 		content.AddChild(grid);
 
 		return scroll;
+	}
+
+	private static TileSpec[] CreateTileSpecs(string tilePrefix)
+	{
+		var tiles = new TileSpec[PlaceholderTileCount];
+		for (var index = 1; index <= PlaceholderTileCount; index++)
+		{
+			var imagePath = index == 1 ? DogTileImagePath : null;
+			tiles[index - 1] = new TileSpec($"{tilePrefix} {index:00}", imagePath);
+		}
+
+		return tiles;
 	}
 
 	private Control CreateSettingsTab()
@@ -274,16 +320,82 @@ public partial class StatusWindow : Window
 		return scroll;
 	}
 
-	private static Button CreateTileButton(string text)
+	private static Button CreateTileButton(TileSpec tile)
 	{
 		var button = new Button
 		{
-			Text = text,
-			CustomMinimumSize = new Vector2(96, 96),
+			Text = string.Empty,
+			CustomMinimumSize = new Vector2(116, 116),
 			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
 		};
 		StyleButton(button);
+
+		var margin = new MarginContainer
+		{
+			MouseFilter = Control.MouseFilterEnum.Ignore
+		};
+		margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		margin.AddThemeConstantOverride("margin_left", 8);
+		margin.AddThemeConstantOverride("margin_top", 8);
+		margin.AddThemeConstantOverride("margin_right", 8);
+		margin.AddThemeConstantOverride("margin_bottom", 8);
+		button.AddChild(margin);
+
+		var content = new VBoxContainer
+		{
+			MouseFilter = Control.MouseFilterEnum.Ignore,
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill
+		};
+		content.AddThemeConstantOverride("separation", 6);
+		margin.AddChild(content);
+
+		content.AddChild(CreateTileImageArea(tile.ImagePath));
+
+		var label = CreateLabel(tile.Label, TextColor, 13);
+		label.MouseFilter = Control.MouseFilterEnum.Ignore;
+		label.HorizontalAlignment = HorizontalAlignment.Center;
+		label.VerticalAlignment = VerticalAlignment.Center;
+		label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		content.AddChild(label);
+
 		return button;
+	}
+
+	private static Control CreateTileImageArea(string? imagePath)
+	{
+		var panel = new PanelContainer
+		{
+			MouseFilter = Control.MouseFilterEnum.Ignore,
+			CustomMinimumSize = new Vector2(0, 70),
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill
+		};
+		panel.AddThemeStyleboxOverride("panel", CreateStyleBox(Color.FromHtml("#f8fafc"), BorderColor, 1, 5));
+
+		if (string.IsNullOrWhiteSpace(imagePath))
+		{
+			return panel;
+		}
+
+		var texture = ResourceLoader.Load<Texture2D>(imagePath);
+		if (texture == null)
+		{
+			return panel;
+		}
+
+		var image = new TextureRect
+		{
+			Texture = texture,
+			MouseFilter = Control.MouseFilterEnum.Ignore,
+			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+			StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill
+		};
+		panel.AddChild(image);
+
+		return panel;
 	}
 
 	private Button CreateTabButton(string text, StatusTab tab)

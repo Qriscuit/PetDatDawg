@@ -59,11 +59,11 @@ Window
   +-- PanelContainer background
         +-- MarginContainer padding
               +-- VBoxContainer root
-                    +-- top row: tab buttons + pets counter
+                    +-- header: tab buttons + pets counter + Exit Game action
                     +-- page container
 ```
 
-The top row is custom instead of using Godot's `TabContainer`. That lets the app keep a persistent pets count on the right while the tab buttons stay on the left.
+The header is custom instead of using Godot's `TabContainer`. That lets the app keep a persistent pets count on the right while the tab buttons stay on the left, and it gives the status menu a tab-styled `Exit Game` action.
 
 The three pages are:
 
