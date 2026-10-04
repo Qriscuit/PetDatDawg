@@ -1,0 +1,22 @@
+{
+  "mode": "Built-in image_gen imagegen",
+  "selected_direction": "Woodland Workshop",
+  "style_reference": "../Concepts/beautification-pass-01/04-woodland-workshop.png",
+  "assets": [
+    {
+      "file": "woodland-window.png",
+      "transparent_background": false,
+      "prompt": "Use case: ui-mockup.\nAsset type: production game UI background skin, a single square raster texture for a Godot nine-slice StyleBox, based on Woodland Workshop.\nImage 1 is a style reference only: derive its moss cloth, wood, paper and leaves. Do not copy the interface layout or its contents.\nCreate one empty square game menu background, straight-on orthographic view. Muted moss/sage woven-fabric main field, framed by a warm carved brown wood border with softly rounded corners. A few hand-painted leaves tucked into the extreme four outer corners. Keep the wooden border very thin, within the outer 3 percent of the image; the central 88 percent must be quiet low-contrast sage cloth, free of decorative motifs, gradient light and dark text-friendly. Small restrained brass corner studs allowed. The middle of each border should be uniform so stretching a nine-slice doesn't distort it.\nStyle: illustrated storybook craftsmanship, gently aged grain, inviting and soft, same earthy Woodland Workshop palette as reference. UI texture, not scenery, no depth perspective.\nAbsolutely no dog, animals, accessories, labels, typography, symbols, buttons, UI layout, transparent holes or drop shadows outside canvas. No watermark. Fill canvas edge to edge."
+    },
+    {
+      "file": "woodland-panel.png",
+      "transparent_background": true,
+      "prompt": "Use case: ui-mockup.\nAsset type: production game UI panel skin, a single blank square texture for Godot nine-slice framing.\nImage 1 is a style reference only: match the Woodland Workshop preview's curved wooden frame and parchment surface.\nCreate a single empty rounded-square parchment panel with a thin softly carved brown wood frame around the perimeter, orthographic front view. Faint warm cream/oat paper texture in center, dark pine text will be placed there later. Wooden edge about 3 percent of canvas width; reserve the central 85 percent as almost uniform pale parchment. Restrained muted brass studs in four corners. Gentle hand-painted grain and curved warm wooden corners, no leaves intruding into center. Texture is for stretchable UI panel: uniform straight middle border runs, localized detail only in corners; minimal internal shading, no vignette or strong central lighting.\nOne isolated panel fills almost entire square canvas, rounded outermost corner pixels genuinely transparent. No extra mockup, no shadow outside the panel. No text, dogs, accessories, symbols, icons, numbers or objects. No watermark. Production texture matching the selected earthy wood-and-parchment concept."
+    },
+    {
+      "file": "woodland-stitched.png",
+      "transparent_background": true,
+      "prompt": "Use case: ui-mockup.\nAsset type: one production game UI control skin, blank neutral stitched cloth/parchment texture for Godot nine-slice buttons and catalog cards.\nImage 1 is a style reference only: match its stitched rounded catalog labels and neutral tabs.\nCreate one single rounded-square cream fabric/paper UI tile, straight-on orthographic, fills almost the entire square image. Soft warm off-white field with extremely subtle linen grain. Thin muted cocoa outline with a neat ochre dashed stitched seam set just inside the edge, softly raised curved corners, tiny restrained beveled edge. Outer outline and stitches together occupy only the outer 3 percent of canvas; center 88 percent is completely clean bright neutral cream for later text and sprite overlays. Border middle runs must be uniform and repeatable for stretching. This neutral source will be recolored to sage and terracotta in the game, so keep brightness high and color saturation low.\nGenuinely transparent outside rounded corners, no shadow beyond canvas. Exactly one tile, no contact sheet, no inner boxes, text, numbers, icons, dog, accessory or other art. No watermark. High-quality inviting Woodland Workshop material, not glossy plastic."
+    }
+  ]
+}

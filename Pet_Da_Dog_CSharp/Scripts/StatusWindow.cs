@@ -4,809 +4,390 @@ using Godot;
 
 public partial class StatusWindow : Window
 {
-	private static readonly Vector2I BaseWindowSize = new(560, 540);
-	private static readonly Vector2I BaseMinimumWindowSize = new(500, 460);
-
-	private static readonly Color BackgroundColor = Color.FromHtml("#f4f6f8");
-	private static readonly Color PanelColor = Color.FromHtml("#ffffff");
-	private static readonly Color BorderColor = Color.FromHtml("#cfd7e3");
-	private static readonly Color TextColor = Color.FromHtml("#152033");
-	private static readonly Color MutedTextColor = Color.FromHtml("#657386");
-	private static readonly Color AccentColor = Color.FromHtml("#2f6fdd");
-	private const string AccessoriesTabTitle = "Accessories";
-	private const string DiscoveriesTabTitle = "Discoveries";
-	private const string SettingsTabTitle = "Settings";
-	private const string DogTileImagePath = "res://Sprites/Doggo.png";
-	private const int PlaceholderTileCount = 50;
-
-	private enum StatusTab
-	{
-		Accessories,
-		Discoveries,
-		Settings
-	}
-
-	private sealed record TileSpec(string Label, string? ImagePath);
-
+	private static readonly Vector2I BaseWindowSize = new(640, 780);
+	private static readonly Vector2I BaseMinimumWindowSize = new(560, 600);
+	private const string LayoutPath = "user://menu_layout.cfg";
+	private enum StatusTab { Dogs, Items, Shop, Settings }
 	private PetSettings? _settings;
-	private bool _refreshingControls;
-	private StatusTab _activeTab = StatusTab.Accessories;
-
-	private Label? _petsValueLabel;
-	private Label? _pendingLabel;
-	private Label? _backendStatusLabel;
-	private Label? _steamStatusLabel;
-	private Button? _accessoriesTabButton;
-	private Button? _discoveriesTabButton;
-	private Button? _settingsTabButton;
-	private Control? _accessoriesPage;
-	private Control? _discoveriesPage;
-	private Control? _settingsPage;
-	private CheckBox? _alwaysOnTopCheck;
-	private CheckBox? _dogClickThroughCheck;
-	private HSlider? _dogTransparencySlider;
-	private SpinBox? _dogTransparencySpin;
-	private HSlider? _dogScaleSlider;
-	private SpinBox? _dogScaleSpin;
-	private HSlider? _uiScaleSlider;
-	private SpinBox? _uiScaleSpin;
-	private Label? _dogTransparencyValueLabel;
-	private Label? _dogScaleValueLabel;
-	private Label? _uiScaleValueLabel;
+	private AccessoryEditingSession? _editingSession;
+	private PatrolRoute? _patrolRoute;
+	private bool _syncingPatrol, _returnFromPatrolEdit;
+	private Button? _editPatrolButton, _clearPatrolButton;
+	private CheckBox? _usePatrolCheck;
+	private Label? _patrolSummary, _patrolSaveStatus;
+	private bool _refreshingControls, _placed;
+	private float _appliedUiScale = -1;
+	private StatusTab _activeTab = StatusTab.Items;
+	private Label? _petsValueLabel, _pendingLabel, _backendStatusLabel, _steamStatusLabel, _connectionSummary;
+	private Button? _dogsTabButton, _itemsTabButton, _shopTabButton, _settingsTabButton;
+	private Control? _dogsPage, _accessoriesPage, _shopPage, _settingsPage, _welcomePanel;
+	private AccessoryEditor? _accessoryEditor;
+	private CheckBox? _alwaysOnTopCheck, _dogClickThroughCheck;
+	private HSlider? _dogTransparencySlider, _dogScaleSlider, _uiScaleSlider;
+	private Label? _dogTransparencyValueLabel, _dogScaleValueLabel, _uiScaleValueLabel;
 
 	public override void _Ready()
 	{
-		Title = "Pet Da Dog Status";
-		Size = BaseWindowSize;
-		MinSize = BaseMinimumWindowSize;
-		InitialPosition = WindowInitialPosition.CenterMainWindowScreen;
-		AlwaysOnTop = false;
-		Borderless = false;
-		Transparent = false;
-		TransparentBg = false;
-		Unresizable = false;
-		Visible = false;
-
-		CloseRequested += Hide;
-
-		BuildUi();
-		RefreshControls();
-		ApplyUiScale();
+		_editingSession = GetNodeOrNull<AccessoryEditingSession>("/root/AccessoryEditingSession");
+		_patrolRoute = GetNodeOrNull<PatrolRoute>("/root/PatrolRoute");
+		Title = "Pet Da Dog";
+		Size = BaseWindowSize; MinSize = BaseMinimumWindowSize;
+		AlwaysOnTop = false; Borderless = false; Transparent = false;
+		TransparentBg = false; Unresizable = false; Visible = false;
+		CloseRequested += () => { _editingSession?.SetActive(false); SaveLayout(); Hide(); };
+		VisibilityChanged += SyncEditingState;
+		Theme = WoodlandTheme.Build(); BuildUi(); ApplyUiScale();
+		if (_patrolRoute != null)
+		{
+			_patrolRoute.Changed += RefreshPatrolControls;
+			_patrolRoute.EditingChanged += OnPatrolEditingChanged;
+		}
+		RefreshPatrolControls();
 	}
-
+	public override void _Process(double delta) => SyncEditingState();
+	private void SyncEditingState() => _editingSession?.SetActive(Visible && Mode != ModeEnum.Minimized
+		&& _activeTab == StatusTab.Items && _patrolRoute?.IsEditing != true);
 	public override void _ExitTree()
 	{
-		if (_settings != null)
+		_editingSession?.SetActive(false);
+		SaveLayout();
+		if (_settings != null) _settings.SettingsChanged -= OnSettingsChanged;
+		_returnFromPatrolEdit = false;
+		if (_patrolRoute != null)
 		{
-			_settings.SettingsChanged -= OnSettingsChanged;
+			_patrolRoute.Changed -= RefreshPatrolControls;
+			_patrolRoute.EditingChanged -= OnPatrolEditingChanged;
 		}
 	}
-
 	public void Configure(PetSettings? settings)
 	{
-		if (_settings != null)
-		{
-			_settings.SettingsChanged -= OnSettingsChanged;
-		}
-
+		if (_settings != null) _settings.SettingsChanged -= OnSettingsChanged;
 		_settings = settings;
-
-		if (_settings != null)
-		{
-			_settings.SettingsChanged += OnSettingsChanged;
-		}
-
-		RefreshControls();
-		ApplyUiScale();
+		if (_settings != null) _settings.SettingsChanged += OnSettingsChanged;
+		RefreshControls(); ApplyUiScale();
 	}
-
 	public void ShowStatusWindow()
 	{
-		RefreshControls();
-		ApplyUiScale();
-
-		PlaceWindowAboveDogPath();
-		Show();
-		GrabFocus();
+		if (Mode == ModeEnum.Minimized) Mode = ModeEnum.Windowed;
+		RefreshControls(); ApplyUiScale();
+		if (!_placed) { LoadLayout(); _placed = true; }
+		KeepWindowReachable(); Show(); GrabFocus();
+		SyncEditingState();
 	}
-
-	public void UpdateStatus(long? confirmedPets, int pendingGrantCount, string backendStatus, string steamStatus)
+	public void UpdateStatus(long? confirmedPets, int pendingGrantCount, string backendStatus, string steamStatus,
+		bool steamReady = false, bool backendReady = false)
 	{
-		if (_petsValueLabel != null)
-		{
-			_petsValueLabel.Text = confirmedPets.HasValue
-				? $"Pets: {confirmedPets.Value.ToString("N0", CultureInfo.InvariantCulture)}"
-				: "Pets: Syncing...";
-		}
-
-		if (_pendingLabel != null)
-		{
-			_pendingLabel.Visible = pendingGrantCount > 0;
-			_pendingLabel.Text = pendingGrantCount > 0
-				? $"Pending: {pendingGrantCount}"
-				: string.Empty;
-		}
-
-		if (_backendStatusLabel != null)
-		{
-			_backendStatusLabel.Text = $"Backend: {NormalizeStatus(backendStatus)}";
-		}
-
-		if (_steamStatusLabel != null)
-		{
-			_steamStatusLabel.Text = $"Steam: {NormalizeStatus(steamStatus)}";
-		}
+		var retrying = backendStatus.Contains("retry", StringComparison.OrdinalIgnoreCase)
+			|| backendStatus.Contains("failed", StringComparison.OrdinalIgnoreCase);
+		_petsValueLabel!.Text = confirmedPets.HasValue
+			? $"Pets: {confirmedPets.Value.ToString("N0", CultureInfo.InvariantCulture)}"
+			: steamReady ? "Pets: Waiting to sync" : "Pets: Steam unavailable";
+		_pendingLabel!.Visible = pendingGrantCount > 0;
+		_pendingLabel.Text = $"{pendingGrantCount} {(pendingGrantCount == 1 ? "click" : "clicks")} waiting to sync";
+		_pendingLabel.TooltipText = "Waiting clicks retry while this app is open. They are not yet confirmed pets and are cleared when you quit.";
+		_backendStatusLabel!.Text = $"Service: {NormalizeStatus(backendStatus)}";
+		_steamStatusLabel!.Text = NormalizeStatus(steamStatus);
+		_connectionSummary!.Text = !steamReady ? steamStatus.StartsWith("Steam is disabled", StringComparison.OrdinalIgnoreCase)
+			? "Steam connection is disabled for this run." : "Steam is unavailable. Open Steam, then restart Pet Da Dog."
+			: retrying ? "Pet syncing is interrupted. The app will retry while it is open."
+			: !backendReady ? "Connecting to the pet service…" : "Connected to Steam and the pet service.";
 	}
-
 	private void BuildUi()
 	{
 		var background = new PanelContainer();
 		background.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		background.AddThemeStyleboxOverride("panel", CreateStyleBox(BackgroundColor, BackgroundColor, 0, 0));
-		AddChild(background);
-
+		background.AddThemeStyleboxOverride("panel", WoodlandTheme.WindowStyle()); AddChild(background);
 		var margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left", 18);
-		margin.AddThemeConstantOverride("margin_top", 18);
-		margin.AddThemeConstantOverride("margin_right", 18);
-		margin.AddThemeConstantOverride("margin_bottom", 18);
+		foreach (var side in new[] { "left", "top", "right", "bottom" }) margin.AddThemeConstantOverride($"margin_{side}", 20);
 		background.AddChild(margin);
-
-		var root = new VBoxContainer();
-		root.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		root.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-		root.AddThemeConstantOverride("separation", 12);
-		margin.AddChild(root);
-
+		var root = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill };
+		root.AddThemeConstantOverride("separation", 10); margin.AddChild(root);
 		root.AddChild(CreateTopBar());
-		root.AddChild(CreateTabPages());
+		_welcomePanel = CreateWelcome(); root.AddChild(_welcomePanel); root.AddChild(CreateTabPages());
 	}
-
 	private Control CreateTopBar()
 	{
-		var header = new VBoxContainer
-		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
-		};
-		header.AddThemeConstantOverride("separation", 6);
-
-		var row = new HBoxContainer
-		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			CustomMinimumSize = new Vector2(0, 42)
-		};
-		row.AddThemeConstantOverride("separation", 10);
-
-		var tabs = new HBoxContainer
-		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter
-		};
-		tabs.AddThemeConstantOverride("separation", 8);
-
-		_accessoriesTabButton = CreateTabButton(AccessoriesTabTitle, StatusTab.Accessories);
-		_discoveriesTabButton = CreateTabButton(DiscoveriesTabTitle, StatusTab.Discoveries);
-		_settingsTabButton = CreateTabButton(SettingsTabTitle, StatusTab.Settings);
-
-		tabs.AddChild(_accessoriesTabButton);
-		tabs.AddChild(_discoveriesTabButton);
-		tabs.AddChild(_settingsTabButton);
-		row.AddChild(tabs);
-
-		var pets = new VBoxContainer
-		{
-			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
-			CustomMinimumSize = new Vector2(148, 0)
-		};
-		pets.AddThemeConstantOverride("separation", 1);
-
-		_petsValueLabel = CreateLabel("Pets: Syncing...", TextColor, 16);
+		var panel = new PanelContainer(); panel.AddThemeStyleboxOverride("panel", WoodlandTheme.PanelStyle());
+		var header = new VBoxContainer(); panel.AddChild(header);
+		var tabs = new HBoxContainer(); tabs.AddThemeConstantOverride("separation", 8);
+		_dogsTabButton = CreateTabButton("Dogs", StatusTab.Dogs);
+		_itemsTabButton = CreateTabButton("Items", StatusTab.Items);
+		_shopTabButton = CreateTabButton("Shop", StatusTab.Shop);
+		_settingsTabButton = CreateTabButton("Settings", StatusTab.Settings);
+		tabs.AddChild(_dogsTabButton); tabs.AddChild(_itemsTabButton); tabs.AddChild(_shopTabButton); tabs.AddChild(_settingsTabButton);
+		var row = new HBoxContainer();
+		row.AddChild(new Label { Text = "Pet Da Dog", ThemeTypeVariation = "WoodlandHeading", SizeFlagsVertical = Control.SizeFlags.ShrinkCenter });
+		row.AddChild(new Control { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill });
+		var pets = new VBoxContainer();
+		_petsValueLabel = CreateLabel("Pets: Waiting to sync", WoodlandTheme.Text, 13);
 		_petsValueLabel.HorizontalAlignment = HorizontalAlignment.Right;
-		pets.AddChild(_petsValueLabel);
-
-		_pendingLabel = CreateLabel(string.Empty, MutedTextColor, 12);
-		_pendingLabel.HorizontalAlignment = HorizontalAlignment.Right;
-		_pendingLabel.Visible = false;
-		pets.AddChild(_pendingLabel);
-
-		row.AddChild(pets);
-
-		header.AddChild(row);
-
-		var actionRow = new HBoxContainer
-		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
-		};
-
-		var spacer = new Control
-		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
-		};
-		actionRow.AddChild(spacer);
-
-		var exitButton = new Button
-		{
-			Text = "Exit Game",
-			CustomMinimumSize = new Vector2(112, 32),
-			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter
-		};
-		StyleButton(exitButton);
-		exitButton.Pressed += () => GetTree().Quit();
-		actionRow.AddChild(exitButton);
-
-		header.AddChild(actionRow);
-
-		return header;
+		_pendingLabel = CreateLabel(string.Empty, WoodlandTheme.Muted, 12);
+		_pendingLabel.HorizontalAlignment = HorizontalAlignment.Right; _pendingLabel.Visible = false;
+		pets.AddChild(_petsValueLabel); pets.AddChild(_pendingLabel); row.AddChild(pets); header.AddChild(row); header.AddChild(tabs);
+		return panel;
 	}
-
+	private Control CreateWelcome()
+	{
+		var panel = new PanelContainer(); panel.AddThemeStyleboxOverride("panel", WoodlandTheme.PanelStyle());
+		var row = new HBoxContainer(); panel.AddChild(row);
+		row.AddChild(CreateStatusLabel("Welcome! Right-click your desktop dog to customize it.\nYou can also choose Open Pet Da Dog from its tray icon. Closing this menu keeps your dog on the desktop."));
+		var dismiss = new Button { Text = "Got it", SizeFlagsVertical = Control.SizeFlags.ShrinkCenter };
+		WoodlandTheme.StyleButton(dismiss, "SecondaryButton");
+		dismiss.Pressed += () => { _settings?.DismissWelcome(); panel.Hide(); }; row.AddChild(dismiss); return panel;
+	}
 	private Control CreateTabPages()
 	{
-		var pages = new VBoxContainer
-		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			SizeFlagsVertical = Control.SizeFlags.ExpandFill
-		};
-
-		_accessoriesPage = CreateTilePage("Accessory");
-		_discoveriesPage = CreateTilePage("Discovery");
-		_settingsPage = CreateSettingsTab();
-
-		pages.AddChild(_accessoriesPage);
-		pages.AddChild(_discoveriesPage);
-		pages.AddChild(_settingsPage);
-
-		SetActiveTab(_activeTab);
-		return pages;
+		var pages = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill };
+		_accessoryEditor = new AccessoryEditor();
+		var panel = new PanelContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill };
+		var style = WoodlandTheme.PanelStyle(); style.SetContentMarginAll(4);
+		panel.AddThemeStyleboxOverride("panel", style); panel.AddChild(_accessoryEditor);
+		_accessoriesPage = panel; _dogsPage = CreateDogs(); _shopPage = CreateShop(); _settingsPage = CreateSettingsTab();
+		pages.AddChild(_dogsPage); pages.AddChild(_accessoriesPage); pages.AddChild(_shopPage); pages.AddChild(_settingsPage);
+		SetActiveTab(_activeTab); return pages;
 	}
-
-	private Control CreateTilePage(string tilePrefix)
+	private Control CreateDogs()
 	{
-		var scroll = CreateScrollPage(out var content);
-		var grid = new GridContainer
+		var (panel, content) = CreatePanel(); panel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		AddSectionTitle(content, "Your desktop dog");
+		var texture = ResourceLoader.Load<Texture2D>("res://Sprites/Doggo.png");
+		if (texture != null)
 		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			Columns = 4
-		};
-		grid.AddThemeConstantOverride("h_separation", 10);
-		grid.AddThemeConstantOverride("v_separation", 10);
-
-		foreach (var tile in CreateTileSpecs(tilePrefix))
-		{
-			grid.AddChild(CreateTileButton(tile));
+			var bounds = AccessoryWardrobe.GetVisibleBounds(texture);
+			content.AddChild(new TextureRect { Texture = new AtlasTexture { Atlas = texture, Region = bounds },
+				CustomMinimumSize = new Vector2(0, 220), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+				StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, SizeFlagsVertical = Control.SizeFlags.ExpandFill });
 		}
-
-		content.AddChild(grid);
-
-		return scroll;
+		content.AddChild(CreateStatusLabel("Your current dog is ready for the desktop.\nVisit Items to change its look, or Settings to adjust its visibility and size."));
+		var customize = new Button { Text = "Customize this dog", SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter };
+		WoodlandTheme.StyleButton(customize, "ActionButton"); customize.Pressed += () => SetActiveTab(StatusTab.Items);
+		content.AddChild(customize); return panel;
 	}
-
-	private static TileSpec[] CreateTileSpecs(string tilePrefix)
+	private static Control CreateShop()
 	{
-		var tiles = new TileSpec[PlaceholderTileCount];
-		for (var index = 1; index <= PlaceholderTileCount; index++)
-		{
-			var imagePath = index == 1 ? DogTileImagePath : null;
-			tiles[index - 1] = new TileSpec($"{tilePrefix} {index:00}", imagePath);
-		}
-
-		return tiles;
+		var (panel, content) = CreatePanel(); panel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		content.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
+		AddSectionTitle(content, "Shop is coming soon");
+		content.AddChild(CreateStatusLabel("There are no items for purchase yet.\nYou can use the bundled accessories in Items to create your dog's look.")); return panel;
 	}
-
 	private Control CreateSettingsTab()
 	{
-		var scroll = CreateScrollPage(out var content);
-		content.AddChild(CreateConnectionPanel());
-		content.AddChild(CreateSettingsPanel());
-		return scroll;
+		var scroll = new ScrollContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+		var content = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+		content.AddThemeConstantOverride("separation", 12); scroll.AddChild(content);
+		content.AddChild(CreatePatrolPanel()); content.AddChild(CreateSettingsPanel()); content.AddChild(CreateConnectionPanel());
+		var quit = new Button { Name = "QuitPetDaDog", Text = "Quit Pet Da Dog", TooltipText = "Closes the app and removes the desktop dog. Waiting clicks are not kept after quitting.",
+			SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd };
+		WoodlandTheme.StyleButton(quit, "SecondaryButton"); quit.Pressed += () => GetTree().Quit(); content.AddChild(quit); return scroll;
 	}
-
-	private static ScrollContainer CreateScrollPage(out VBoxContainer content)
+	private Control CreatePatrolPanel()
 	{
-		var scroll = new ScrollContainer
-		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			SizeFlagsVertical = Control.SizeFlags.ExpandFill,
-			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
-		};
-
-		content = new VBoxContainer
-		{
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			SizeFlagsVertical = Control.SizeFlags.ExpandFill
-		};
-		content.AddThemeConstantOverride("separation", 12);
-		scroll.AddChild(content);
-
-		return scroll;
-	}
-
-	private static Button CreateTileButton(TileSpec tile)
-	{
-		var button = new Button
-		{
-			Text = string.Empty,
-			CustomMinimumSize = new Vector2(116, 116),
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
-		};
-		StyleButton(button);
-
-		var margin = new MarginContainer
-		{
-			MouseFilter = Control.MouseFilterEnum.Ignore
-		};
-		margin.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		margin.AddThemeConstantOverride("margin_left", 8);
-		margin.AddThemeConstantOverride("margin_top", 8);
-		margin.AddThemeConstantOverride("margin_right", 8);
-		margin.AddThemeConstantOverride("margin_bottom", 8);
-		button.AddChild(margin);
-
-		var content = new VBoxContainer
-		{
-			MouseFilter = Control.MouseFilterEnum.Ignore,
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			SizeFlagsVertical = Control.SizeFlags.ExpandFill
-		};
-		content.AddThemeConstantOverride("separation", 6);
-		margin.AddChild(content);
-
-		content.AddChild(CreateTileImageArea(tile.ImagePath));
-
-		var label = CreateLabel(tile.Label, TextColor, 13);
-		label.MouseFilter = Control.MouseFilterEnum.Ignore;
-		label.HorizontalAlignment = HorizontalAlignment.Center;
-		label.VerticalAlignment = VerticalAlignment.Center;
-		label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		content.AddChild(label);
-
-		return button;
-	}
-
-	private static Control CreateTileImageArea(string? imagePath)
-	{
-		var panel = new PanelContainer
-		{
-			MouseFilter = Control.MouseFilterEnum.Ignore,
-			CustomMinimumSize = new Vector2(0, 70),
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			SizeFlagsVertical = Control.SizeFlags.ExpandFill
-		};
-		panel.AddThemeStyleboxOverride("panel", CreateStyleBox(Color.FromHtml("#f8fafc"), BorderColor, 1, 5));
-
-		if (string.IsNullOrWhiteSpace(imagePath))
-		{
-			return panel;
-		}
-
-		var texture = ResourceLoader.Load<Texture2D>(imagePath);
-		if (texture == null)
-		{
-			return panel;
-		}
-
-		var image = new TextureRect
-		{
-			Texture = texture,
-			MouseFilter = Control.MouseFilterEnum.Ignore,
-			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-			StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			SizeFlagsVertical = Control.SizeFlags.ExpandFill
-		};
-		panel.AddChild(image);
-
+		var (panel, content) = CreatePanel(); panel.Name = "PatrolRouteSettings";
+		AddSectionTitle(content, "Patrol route");
+		content.AddChild(CreateStatusLabel("Choose stops on your desktop. Your dog visits them in order, then loops back to the first stop."));
+		_patrolSummary = CreateStatusLabel("No patrol route set.");
+		_patrolSummary.Name = "PatrolRouteSummary"; content.AddChild(_patrolSummary);
+		var actions = new HBoxContainer(); actions.AddThemeConstantOverride("separation", 8);
+		_editPatrolButton = new Button { Name = "EditPatrolRoute", Text = "Set patrol route", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+		WoodlandTheme.StyleButton(_editPatrolButton, "ActionButton");
+		_editPatrolButton.Pressed += BeginPatrolEdit; actions.AddChild(_editPatrolButton);
+		_clearPatrolButton = new Button { Name = "ClearPatrolRoute", Text = "Clear route", TooltipText = "Remove the saved route and return to the usual walk." };
+		WoodlandTheme.StyleButton(_clearPatrolButton, "SecondaryButton");
+		_clearPatrolButton.Pressed += () => _patrolRoute?.ClearRoute(); actions.AddChild(_clearPatrolButton);
+		content.AddChild(actions);
+		_usePatrolCheck = new CheckBox { Name = "UsePatrolRoute", Text = "Use patrol route",
+			TooltipText = "Turn off to return to the usual walk without removing your route." };
+		_usePatrolCheck.Toggled += enabled => { if (!_syncingPatrol) _patrolRoute?.SetEnabled(enabled); };
+		content.AddChild(_usePatrolCheck);
+		content.AddChild(CreateStatusLabel("Turn this off to return to your dog's usual walk."));
+		_patrolSaveStatus = CreateStatusLabel(string.Empty);
+		_patrolSaveStatus.Name = "PatrolRouteSaveStatus";
+		_patrolSaveStatus.AddThemeColorOverride("font_color", WoodlandTheme.Accent);
+		content.AddChild(_patrolSaveStatus);
 		return panel;
 	}
-
-	private Button CreateTabButton(string text, StatusTab tab)
+	private void BeginPatrolEdit()
 	{
-		var button = new Button
-		{
-			Text = text,
-			ToggleMode = true,
-			CustomMinimumSize = new Vector2(118, 36)
-		};
-		StyleButton(button);
-		button.Pressed += () => SetActiveTab(tab);
-		return button;
+		if (_patrolRoute == null || _patrolRoute.IsEditing) return;
+		_editingSession?.SetActive(false);
+		_returnFromPatrolEdit = true;
+		SaveLayout(); Hide();
+		_patrolRoute.BeginEdit();
 	}
-
-	private void SetActiveTab(StatusTab tab)
+	private void OnPatrolEditingChanged(bool editing)
 	{
-		_activeTab = tab;
-		var accessoriesSelected = tab == StatusTab.Accessories;
-		var discoveriesSelected = tab == StatusTab.Discoveries;
-		var settingsSelected = tab == StatusTab.Settings;
-
-		if (_accessoriesTabButton != null)
-		{
-			_accessoriesTabButton.ButtonPressed = accessoriesSelected;
-		}
-
-		if (_discoveriesTabButton != null)
-		{
-			_discoveriesTabButton.ButtonPressed = discoveriesSelected;
-		}
-
-		if (_settingsTabButton != null)
-		{
-			_settingsTabButton.ButtonPressed = settingsSelected;
-		}
-
-		if (_accessoriesPage != null)
-		{
-			_accessoriesPage.Visible = accessoriesSelected;
-		}
-
-		if (_discoveriesPage != null)
-		{
-			_discoveriesPage.Visible = discoveriesSelected;
-		}
-
-		if (_settingsPage != null)
-		{
-			_settingsPage.Visible = settingsSelected;
-		}
+		RefreshPatrolControls(); SyncEditingState();
+		if (editing || !_returnFromPatrolEdit) return;
+		_returnFromPatrolEdit = false;
+		// Let the desktop editor restore its window before this menu takes focus again.
+		CallDeferred(nameof(ReturnFromPatrolEdit));
 	}
-
+	private void ReturnFromPatrolEdit()
+	{
+		if (!IsInsideTree() || _patrolRoute?.IsEditing == true) return;
+		SetActiveTab(StatusTab.Settings);
+		ShowStatusWindow();
+	}
+	private void RefreshPatrolControls()
+	{
+		if (_editPatrolButton == null) return;
+		var count = _patrolRoute?.Points.Count ?? 0;
+		var editing = _patrolRoute?.IsEditing == true;
+		_editPatrolButton.Text = count > 0 ? "Edit route" : "Set patrol route";
+		_editPatrolButton.Disabled = _patrolRoute == null || editing;
+		_clearPatrolButton!.Disabled = _patrolRoute == null || count == 0 || editing;
+		_usePatrolCheck!.Disabled = _patrolRoute == null || count < 2 || editing;
+		_syncingPatrol = true;
+		_usePatrolCheck.SetPressedNoSignal(_patrolRoute?.Enabled == true);
+		_syncingPatrol = false;
+		_patrolSummary!.Text = count == 0 ? "No patrol route set. Your dog uses its usual walk."
+			: PatrolRouteToolbar.DescribeRoute(count) + (_patrolRoute?.Enabled == true ? "\nPatrol is on." : "\nPatrol is off; your dog uses its usual walk.");
+		_patrolSaveStatus!.Visible = _patrolRoute?.LastSaveSucceeded == false;
+		_patrolSaveStatus.Text = "Could not save patrol settings. This change applies for this session; try again to save it.";
+	}
 	private Control CreateConnectionPanel()
 	{
-		var (panel, content) = CreatePanel();
-		AddSectionTitle(content, "Connection");
-
-		_backendStatusLabel = CreateStatusLabel("Backend: Starting");
-		_steamStatusLabel = CreateStatusLabel("Steam: Starting");
-		content.AddChild(_backendStatusLabel);
-		content.AddChild(_steamStatusLabel);
-
+		var (panel, content) = CreatePanel(); AddSectionTitle(content, "Connection");
+		_connectionSummary = CreateStatusLabel("Connecting…"); content.AddChild(_connectionSummary);
+		var toggle = new Button { Text = "Show technical details", ToggleMode = true, SizeFlagsHorizontal = Control.SizeFlags.ShrinkBegin };
+		WoodlandTheme.StyleButton(toggle, "SecondaryButton"); content.AddChild(toggle);
+		var details = new VBoxContainer { Visible = false, Name = "ConnectionDetails" };
+		_backendStatusLabel = CreateStatusLabel("Service: Starting"); _steamStatusLabel = CreateStatusLabel("Steam: Starting");
+		details.AddChild(_backendStatusLabel); details.AddChild(_steamStatusLabel); content.AddChild(details);
+		toggle.Toggled += expanded => { details.Visible = expanded; toggle.Text = expanded ? "Hide technical details" : "Show technical details"; };
 		return panel;
 	}
-
 	private Control CreateSettingsPanel()
 	{
-		var (panel, content) = CreatePanel();
-		AddSectionTitle(content, "Dog Settings");
-
-		_alwaysOnTopCheck = CreateCheckBox("Always On Top");
-		_alwaysOnTopCheck.Toggled += value =>
-		{
-			if (!_refreshingControls)
-			{
-				_settings?.SetAlwaysOnTop(value);
-			}
-		};
-		content.AddChild(_alwaysOnTopCheck);
-
-		_dogClickThroughCheck = CreateCheckBox("Doggo Click Through (Alt + `)");
-		_dogClickThroughCheck.Toggled += value =>
-		{
-			if (!_refreshingControls)
-			{
-				_settings?.SetDogClickThrough(value);
-			}
-		};
-		content.AddChild(_dogClickThroughCheck);
-
-		content.AddChild(CreateSliderBlock(
-			"Doggo Transparency",
-			PetSettings.MinDogTransparency,
-			PetSettings.MaxDogTransparency,
-			0.01,
-			out _dogTransparencySlider,
-			out _dogTransparencySpin,
-			out _dogTransparencyValueLabel,
-			value => _settings?.SetDogTransparency(value)));
-
-		content.AddChild(CreateSliderBlock(
-			"Dog Scale",
-			PetSettings.MinDogScale,
-			PetSettings.MaxDogScale,
-			0.01,
-			out _dogScaleSlider,
-			out _dogScaleSpin,
-			out _dogScaleValueLabel,
-			value => _settings?.SetDogScale(value)));
-
-		content.AddChild(CreateSliderBlock(
-			"UI Scale",
-			PetSettings.MinUiScale,
-			PetSettings.MaxUiScale,
-			0.01,
-			out _uiScaleSlider,
-			out _uiScaleSpin,
-			out _uiScaleValueLabel,
-			value => _settings?.SetUiScale(value)));
-
-		return panel;
+		var (panel, content) = CreatePanel(); AddSectionTitle(content, "Your desktop dog");
+		_alwaysOnTopCheck = new CheckBox { Text = "Keep dog above other windows" };
+		_alwaysOnTopCheck.Toggled += value => { if (!_refreshingControls) _settings?.SetAlwaysOnTop(value); }; content.AddChild(_alwaysOnTopCheck);
+		_dogClickThroughCheck = new CheckBox { Text = "Let clicks pass through the dog" };
+		_dogClickThroughCheck.Toggled += value => { if (!_refreshingControls) _settings?.SetDogClickThrough(value); }; content.AddChild(_dogClickThroughCheck);
+		content.AddChild(CreateStatusLabel("When enabled, you cannot pet or right-click the dog.\nPress Alt + backtick to toggle this, or reopen the menu from the tray icon."));
+		content.AddChild(CreateSliderBlock("Dog visibility", PetSettings.MinDogTransparency, PetSettings.MaxDogTransparency,
+			out _dogTransparencySlider, out _dogTransparencyValueLabel, value => _settings?.SetDogTransparency(value)));
+		content.AddChild(CreateStatusLabel("100% is fully visible; 0% hides the dog."));
+		content.AddChild(CreateSliderBlock("Dog size", PetSettings.MinDogScale, PetSettings.MaxDogScale,
+			out _dogScaleSlider, out _dogScaleValueLabel, value => _settings?.SetDogScale(value)));
+		content.AddChild(CreateSliderBlock("Menu size", PetSettings.MinUiScale, PetSettings.MaxUiScale,
+			out _uiScaleSlider, out _uiScaleValueLabel, value => _settings?.SetUiScale(value))); return panel;
 	}
-
-	private static (PanelContainer Panel, VBoxContainer Content) CreatePanel()
+	private Control CreateSliderBlock(string text, double min, double max, out HSlider slider, out Label valueLabel, Action<float> apply)
 	{
-		var panel = new PanelContainer();
-		panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		panel.AddThemeStyleboxOverride("panel", CreateStyleBox(PanelColor, BorderColor, 1, 8));
-
+		var block = new VBoxContainer(); var row = new HBoxContainer(); block.AddChild(row);
+		row.AddChild(CreateLabel(text, WoodlandTheme.Text));
+		valueLabel = CreateLabel(string.Empty, WoodlandTheme.Muted); valueLabel.HorizontalAlignment = HorizontalAlignment.Right; row.AddChild(valueLabel);
+		slider = new HSlider { MinValue = min, MaxValue = max, Step = 0.01, CustomMinimumSize = new Vector2(120, 28), SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+		slider.ValueChanged += value => { if (!_refreshingControls) apply((float)value); }; block.AddChild(slider); return block;
+	}
+	private static (PanelContainer, VBoxContainer) CreatePanel()
+	{
+		var panel = new PanelContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+		panel.AddThemeStyleboxOverride("panel", WoodlandTheme.PanelStyle(true));
 		var margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left", 14);
-		margin.AddThemeConstantOverride("margin_top", 12);
-		margin.AddThemeConstantOverride("margin_right", 14);
-		margin.AddThemeConstantOverride("margin_bottom", 12);
+		foreach (var side in new[] { "left", "right", "top", "bottom" }) margin.AddThemeConstantOverride($"margin_{side}", 12);
 		panel.AddChild(margin);
-
-		var content = new VBoxContainer();
-		content.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		content.AddThemeConstantOverride("separation", 8);
-		margin.AddChild(content);
-
-		return (panel, content);
+		var content = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+		content.AddThemeConstantOverride("separation", 8); margin.AddChild(content); return (panel, content);
 	}
-
-	private static Control CreateValueRow(string labelText, out Label valueLabel, string initialValue)
+	private static Label CreateLabel(string text, Color color, int size = 14)
 	{
-		var row = new HBoxContainer();
-		row.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		row.AddThemeConstantOverride("separation", 12);
-
-		var label = CreateLabel(labelText, MutedTextColor);
-		label.CustomMinimumSize = new Vector2(150, 0);
-		row.AddChild(label);
-
-		valueLabel = CreateLabel(initialValue, TextColor, 18);
-		valueLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		row.AddChild(valueLabel);
-
-		return row;
+		var label = new Label { Text = text, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+		label.AddThemeColorOverride("font_color", color); label.AddThemeFontSizeOverride("font_size", size); return label;
 	}
-
 	private static Label CreateStatusLabel(string text)
 	{
-		var label = CreateLabel(text, MutedTextColor);
-		label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		return label;
+		var label = CreateLabel(text, WoodlandTheme.Muted, 13); label.AutowrapMode = TextServer.AutowrapMode.WordSmart; return label;
 	}
-
-	private static Label CreateLabel(string text, Color color, int fontSize = 14)
+	private static void AddSectionTitle(VBoxContainer parent, string text) => parent.AddChild(new Label { Text = text, ThemeTypeVariation = "WoodlandHeading" });
+	private Button CreateTabButton(string text, StatusTab tab)
 	{
-		var label = new Label
-		{
-			Text = text,
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
-		};
-		label.AddThemeColorOverride("font_color", color);
-		label.AddThemeFontSizeOverride("font_size", fontSize);
-		return label;
+		var button = new Button { Text = text, ToggleMode = true, CustomMinimumSize = new Vector2(80, 36), SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+		WoodlandTheme.StyleButton(button, "TabButton"); button.Pressed += () => SetActiveTab(tab); return button;
 	}
-
-	private static void AddSectionTitle(VBoxContainer root, string text)
+	private void SetActiveTab(StatusTab tab)
 	{
-		root.AddChild(CreateLabel(text, TextColor, 16));
+		if (tab != StatusTab.Items) _editingSession?.SetActive(false);
+		_activeTab = tab; _dogsTabButton?.SetPressedNoSignal(tab == StatusTab.Dogs); _itemsTabButton?.SetPressedNoSignal(tab == StatusTab.Items);
+		_shopTabButton?.SetPressedNoSignal(tab == StatusTab.Shop); _settingsTabButton?.SetPressedNoSignal(tab == StatusTab.Settings);
+		if (_accessoriesPage != null) _accessoriesPage.Visible = tab == StatusTab.Items;
+		if (_dogsPage != null) _dogsPage.Visible = tab == StatusTab.Dogs;
+		if (_shopPage != null) _shopPage.Visible = tab == StatusTab.Shop;
+		if (_settingsPage != null) _settingsPage.Visible = tab == StatusTab.Settings;
+		SyncEditingState();
 	}
-
-	private static CheckBox CreateCheckBox(string text)
-	{
-		var checkBox = new CheckBox
-		{
-			Text = text,
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
-		};
-		checkBox.AddThemeColorOverride("font_color", TextColor);
-		checkBox.AddThemeColorOverride("font_hover_color", TextColor);
-		checkBox.AddThemeColorOverride("font_pressed_color", TextColor);
-		checkBox.AddThemeColorOverride("font_focus_color", TextColor);
-		checkBox.AddThemeColorOverride("font_disabled_color", MutedTextColor);
-		checkBox.AddThemeFontSizeOverride("font_size", 14);
-		return checkBox;
-	}
-
-	private static void StyleButton(Button button)
-	{
-		button.AddThemeColorOverride("font_color", TextColor);
-		button.AddThemeColorOverride("font_hover_color", TextColor);
-		button.AddThemeColorOverride("font_pressed_color", TextColor);
-		button.AddThemeColorOverride("font_focus_color", TextColor);
-		button.AddThemeColorOverride("font_disabled_color", MutedTextColor);
-		button.AddThemeFontSizeOverride("font_size", 14);
-		button.AddThemeStyleboxOverride("normal", CreateStyleBox(PanelColor, BorderColor, 1, 6));
-		button.AddThemeStyleboxOverride("hover", CreateStyleBox(Color.FromHtml("#eef4ff"), AccentColor, 1, 6));
-		button.AddThemeStyleboxOverride("pressed", CreateStyleBox(Color.FromHtml("#dceaff"), AccentColor, 1, 6));
-		button.AddThemeStyleboxOverride("focus", CreateStyleBox(Color.FromHtml("#ffffff"), AccentColor, 1, 6));
-	}
-
-	private Control CreateSliderBlock(
-		string labelText,
-		double min,
-		double max,
-		double step,
-		out HSlider slider,
-		out SpinBox spinBox,
-		out Label valueLabel,
-		Action<float> applyValue)
-	{
-		var block = new VBoxContainer();
-		block.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		block.AddThemeConstantOverride("separation", 5);
-
-		var heading = new HBoxContainer();
-		heading.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		heading.AddThemeConstantOverride("separation", 10);
-		block.AddChild(heading);
-
-		heading.AddChild(CreateLabel(labelText, TextColor));
-
-		valueLabel = CreateLabel(string.Empty, MutedTextColor);
-		valueLabel.HorizontalAlignment = HorizontalAlignment.Right;
-		valueLabel.CustomMinimumSize = new Vector2(70, 0);
-		heading.AddChild(valueLabel);
-
-		var controls = new HBoxContainer();
-		controls.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		controls.AddThemeConstantOverride("separation", 12);
-		block.AddChild(controls);
-
-		slider = new HSlider
-		{
-			MinValue = min,
-			MaxValue = max,
-			Step = step,
-			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-			CustomMinimumSize = new Vector2(240, 28)
-		};
-		slider.ValueChanged += value =>
-		{
-			if (!_refreshingControls)
-			{
-				applyValue((float)value);
-			}
-		};
-		controls.AddChild(slider);
-
-		spinBox = new SpinBox
-		{
-			MinValue = min,
-			MaxValue = max,
-			Step = step,
-			CustomMinimumSize = new Vector2(92, 30)
-		};
-		StyleSpinBox(spinBox);
-		spinBox.ValueChanged += value =>
-		{
-			if (!_refreshingControls)
-			{
-				applyValue((float)value);
-			}
-		};
-		controls.AddChild(spinBox);
-
-		return block;
-	}
-
-	private static void StyleSpinBox(SpinBox spinBox)
-	{
-		spinBox.AddThemeColorOverride("font_color", TextColor);
-		spinBox.AddThemeFontSizeOverride("font_size", 14);
-
-		var lineEdit = spinBox.GetLineEdit();
-		lineEdit.AddThemeColorOverride("font_color", TextColor);
-		lineEdit.AddThemeColorOverride("caret_color", AccentColor);
-		lineEdit.AddThemeStyleboxOverride("normal", CreateStyleBox(Color.FromHtml("#ffffff"), BorderColor, 1, 5));
-		lineEdit.AddThemeStyleboxOverride("focus", CreateStyleBox(Color.FromHtml("#ffffff"), AccentColor, 1, 5));
-	}
-
 	private void RefreshControls()
 	{
-		if (_settings == null)
-		{
-			return;
-		}
-
-		_refreshingControls = true;
-
-		if (_alwaysOnTopCheck != null)
-		{
-			_alwaysOnTopCheck.ButtonPressed = _settings.AlwaysOnTop;
-		}
-
-		if (_dogClickThroughCheck != null)
-		{
-			_dogClickThroughCheck.ButtonPressed = _settings.DogClickThrough;
-		}
-
-		SetPairValue(_dogTransparencySlider, _dogTransparencySpin, _dogTransparencyValueLabel, _settings.DogTransparency);
-		SetPairValue(_dogScaleSlider, _dogScaleSpin, _dogScaleValueLabel, _settings.DogScale);
-		SetPairValue(_uiScaleSlider, _uiScaleSpin, _uiScaleValueLabel, _settings.UiScale);
-
-		_refreshingControls = false;
+		RefreshPatrolControls();
+		if (_settings == null) return; _refreshingControls = true;
+		_alwaysOnTopCheck!.SetPressedNoSignal(_settings.AlwaysOnTop); _dogClickThroughCheck!.SetPressedNoSignal(_settings.DogClickThrough);
+		SetValue(_dogTransparencySlider, _dogTransparencyValueLabel, _settings.DogTransparency);
+		SetValue(_dogScaleSlider, _dogScaleValueLabel, _settings.DogScale); SetValue(_uiScaleSlider, _uiScaleValueLabel, _settings.UiScale);
+		_welcomePanel!.Visible = !_settings.HasSeenWelcome; _refreshingControls = false;
 	}
-
+	private static void SetValue(HSlider? slider, Label? label, float value)
+	{
+		if (slider != null) slider.Value = value; if (label != null) label.Text = $"{Mathf.RoundToInt(value * 100)}%";
+	}
 	private void ApplyUiScale()
 	{
-		var uiScale = _settings?.UiScale ?? PetSettings.DefaultUiScale;
-		Theme = new Theme
-		{
-			DefaultBaseScale = uiScale,
-			DefaultFontSize = Mathf.RoundToInt(14 * uiScale)
-		};
-
-		var desiredSize = new Vector2I(
-			Mathf.RoundToInt(BaseWindowSize.X * uiScale),
-			Mathf.RoundToInt(BaseWindowSize.Y * uiScale));
-		var desiredMinimumSize = new Vector2I(
-			Mathf.RoundToInt(BaseMinimumWindowSize.X * uiScale),
-			Mathf.RoundToInt(BaseMinimumWindowSize.Y * uiScale));
-
+		var scale = _settings?.UiScale ?? PetSettings.DefaultUiScale;
+		if (Mathf.IsEqualApprox(scale, _appliedUiScale)) return;
+		_appliedUiScale = scale; Theme = WoodlandTheme.Build(scale);
+		var size = new Vector2I(Mathf.RoundToInt(BaseWindowSize.X * scale), Mathf.RoundToInt(BaseWindowSize.Y * scale));
+		var minimum = new Vector2I(Mathf.RoundToInt(BaseMinimumWindowSize.X * scale), Mathf.RoundToInt(BaseMinimumWindowSize.Y * scale));
 		if (!Engine.IsEmbeddedInEditor())
 		{
-			var usableRect = DisplayServer.ScreenGetUsableRect((int)DisplayServer.ScreenPrimary);
-			var maxSize = new Vector2I(
-				Mathf.Max(BaseMinimumWindowSize.X, usableRect.Size.X - 48),
-				Mathf.Max(BaseMinimumWindowSize.Y, usableRect.Size.Y - 220)
-			);
-
-			desiredSize = new Vector2I(
-				Mathf.Min(desiredSize.X, maxSize.X),
-				Mathf.Min(desiredSize.Y, maxSize.Y)
-			);
+			var usable = DisplayServer.ScreenGetUsableRect(CurrentScreen);
+			size = new Vector2I(Mathf.Min(size.X, usable.Size.X - 48), Mathf.Min(size.Y, usable.Size.Y - 80));
 		}
-
-		Size = desiredSize;
-		MinSize = new Vector2I(
-			Mathf.Min(desiredMinimumSize.X, Size.X),
-			Mathf.Min(desiredMinimumSize.Y, Size.Y)
-		);
+		MinSize = new Vector2I(Mathf.Min(minimum.X, size.X), Mathf.Min(minimum.Y, size.Y)); Size = size;
 	}
-
-	private void PlaceWindowAboveDogPath()
+	private void OnSettingsChanged() { RefreshControls(); ApplyUiScale(); }
+	private void LoadLayout()
 	{
-		if (Engine.IsEmbeddedInEditor())
+		var config = new ConfigFile();
+		if (config.Load(LayoutPath) == Error.Ok)
 		{
+			var position = config.GetValue("menu", "position"); var size = config.GetValue("menu", "size");
+			if (position.VariantType == Variant.Type.Vector2I) Position = position.AsVector2I();
+			if (size.VariantType == Variant.Type.Vector2I && config.GetValue("menu", "layout_version", 0).AsInt32() >= 2
+				&& Mathf.IsEqualApprox(config.GetValue("menu", "scale", 1f).AsSingle(), _appliedUiScale))
+			{
+				var stored = size.AsVector2I(); if (stored.X > 0 && stored.Y > 0) Size = stored.Max(MinSize);
+			}
 			return;
 		}
-
-		var usableRect = DisplayServer.ScreenGetUsableRect((int)DisplayServer.ScreenPrimary);
-		const int margin = 24;
-		var x = Mathf.Max(usableRect.Position.X + margin, usableRect.End.X - Size.X - margin);
-		var y = usableRect.Position.Y + margin;
-		Position = new Vector2I(x, y);
+		PlaceWindowAboveDogPath();
 	}
-
-	private void OnSettingsChanged()
+	private void SaveLayout()
 	{
-		RefreshControls();
-		ApplyUiScale();
+		if (!_placed || Mode != ModeEnum.Windowed) return;
+		var config = new ConfigFile(); config.SetValue("menu", "position", Position); config.SetValue("menu", "size", Size);
+		config.SetValue("menu", "scale", _appliedUiScale); config.SetValue("menu", "layout_version", 2); config.Save(LayoutPath);
 	}
-
-	private static void SetPairValue(HSlider? slider, SpinBox? spinBox, Label? valueLabel, float value)
+	private void KeepWindowReachable()
 	{
-		if (slider != null)
+		if (Engine.IsEmbeddedInEditor()) return;
+		for (var screen = 0; screen < DisplayServer.GetScreenCount(); screen++)
 		{
-			slider.Value = value;
+			var usable = DisplayServer.ScreenGetUsableRect(screen);
+			if (!usable.HasPoint(Position + new Vector2I(32, 16))) continue;
+			var maximum = new Vector2I(Mathf.Max(1, usable.Size.X - 24), Mathf.Max(1, usable.Size.Y - 56));
+			MinSize = new Vector2I(Mathf.RoundToInt(BaseMinimumWindowSize.X * _appliedUiScale), Mathf.RoundToInt(BaseMinimumWindowSize.Y * _appliedUiScale)).Min(maximum);
+			Size = Size.Min(maximum).Max(MinSize);
+			Position = new Vector2I(Mathf.Clamp(Position.X, usable.Position.X + 12, Mathf.Max(usable.Position.X + 12, usable.End.X - Size.X - 12)),
+				Mathf.Clamp(Position.Y, usable.Position.Y + 40, Mathf.Max(usable.Position.Y + 40, usable.End.Y - Size.Y - 16))); return;
 		}
-
-		if (spinBox != null)
-		{
-			spinBox.Value = value;
-		}
-
-		if (valueLabel != null)
-		{
-			valueLabel.Text = value.ToString("0.00", CultureInfo.InvariantCulture);
-		}
+		PlaceWindowAboveDogPath();
 	}
-
-	private static StyleBoxFlat CreateStyleBox(Color background, Color border, int borderWidth, int cornerRadius)
+	private void PlaceWindowAboveDogPath()
 	{
-		var style = new StyleBoxFlat
-		{
-			BgColor = background,
-			BorderColor = border
-		};
-		style.SetBorderWidthAll(borderWidth);
-		style.SetCornerRadiusAll(cornerRadius);
-		return style;
+		if (Engine.IsEmbeddedInEditor()) return;
+		var usable = DisplayServer.ScreenGetUsableRect((int)DisplayServer.ScreenPrimary);
+		Position = new Vector2I(Mathf.Max(usable.Position.X + 24, usable.End.X - Size.X - 24), usable.Position.Y + 24);
 	}
-
-	private static string NormalizeStatus(string status)
-	{
-		return string.IsNullOrWhiteSpace(status) ? "Unavailable" : status;
-	}
+	private static string NormalizeStatus(string text) => string.IsNullOrWhiteSpace(text) ? "Unavailable" : text;
 }

@@ -16,6 +16,7 @@ public partial class NativeWindowBridge : Node
 	public delegate void DogClickThroughToggleRequestedEventHandler();
 
 	private const int GwlExStyle = -20;
+	private const long WsExTopmost = 0x00000008L;
 	private const long WsExToolWindow = 0x00000080L;
 	private const long WsExAppWindow = 0x00040000L;
 	private const long WsExLayered = 0x00080000L;
@@ -70,6 +71,8 @@ public partial class NativeWindowBridge : Node
 	private volatile bool _exitRequested;
 	private volatile bool _dogClickThroughToggleRequested;
 	private double _refreshTimer;
+	private bool _pointerPassthrough;
+	private bool _accessoryEditing;
 
 	public override void _Ready()
 	{
@@ -124,6 +127,26 @@ public partial class NativeWindowBridge : Node
 		ApplyDesktopPetWindowStyles(forceZOrder: true);
 	}
 
+	public void SetPointerPassthrough(bool value)
+	{
+		if (_pointerPassthrough == value)
+		{
+			return;
+		}
+		_pointerPassthrough = value;
+		ApplyDesktopPetWindowStyles();
+	}
+
+	public void SetAccessoryEditing(bool value)
+	{
+		if (_accessoryEditing == value) return;
+		_accessoryEditing = value;
+		ApplyDesktopPetWindowStyles(forceZOrder: true);
+	}
+
+	public static bool IsLeftMouseButtonDown() => OS.GetName() == "Windows"
+		? (GetAsyncKeyState(0x01) & 0x8000) != 0 : Input.IsMouseButtonPressed(MouseButton.Left);
+
 	private void ApplyDesktopPetWindowStyles(bool forceZOrder)
 	{
 		if (OS.GetName() != "Windows" || Engine.IsEmbeddedInEditor())
@@ -138,11 +161,12 @@ public partial class NativeWindowBridge : Node
 		}
 
 		var settings = GetNodeOrNull<PetSettings>("/root/PetSettings");
-		var dogPassThrough = (settings?.DogClickThrough ?? PetSettings.DefaultDogClickThrough)
-			|| (settings?.DogTransparency ?? PetSettings.DefaultDogTransparency) <= InvisibleDogAlphaThreshold;
+		var dogPassThrough = _pointerPassthrough || (!_accessoryEditing &&
+			((settings?.DogClickThrough ?? PetSettings.DefaultDogClickThrough)
+			|| (settings?.DogTransparency ?? PetSettings.DefaultDogTransparency) <= InvisibleDogAlphaThreshold));
 		ApplyWindowStyles(
 			new IntPtr(hwndValue),
-			settings?.AlwaysOnTop ?? PetSettings.DefaultAlwaysOnTop,
+			_accessoryEditing || (settings?.AlwaysOnTop ?? PetSettings.DefaultAlwaysOnTop),
 			dogPassThrough,
 			forceZOrder
 		);
@@ -339,8 +363,8 @@ public partial class NativeWindowBridge : Node
 
 		try
 		{
-			AppendMenu(menu, MfString, new UIntPtr(MenuStatus), "Status");
-			AppendMenu(menu, MfString, new UIntPtr(MenuExit), "Exit Game");
+			AppendMenu(menu, MfString, new UIntPtr(MenuStatus), "Open Pet Da Dog");
+			AppendMenu(menu, MfString, new UIntPtr(MenuExit), "Quit Pet Da Dog");
 
 			GetCursorPos(out var point);
 			SetForegroundWindow(hwnd);
@@ -371,7 +395,8 @@ public partial class NativeWindowBridge : Node
 
 	private static void ApplyWindowStyles(IntPtr hwnd, bool alwaysOnTop, bool dogPassThrough, bool forceZOrder)
 	{
-		var style = GetWindowLongPtr(hwnd, GwlExStyle).ToInt64();
+		var previousStyle = GetWindowLongPtr(hwnd, GwlExStyle).ToInt64();
+		var style = previousStyle;
 		style |= WsExToolWindow | WsExNoActivate | WsExLayered;
 		style &= ~WsExAppWindow;
 		if (dogPassThrough)
@@ -383,23 +408,29 @@ public partial class NativeWindowBridge : Node
 			style &= ~WsExTransparent;
 		}
 
-		SetWindowLongPtr(hwnd, GwlExStyle, new IntPtr(style));
-		ApplyWindowZOrder(hwnd, alwaysOnTop, forceZOrder);
+		var styleChanged = style != previousStyle;
+		var topmostChanged = ((previousStyle & WsExTopmost) != 0) != alwaysOnTop;
+		// Keep periodic repair checks, but leave an already-correct transparent surface
+		// alone. FRAMECHANGED on every refresh forces unnecessary native repainting.
+		if (!styleChanged && !topmostChanged && !forceZOrder) return;
+		if (styleChanged) SetWindowLongPtr(hwnd, GwlExStyle, new IntPtr(style));
+		ApplyWindowZOrder(hwnd, alwaysOnTop, forceZOrder || topmostChanged, styleChanged);
 	}
 
-	private static void ApplyWindowZOrder(IntPtr hwnd, bool alwaysOnTop, bool forceZOrder)
+	private static void ApplyWindowZOrder(IntPtr hwnd, bool alwaysOnTop, bool forceZOrder, bool styleChanged)
 	{
-		var flags = SwpNoMove | SwpNoSize | SwpNoActivate | SwpFrameChanged;
-
-		if (alwaysOnTop)
-		{
-			SetWindowPos(hwnd, HwndTopmost, 0, 0, 0, 0, flags);
-			return;
-		}
+		var flags = SwpNoMove | SwpNoSize | SwpNoActivate;
+		if (styleChanged) flags |= SwpFrameChanged;
 
 		if (!forceZOrder)
 		{
 			SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, flags | SwpNoZOrder);
+			return;
+		}
+
+		if (alwaysOnTop)
+		{
+			SetWindowPos(hwnd, HwndTopmost, 0, 0, 0, 0, flags);
 			return;
 		}
 
@@ -558,6 +589,9 @@ public partial class NativeWindowBridge : Node
 
 	[DllImport("user32.dll", SetLastError = true)]
 	private static extern bool GetCursorPos(out Point point);
+
+	[DllImport("user32.dll")]
+	private static extern short GetAsyncKeyState(int virtualKey);
 
 	[DllImport("user32.dll", SetLastError = true)]
 	private static extern bool SetForegroundWindow(IntPtr hwnd);

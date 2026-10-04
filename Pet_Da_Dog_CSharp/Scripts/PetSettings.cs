@@ -28,12 +28,15 @@ public partial class PetSettings : Node
     private float _dogTransparency = DefaultDogTransparency;
     private float _dogScale = DefaultDogScale;
     private float _uiScale = DefaultUiScale;
+    private bool _hasSeenWelcome;
 
     public bool AlwaysOnTop => _alwaysOnTop;
     public bool DogClickThrough => _dogClickThrough;
     public float DogTransparency => _dogTransparency;
     public float DogScale => _dogScale;
     public float UiScale => _uiScale;
+    public bool HasSeenWelcome => _hasSeenWelcome;
+    public void DismissWelcome() => SetBool(ref _hasSeenWelcome, true);
 
     public override void _Ready()
     {
@@ -85,6 +88,7 @@ public partial class PetSettings : Node
         _dogTransparency = Mathf.Clamp(ReadFloat(config, "dog_transparency", DefaultDogTransparency), MinDogTransparency, MaxDogTransparency);
         _dogScale = Mathf.Clamp(ReadFloat(config, "dog_scale", DefaultDogScale), MinDogScale, MaxDogScale);
         _uiScale = Mathf.Clamp(ReadFloat(config, "ui_scale", DefaultUiScale), MinUiScale, MaxUiScale);
+        _hasSeenWelcome = ReadBool(config, "welcome_seen", false);
     }
 
     private void Save()
@@ -95,6 +99,7 @@ public partial class PetSettings : Node
         config.SetValue(Section, "dog_transparency", DogTransparency);
         config.SetValue(Section, "dog_scale", DogScale);
         config.SetValue(Section, "ui_scale", UiScale);
+        config.SetValue(Section, "welcome_seen", HasSeenWelcome);
 
         var error = config.Save(SettingsPath);
         if (error != Error.Ok)
