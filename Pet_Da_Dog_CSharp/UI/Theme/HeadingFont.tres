@@ -1,0 +1,6 @@
+[gd_resource type="SystemFont" format=3]
+
+[resource]
+resource_name = "HeadingFont"
+font_names = PackedStringArray("Georgia", "Noto Serif")
+font_weight = 700

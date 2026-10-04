@@ -38,6 +38,10 @@ window/per_pixel_transparency/allowed=true
 
 project/assembly_name="PetDaDogCSharp"
 
+[gui]
+
+theme/custom="res://UI/Theme/DefaultTheme.tres"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

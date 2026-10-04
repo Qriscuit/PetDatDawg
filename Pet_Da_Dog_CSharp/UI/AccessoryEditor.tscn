@@ -1,0 +1,523 @@
+[gd_scene load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://Scripts/AccessoryEditor.cs" id="1_editor"]
+
+[ext_resource type="PackedScene" path="res://UI/AccessoryCard.tscn" id="2_card"]
+
+[ext_resource type="PackedScene" path="res://UI/AccessoryCategoryRow.tscn" id="3_row"]
+
+[ext_resource type="PackedScene" path="res://UI/AccessoryColorControls.tscn" id="4_colors"]
+
+[ext_resource type="StyleBox" path="res://UI/Theme/Panel.tres" id="5_panel"]
+
+[ext_resource type="StyleBox" path="res://UI/Theme/Catalog.tres" id="6_catalog"]
+
+[ext_resource type="Texture2D" path="res://Art/UI/Woodland/Icons/leaf.svg" id="7_leaf"]
+
+[ext_resource type="Texture2D" path="res://Art/UI/Woodland/Icons/remove.svg" id="8_remove"]
+
+[ext_resource type="Texture2D" path="res://Art/UI/Woodland/Icons/reset.svg" id="9_reset"]
+
+[ext_resource type="Texture2D" path="res://Art/UI/Woodland/Icons/text-box.svg" id="10_text"]
+
+[ext_resource type="Texture2D" path="res://Sprites/Accessories/DragonWing.jpg" id="asset_0"]
+
+[ext_resource type="Texture2D" path="res://Sprites/Accessories/FairyWing.jpg" id="asset_1"]
+
+[ext_resource type="Texture2D" path="res://Sprites/Accessories/SafetyGlasses.jpg" id="asset_2"]
+
+[ext_resource type="Texture2D" path="res://Sprites/Accessories/SFlower1.png" id="asset_3"]
+
+[ext_resource type="Texture2D" path="res://Sprites/Accessories/SFlower2.png" id="asset_4"]
+
+[ext_resource type="Texture2D" path="res://Sprites/Accessories/SquareCharm.png" id="asset_5"]
+
+[sub_resource type="AtlasTexture" id="Sample_0"]
+atlas = ExtResource("asset_0")
+region = Rect2(29, 128, 991, 804)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="Sample_1"]
+atlas = ExtResource("asset_1")
+region = Rect2(105, 35, 811, 909)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="Sample_2"]
+atlas = ExtResource("asset_2")
+region = Rect2(139, 333, 777, 354)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="Sample_3"]
+atlas = ExtResource("asset_3")
+region = Rect2(154, 158, 690, 703)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="Sample_4"]
+atlas = ExtResource("asset_4")
+region = Rect2(154, 158, 690, 703)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="Sample_5"]
+atlas = ExtResource("asset_5")
+region = Rect2(210, 188, 609, 673)
+filter_clip = true
+
+[sub_resource type="Shader" id="SampleJpegCutoutShader"]
+code = "shader_type canvas_item;\nrender_mode unshaded;\nvarying vec4 item_color;\nvoid vertex() { item_color = COLOR; }\nvoid fragment() {\n    vec4 pixel = texture(TEXTURE, UV);\n    float alpha = smoothstep(0.06, 0.30, max(pixel.r, max(pixel.g, pixel.b)));\n    vec3 rgb = alpha > 0.0 ? min(vec3(1.0), pixel.rgb / max(alpha, 0.0001)) : vec3(1.0);\n    COLOR = vec4(rgb, pixel.a * alpha) * item_color;\n}\n"
+
+[sub_resource type="ShaderMaterial" id="SampleJpegCutoutMaterial"]
+shader = SubResource("SampleJpegCutoutShader")
+
+[node name="AccessoryEditor" type="VBoxContainer"]
+offset_right = 600.0
+offset_bottom = 650.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 9
+script = ExtResource("1_editor")
+CardScene = ExtResource("2_card")
+CategoryRowScene = ExtResource("3_row")
+ColorControlsScene = ExtResource("4_colors")
+
+[node name="InstructionsRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="InstructionsIcon" type="TextureRect" parent="InstructionsRow"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("7_leaf")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AccessoryInstructions" type="Label" parent="InstructionsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = "Choose an item, then click your desktop dog to place it.\nDrag equipped items to move them; use the handles to resize or rotate."
+custom_minimum_size = Vector2(0, 40)
+size_flags_horizontal = 3
+autowrap_mode = 3
+
+[node name="Workspace" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="InspectorPanel" type="PanelContainer" parent="Workspace"]
+custom_minimum_size = Vector2(164, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("5_panel")
+
+[node name="InspectorScroll" type="ScrollContainer" parent="Workspace/InspectorPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="AccessoryInspector" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="InspectorHeading" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 15
+text = "Adjust item"
+
+[node name="AccessorySelectionLabel" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+text = "No accessory selected"
+size_flags_horizontal = 3
+autowrap_mode = 3
+
+[node name="CancelAccessory" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+tooltip_text = "Cancel placement (Escape)."
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "Cancel"
+
+[node name="RemoveAccessory" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+tooltip_text = "Remove the selected accessory (Delete)."
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "Remove"
+icon = ExtResource("8_remove")
+theme_override_constants/icon_max_width = 14
+
+[node name="OutfitActions" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="ClearOutfit" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/OutfitActions"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+tooltip_text = "Take off every accessory."
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "Clear all"
+
+[node name="UndoOutfit" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/OutfitActions"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+tooltip_text = "Undo the last outfit change (Ctrl + Z)."
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "Undo"
+
+[node name="AccessoryLayerControls" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="AccessoryLayerLabel" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryLayerControls"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Layers"
+autowrap_mode = 3
+
+[node name="LayerButtons" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryLayerControls"]
+layout_mode = 2
+
+[node name="MoveAccessoryLayerUp" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryLayerControls/LayerButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+tooltip_text = "Move the selected item forward one layer, including past the dog."
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "↑ Up"
+size_flags_horizontal = 3
+
+[node name="MoveAccessoryLayerDown" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryLayerControls/LayerButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+tooltip_text = "Move the selected item backward one layer, including behind the dog."
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "↓ Down"
+size_flags_horizontal = 3
+
+[node name="AccessoryTransformControls" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TransformSliders" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="SizeColumn" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="SizeHeading" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Size"
+horizontal_alignment = 1
+
+[node name="AccessorySizeValue" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "100%"
+horizontal_alignment = 1
+
+[node name="AccessorySizeSlider" type="VSlider" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(28, 190)
+size_flags_horizontal = 4
+min_value = 50.0
+max_value = 200.0
+step = 1.0
+value = 100.0
+
+[node name="RotationColumn" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="RotationHeading" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Rotation"
+horizontal_alignment = 1
+
+[node name="AccessoryRotationValue" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "0°"
+horizontal_alignment = 1
+
+[node name="AccessoryRotationSlider" type="VSlider" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(28, 190)
+size_flags_horizontal = 4
+min_value = -180.0
+max_value = 180.0
+step = 1.0
+value = 0.0
+
+[node name="ResetAccessoryTransform" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+tooltip_text = "Restore this accessory to 100% size and no rotation."
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "Reset fit"
+
+[node name="TextAccessoryControls" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TextStack" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TextHeading" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = "Text"
+
+[node name="AccessoryTextInput" type="LineEdit" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Up to 64 characters. Changes save automatically."
+placeholder_text = "What should your dog say?"
+
+[node name="TextBackgroundToggle" type="CheckBox" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Show a bubble behind the text. Turn it off to show only the letters."
+theme_override_font_sizes/font_size = 12
+text = "Text background"
+button_pressed = true
+
+[node name="AccessoryColorControls" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ColorStack" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AccessoryColorLabel" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = "Color"
+
+[node name="AccessoryColorPicker" type="ColorPickerButton" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(72, 30)
+size_flags_horizontal = 3
+tooltip_text = "Open the color wheel. Changes apply to this accessory immediately."
+theme_type_variation = &"SecondaryButton"
+edit_alpha = false
+
+[node name="ResetAccessoryColor" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+tooltip_text = "Restore the accessory's original white color."
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "Reset white"
+icon = ExtResource("9_reset")
+theme_override_constants/icon_max_width = 14
+
+[node name="CatalogColumn" type="VBoxContainer" parent="Workspace"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CatalogHeadingRow" type="HBoxContainer" parent="Workspace/CatalogColumn"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="CatalogHeadingIcon" type="TextureRect" parent="Workspace/CatalogColumn/CatalogHeadingRow"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("7_leaf")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AccessoryCatalogHeading" type="Label" parent="Workspace/CatalogColumn/CatalogHeadingRow"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 15
+text = "Accessories · 7"
+
+[node name="CatalogHeadingSpacer" type="Control" parent="Workspace/CatalogColumn/CatalogHeadingRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="AccessoryCatalogScroll" type="ScrollContainer" parent="Workspace/CatalogColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 160)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("6_catalog")
+horizontal_scroll_mode = 0
+
+[node name="AccessoryShelves" type="VBoxContainer" parent="Workspace/CatalogColumn/AccessoryCatalogScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Wings" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" instance=ExtResource("3_row")]
+layout_mode = 2
+Category = "Wings"
+PreviewCount = 2
+Expanded = true
+
+[node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" instance=ExtResource("2_card")]
+layout_mode = 2
+DisplayName = "Dragon Wing"
+PreviewTexture = SubResource("Sample_0")
+
+[node name="SampleCard2" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" instance=ExtResource("2_card")]
+layout_mode = 2
+DisplayName = "Fairy Wing"
+PreviewTexture = SubResource("Sample_1")
+
+[node name="Collars" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" instance=ExtResource("3_row")]
+layout_mode = 2
+Category = "Collars"
+PreviewCount = 0
+Expanded = false
+
+[node name="Glasses" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" instance=ExtResource("3_row")]
+layout_mode = 2
+Category = "Glasses"
+PreviewCount = 1
+Expanded = true
+
+[node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards" instance=ExtResource("2_card")]
+layout_mode = 2
+DisplayName = "Safety Glasses"
+PreviewTexture = SubResource("Sample_2")
+
+[node name="Decorations" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" instance=ExtResource("3_row")]
+layout_mode = 2
+Category = "Decorations"
+PreviewCount = 3
+Expanded = true
+
+[node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" instance=ExtResource("2_card")]
+layout_mode = 2
+DisplayName = "S Flower 1"
+PreviewTexture = SubResource("Sample_3")
+
+[node name="SampleCard2" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" instance=ExtResource("2_card")]
+layout_mode = 2
+DisplayName = "S Flower 2"
+PreviewTexture = SubResource("Sample_4")
+
+[node name="SampleCard3" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" instance=ExtResource("2_card")]
+layout_mode = 2
+DisplayName = "Square Charm"
+PreviewTexture = SubResource("Sample_5")
+
+[node name="Text" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" instance=ExtResource("3_row")]
+layout_mode = 2
+Category = "Text"
+PreviewCount = 1
+Expanded = true
+
+[node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text/CategoryScroll/CategoryCards" instance=ExtResource("2_card")]
+layout_mode = 2
+DisplayName = "Text Box"
+PreviewTexture = ExtResource("10_text")
+
+[node name="OutfitSaveStatus" type="Label" parent="Workspace/CatalogColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Outfit saves automatically"
+size_flags_horizontal = 3
+text_overrun_behavior = 1
+
+
+
+
+
+
+[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent"]
+material = SubResource("SampleJpegCutoutMaterial")
+
+
+[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2/CardMargin/CardContent"]
+material = SubResource("SampleJpegCutoutMaterial")
+
+
+[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent"]
+material = SubResource("SampleJpegCutoutMaterial")
+
+[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings"]
+
+[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Collars"]
+
+[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses"]
+
+[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations"]
+
+[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text"]
+
+[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1"]
+
+[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2"]
+
+[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1"]

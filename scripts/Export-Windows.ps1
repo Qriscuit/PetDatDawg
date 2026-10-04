@@ -34,7 +34,8 @@ function Invoke-CheckedProcess([string]$Executable, [string[]]$Arguments, [strin
     $process.WaitForExit()
     $log = (Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue) + (Get-Content -LiteralPath $stderr -Raw -ErrorAction SilentlyContinue)
     if ($process.ExitCode -ne 0 -or $log -match '(?m)^\s*(?:SCRIPT ERROR:|ERROR:|ERROR [A-Z]+\d+|Build FAILED)') {
-        throw "$Name failed (exit $($process.ExitCode)). Logs: $runRoot`n$log"
+        $diagnostics = ($log -split '\r?\n' | Where-Object { $_ -match '^\s*(?:SCRIPT ERROR:|ERROR:|ERROR [A-Z]+\d+|Build FAILED)' } | Select-Object -First 25) -join [Environment]::NewLine
+        throw "$Name failed (exit $($process.ExitCode)). Logs: $runRoot`n$diagnostics"
     }
     Write-Host "$Name passed."
     return $log
@@ -74,6 +75,16 @@ $preset = $preset -replace '(?m)^custom_template/release=.*$', ('custom_template
 Set-Content -LiteralPath $presetPath -Value $preset -Encoding utf8
 
 $null = Invoke-CheckedProcess 'dotnet' @('build', (Join-Path $stageProject 'PetDaDogCSharp.csproj')) 'build-client'
+# Godot initializes the project theme before first importing its textures. Bootstrap
+# only this fresh staging copy without it, then validate the actual saved configuration.
+$stagedConfigPath = Join-Path $stageProject 'project.godot'
+$stagedConfig = [IO.File]::ReadAllText($stagedConfigPath)
+try {
+    [IO.File]::WriteAllText($stagedConfigPath, ($stagedConfig -replace '(?m)^theme/custom=.*\r?\n?', ''))
+    $null = Invoke-CheckedProcess $GodotPath @('--headless', '--path', $stageProject, '--editor', '--import') 'import-textures'
+} finally {
+    [IO.File]::WriteAllText($stagedConfigPath, $stagedConfig)
+}
 $null = Invoke-CheckedProcess $GodotPath @('--headless', '--path', $stageProject, '--editor', '--import') 'import-resources'
 $exportExe = Join-Path $packagePath 'PetDaDogCSharp.exe'
 $null = Invoke-CheckedProcess $GodotPath @('--headless', '--path', $stageProject, '--export-release', 'Windows Desktop', $exportExe) 'export-windows'

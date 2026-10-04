@@ -4,10 +4,44 @@ using System.Linq;
 using Godot;
 
 /// <summary>Category shelves and an inspector for accessories on the real desktop dog.</summary>
+[Tool]
 public partial class AccessoryEditor : VBoxContainer
 {
-	private static readonly Color TextColor = WoodlandTheme.Text;
-	private static readonly Color MutedColor = WoodlandTheme.Muted;
+	[Export] public PackedScene? CardScene { get; set; }
+	[Export] public PackedScene? CategoryRowScene { get; set; }
+	[Export] public PackedScene? ColorControlsScene { get; set; }
+	[Export] public ColorPicker.PickerShapeType ColorWheelShape { get; set; } = ColorPicker.PickerShapeType.HsvWheel;
+	[ExportGroup("State captions")]
+	[Export] public string WardrobeUnavailableText { get; set; } = "The accessory wardrobe is unavailable.";
+	[Export] public string NoSelectionText { get; set; } = "No accessory selected";
+	[Export] public string ItemColorCaption { get; set; } = "Color";
+	[Export] public string TextColorCaption { get; set; } = "Text color";
+	[Export] public string LayerBehindDogText { get; set; } = "Layers · Behind dog";
+	[Export] public string LayerInFrontOfDogText { get; set; } = "Layers · In front of dog";
+	[ExportGroup("Instructions")]
+	[Export(PropertyHint.MultilineText)] public string IdleInstructions { get; set; } = "Choose an item, then click your desktop dog to place it.\nDrag the dog to move it; right-click the dog or an item for layer options.";
+	/// <summary>Use {name} for the selected accessory's display name.</summary>
+	[Export(PropertyHint.MultilineText)] public string SelectedInstructionsFormat { get; set; } = "Drag {name} to move it; use its handles to resize or rotate.\nRight-click it or use the layer arrows to change what appears in front.";
+	/// <summary>Use {name} for the accessory being placed.</summary>
+	[Export(PropertyHint.MultilineText)] public string ItemPlacementInstructionsFormat { get; set; } = "Click your desktop dog to place {name}.\nPress Escape or Cancel to choose something else.";
+	[Export(PropertyHint.MultilineText)] public string TextPlacementInstructions { get; set; } = "Click near your desktop dog to place the text.\nEdit its message, color and background in the side panel.";
+	[ExportGroup("Save status")]
+	[Export] public string OutfitSavedText { get; set; } = "Outfit saved";
+	[Export] public string OutfitSaveFailedText { get; set; } = "Could not save outfit";
+	[Export(PropertyHint.MultilineText)] public string OutfitSavedTooltip { get; set; } = "This outfit will return when you restart.";
+	[Export(PropertyHint.MultilineText)] public string OutfitSaveFailedTooltip { get; set; } = "Your outfit is applied for this session. Try moving an accessory to save again.";
+	/// <summary>Use {count} for the number of available accessories.</summary>
+	[ExportGroup("Dynamic formats")]
+	[Export] public string CatalogHeadingFormat { get; set; } = "Accessories · {count}";
+	/// <summary>Use {value} for the selected item's size percentage.</summary>
+	[Export] public string SizeValueFormat { get; set; } = "{value}%";
+	/// <summary>Use {value} for the selected item's angle in degrees.</summary>
+	[Export] public string RotationValueFormat { get; set; } = "{value}°";
+	/// <summary>Use {label} for the outfit change being undone.</summary>
+	[Export] public string UndoTooltipFormat { get; set; } = "Undo {label} (Ctrl + Z).";
+	[Export] public string EmptyUndoTooltip { get; set; } = "No outfit changes to undo.";
+	/// <summary>Use {name} for the current selection label, including the no-selection caption.</summary>
+	[Export] public string SelectionTooltipFormat { get; set; } = "{name}";
 	private readonly Dictionary<string, Button> _cards = new();
 	private readonly Dictionary<string, Label> _cardStatuses = new();
 	private readonly Dictionary<string, TextureRect> _cardTextures = new();
@@ -45,240 +79,143 @@ public partial class AccessoryEditor : VBoxContainer
 
 	public override void _Ready()
 	{
-		SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		SizeFlagsVertical = SizeFlags.ExpandFill;
-		AddThemeConstantOverride("separation", 9);
+		BindSceneNodes();
+		// Authored sample cards remain visible in the editor. No autoloads, native
+		// windows, cosmetic transactions or saves are touched during editor preview.
+		if (Engine.IsEditorHint()) { SetProcess(false); return; }
 		_wardrobe = GetNodeOrNull<AccessoryWardrobe>("/root/AccessoryWardrobe");
 		_session = GetNodeOrNull<AccessoryEditingSession>("/root/AccessoryEditingSession");
 		if (_wardrobe == null || _session == null)
 		{
-			AddChild(MakeLabel("The accessory wardrobe is unavailable.", MutedColor));
-			return;
+			_instructions!.Text = WardrobeUnavailableText;
+			SetProcess(false); return;
 		}
-
-		_instructions = MakeLabel("Choose an item, then click your desktop dog to place it.\nDrag equipped items to move them; use the handles to resize or rotate.", MutedColor, 13);
-		_instructions.CustomMinimumSize = new Vector2(0, 40);
-		_instructions.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		_instructions.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		var instructionsRow = new HBoxContainer();
-		instructionsRow.AddThemeConstantOverride("separation", 9);
-		instructionsRow.AddChild(MakeIcon("leaf", 22));
-		instructionsRow.AddChild(_instructions);
-		AddChild(instructionsRow);
-
+		BindBehavior();
+		PopulateCatalog();
 		_session.StateChanged += Refresh;
 		_session.OutfitSaved += ShowSaveStatus;
 		_session.EditStarting += PrepareDesktopEdit;
-
-		var workspace = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
-		workspace.AddThemeConstantOverride("separation", 12); AddChild(workspace);
-		var inspectorPanel = new PanelContainer { CustomMinimumSize = new Vector2(164, 0), SizeFlagsVertical = SizeFlags.ExpandFill };
-		inspectorPanel.AddThemeStyleboxOverride("panel", WoodlandTheme.PanelStyle()); workspace.AddChild(inspectorPanel);
-		var inspectorScroll = new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, SizeFlagsVertical = SizeFlags.ExpandFill };
-		inspectorPanel.AddChild(inspectorScroll);
-		_inspector = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-		_inspector.AddThemeConstantOverride("separation", 10); inspectorScroll.AddChild(_inspector);
-		_inspector.AddChild(MakeLabel("Adjust item", TextColor, 15));
-
-		var actions = new HBoxContainer();
-		actions.AddThemeConstantOverride("separation", 7);
-		_selectionLabel = MakeLabel("No accessory selected", MutedColor, 14);
-		_selectionLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		_selectionLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		_inspector.AddChild(_selectionLabel);
-		_cancelButton = MakeButton("Cancel", "Cancel placement (Escape).");
-		_cancelButton.Pressed += CancelInteraction;
-		_inspector.AddChild(_cancelButton);
-		_removeButton = MakeButton("Remove", "Remove the selected accessory (Delete).");
-		_removeButton.Pressed += RemoveSelected;
-		_inspector.AddChild(_removeButton);
-		_clearButton = MakeButton("Clear all", "Take off every accessory.");
-		_clearButton.Pressed += () =>
-		{
-			CancelInteraction();
-			_wardrobe.Clear();
-			ShowSaveStatus(_wardrobe.Save());
-			_session.ClearSelection();
-		};
-		actions.AddChild(_clearButton);
-		_undoButton = MakeButton("Undo", "Undo the last outfit change (Ctrl + Z).");
-		_undoButton.Name = "UndoOutfit";
-		_undoButton.Pressed += UndoOutfit;
-		actions.AddChild(_undoButton);
-		_inspector.AddChild(actions);
-		_layerControls = new VBoxContainer { Name = "AccessoryLayerControls", Visible = false };
-		_layerControls.AddThemeConstantOverride("separation", 5);
-		_layerLabel = MakeLabel("Layers", MutedColor, 12);
-		_layerLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		_layerControls.AddChild(_layerLabel);
-		var layerButtons = new HBoxContainer();
-		_layerUpButton = MakeButton("↑ Up", "Move the selected item forward one layer, including past the dog.");
-		_layerUpButton.Name = "MoveAccessoryLayerUp";
-		_layerUpButton.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		_layerUpButton.Pressed += () => MoveSelectedLayer(1);
-		_layerDownButton = MakeButton("↓ Down", "Move the selected item backward one layer, including behind the dog.");
-		_layerDownButton.Name = "MoveAccessoryLayerDown";
-		_layerDownButton.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		_layerDownButton.Pressed += () => MoveSelectedLayer(-1);
-		layerButtons.AddChild(_layerUpButton); layerButtons.AddChild(_layerDownButton);
-		_layerControls.AddChild(layerButtons); _inspector.AddChild(_layerControls);
-
-		_transformControls = new VBoxContainer { Name = "AccessoryTransformControls", Visible = false };
-		var transformRow = new HBoxContainer();
-		var transformSliders = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-		transformSliders.AddThemeConstantOverride("separation", 10);
-		transformSliders.AddChild(CreateTransformRow("Size", 50, 200, 1, out _sizeSlider, out _sizeValueLabel));
-		transformSliders.AddChild(CreateTransformRow("Rotation", -180, 180, 1, out _rotationSlider, out _rotationValueLabel));
-		transformRow.AddChild(transformSliders);
-		var resetTransform = MakeButton("Reset fit", "Restore this accessory to 100% size and no rotation.");
-		resetTransform.Name = "ResetAccessoryTransform";
-		resetTransform.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		resetTransform.Pressed += () =>
-		{
-			if (_session.SelectedId is string id) { PrepareInspectorEdit(); PrepareDesktopEdit(); _wardrobe.SetTransform(id, 1, 0); ShowSaveStatus(_wardrobe.Save()); }
-		};
-		_transformControls.AddChild(transformRow);
-		_transformControls.AddChild(resetTransform);
-		_inspector.AddChild(_transformControls);
-		_textControls = new HBoxContainer { Name = "TextAccessoryControls", Visible = false };
-		var textStack = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; _textControls.AddChild(textStack);
-		textStack.AddChild(MakeLabel("Text", TextColor, 13));
-		_textInput = new LineEdit { Name = "AccessoryTextInput", PlaceholderText = "What should your dog say?",
-			SizeFlagsHorizontal = SizeFlags.ExpandFill, TooltipText = "Up to 64 characters. Changes save automatically." };
-		_textInput.TextChanged += text =>
-		{
-			if (_syncingText || _wardrobe == null) return;
-			PrepareInspectorEdit();
-			FinishTransform(); SavePendingColor();
-			if (!_textEditing) { _wardrobe.BeginEdit("text change"); _textEditing = true; }
-			_wardrobe.SetText(text); SyncTextInput(); ShowSaveStatus(_wardrobe.Save());
-		};
-		_textInput.FocusExited += SavePendingText;
-		_textInput.TextSubmitted += _ => { SavePendingText(); _textInput.ReleaseFocus(); };
-		textStack.AddChild(_textInput);
-		_textBackgroundCheck = new CheckBox
-		{
-			Name = "TextBackgroundToggle",
-			Text = "Text background",
-			TooltipText = "Show a bubble behind the text. Turn it off to show only the letters."
-		};
-		_textBackgroundCheck.AddThemeFontSizeOverride("font_size", 12);
-		_textBackgroundCheck.Toggled += visible =>
-		{
-			if (_syncingText || _wardrobe == null) return;
-			PrepareInspectorEdit(); PrepareDesktopEdit();
-			_wardrobe.SetTextBackgroundVisible(visible);
-			ShowSaveStatus(_wardrobe.Save());
-		};
-		textStack.AddChild(_textBackgroundCheck); _inspector.AddChild(_textControls);
-
-		_colorControls = new HBoxContainer { Name = "AccessoryColorControls", Visible = false };
-		_colorControls.AddThemeConstantOverride("separation", 8);
-		var colorStack = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; _colorControls.AddChild(colorStack);
-		_colorLabel = MakeLabel("Color", TextColor, 13); colorStack.AddChild(_colorLabel);
-		_colorPicker = new ColorPickerButton
-		{
-			Name = "AccessoryColorPicker",
-			Color = Colors.White,
-			EditAlpha = false,
-			CustomMinimumSize = new Vector2(72, 30),
-			TooltipText = "Open the color wheel. Changes apply to this accessory immediately."
-		};
-		WoodlandTheme.StyleButton(_colorPicker, "SecondaryButton");
-		_colorPicker.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		colorStack.AddChild(_colorPicker);
-		_resetColorButton = MakeButton("Reset white", "Restore the accessory's original white color.");
-		_resetColorButton.Name = "ResetAccessoryColor";
-		_resetColorButton.Pressed += () =>
-		{
-			OnAccessoryColorChanged(Colors.White);
-			SavePendingColor();
-		};
-		colorStack.AddChild(_resetColorButton);
-		_inspector.AddChild(_colorControls);
-		var picker = _colorPicker.GetPicker();
-		picker.PickerShape = ColorPicker.PickerShapeType.HsvWheel;
-		picker.EditAlpha = false;
-		picker.DeferredMode = false;
-		picker.EditIntensity = false;
-		picker.PresetsVisible = false;
-		picker.CanAddSwatches = false;
-		var swatches = new HBoxContainer { Name = "QuickColors", Alignment = BoxContainer.AlignmentMode.Center };
-		foreach (var (label, color) in new[] { ("White", Colors.White), ("Red", Color.FromHtml("#e35650")),
-			("Orange", Color.FromHtml("#ff9b3f")), ("Yellow", Color.FromHtml("#f5d75c")),
-			("Green", Color.FromHtml("#62af76")), ("Blue", Color.FromHtml("#5b9bda")),
-			("Purple", Color.FromHtml("#a176d6")), ("Pink", Color.FromHtml("#eb91ba")) })
-		{
-			var swatch = new Button { CustomMinimumSize = new Vector2(26, 26), TooltipText = label };
-			var skin = new StyleBoxFlat { BgColor = color, BorderColor = WoodlandTheme.Border };
-			skin.SetCornerRadiusAll(5); skin.SetBorderWidthAll(1);
-			foreach (var state in new[] { "normal", "hover", "pressed" }) swatch.AddThemeStyleboxOverride(state, skin);
-			swatch.Pressed += () => { _colorPicker.Color = color; OnAccessoryColorChanged(color); };
-			swatches.AddChild(swatch);
-		}
-		picker.AddChild(swatches);
-		var colorActions = new HBoxContainer();
-		_advancedColorButton = MakeButton("Advanced", "Show numeric color controls.");
-		_advancedColorButton.ToggleMode = true;
-		_advancedColorButton.Toggled += SetAdvancedColors;
-		colorActions.AddChild(_advancedColorButton);
-		var popupReset = MakeButton("Reset", "Restore the accessory's white color.");
-		popupReset.Pressed += () => { _colorPicker.Color = Colors.White; OnAccessoryColorChanged(Colors.White); };
-		colorActions.AddChild(popupReset);
-		var done = MakeButton("Done", "Keep this color and close the picker.");
-		done.Pressed += () => _colorPicker.GetPopup().Hide();
-		colorActions.AddChild(done);
-		picker.AddChild(colorActions);
-		SetAdvancedColors(false);
-		WoodlandTheme.ApplyPopup(_colorPicker.GetPopup());
-		_colorPicker.GetPopup().AboutToPopup += () =>
-		{
-			_advancedColorButton.SetPressedNoSignal(false);
-			SetAdvancedColors(false);
-			WoodlandTheme.ApplyPopup(_colorPicker.GetPopup());
-		};
-		_colorPicker.ColorChanged += OnAccessoryColorChanged;
-		_colorPicker.PopupClosed += SavePendingColor;
-
-		var catalogColumn = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
-		workspace.AddChild(catalogColumn);
-		var catalogHeading = new HBoxContainer();
-		catalogHeading.AddThemeConstantOverride("separation", 7);
-		catalogHeading.AddChild(MakeIcon("leaf", 18));
-		catalogHeading.AddChild(MakeLabel($"Accessories · {_wardrobe.Catalog.Count}", TextColor, 15));
-		catalogHeading.AddChild(new Control { SizeFlagsHorizontal = SizeFlags.ExpandFill });
-		catalogColumn.AddChild(catalogHeading);
-		_saveStatusLabel = MakeLabel("Outfit saves automatically", MutedColor, 12);
-		_saveStatusLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		_saveStatusLabel.HorizontalAlignment = HorizontalAlignment.Left;
-		_saveStatusLabel.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
-
-		_catalogScroll = new ScrollContainer
-		{
-			CustomMinimumSize = new Vector2(0, 160),
-			SizeFlagsHorizontal = SizeFlags.ExpandFill,
-			SizeFlagsVertical = SizeFlags.ExpandFill,
-			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
-		};
-		_catalogScroll.AddThemeStyleboxOverride("panel", WoodlandTheme.CatalogStyle());
-		var shelves = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
-		shelves.AddThemeConstantOverride("separation", 10); _catalogScroll.AddChild(shelves); catalogColumn.AddChild(_catalogScroll);
-		foreach (var category in AccessoryCategories.OrderedNames)
-		{
-			var items = _wardrobe.Catalog.Where(item => AccessoryCategories.For(item) == category).ToArray();
-			var shelf = new AccessoryCategoryRow(); shelf.Configure(category, items.Length); shelves.AddChild(shelf);
-			foreach (var item in items) shelf.AddCard(CreateCard(item));
-			if (items.Length == 0) shelf.Expanded = false;
-			_categoryRows.Add(category, shelf);
-		}
-		catalogColumn.AddChild(_saveStatusLabel);
 		VisibilityChanged += OnVisibilityChanged;
 		_wardrobe.Changed += Refresh;
 		Refresh();
 	}
 
+	private void BindSceneNodes()
+	{
+		_instructions = GetNode<Label>("%AccessoryInstructions");
+		_selectionLabel = GetNode<Label>("%AccessorySelectionLabel");
+		_saveStatusLabel = GetNode<Label>("%OutfitSaveStatus");
+		_removeButton = GetNode<Button>("%RemoveAccessory");
+		_cancelButton = GetNode<Button>("%CancelAccessory");
+		_clearButton = GetNode<Button>("%ClearOutfit");
+		_undoButton = GetNode<Button>("%UndoOutfit");
+		_layerControls = GetNode<VBoxContainer>("%AccessoryLayerControls");
+		_layerUpButton = GetNode<Button>("%MoveAccessoryLayerUp");
+		_layerDownButton = GetNode<Button>("%MoveAccessoryLayerDown");
+		_layerLabel = GetNode<Label>("%AccessoryLayerLabel");
+		_transformControls = GetNode<VBoxContainer>("%AccessoryTransformControls");
+		_sizeSlider = GetNode<Slider>("%AccessorySizeSlider");
+		_rotationSlider = GetNode<Slider>("%AccessoryRotationSlider");
+		_sizeValueLabel = GetNode<Label>("%AccessorySizeValue");
+		_rotationValueLabel = GetNode<Label>("%AccessoryRotationValue");
+		_textControls = GetNode<HBoxContainer>("%TextAccessoryControls");
+		_textInput = GetNode<LineEdit>("%AccessoryTextInput");
+		_textBackgroundCheck = GetNode<CheckBox>("%TextBackgroundToggle");
+		_colorControls = GetNode<HBoxContainer>("%AccessoryColorControls");
+		_colorPicker = GetNode<ColorPickerButton>("%AccessoryColorPicker");
+		_resetColorButton = GetNode<Button>("%ResetAccessoryColor");
+		_colorLabel = GetNode<Label>("%AccessoryColorLabel");
+		_catalogScroll = GetNode<ScrollContainer>("%AccessoryCatalogScroll");
+		_inspector = GetNode<VBoxContainer>("%AccessoryInspector");
+	}
+
+	private void BindBehavior()
+	{
+		_cancelButton!.Pressed += CancelInteraction;
+		_removeButton!.Pressed += RemoveSelected;
+		_clearButton!.Pressed += () =>
+		{
+			CancelInteraction(); _wardrobe!.Clear(); ShowSaveStatus(_wardrobe.Save()); _session!.ClearSelection();
+		};
+		_undoButton!.Pressed += UndoOutfit;
+		_layerUpButton!.Pressed += () => MoveSelectedLayer(1);
+		_layerDownButton!.Pressed += () => MoveSelectedLayer(-1);
+		foreach (var slider in new[] { _sizeSlider!, _rotationSlider! })
+		{
+			slider.DragStarted += () => { PrepareInspectorEdit(); SavePendingText(); SavePendingColor(); _transformDragging = true; _wardrobe?.BeginEdit("size / rotation"); };
+			slider.DragEnded += _ => FinishTransform();
+			slider.ValueChanged += _ => ApplyTransform();
+		}
+		GetNode<Button>("%ResetAccessoryTransform").Pressed += () =>
+		{
+			if (_session!.SelectedId is string id) { PrepareInspectorEdit(); PrepareDesktopEdit(); _wardrobe!.SetTransform(id, 1, 0); ShowSaveStatus(_wardrobe.Save()); }
+		};
+		_textInput!.TextChanged += text =>
+		{
+			if (_syncingText || _wardrobe == null) return;
+			PrepareInspectorEdit(); FinishTransform(); SavePendingColor();
+			if (!_textEditing) { _wardrobe.BeginEdit("text change"); _textEditing = true; }
+			_wardrobe.SetText(text); SyncTextInput(); ShowSaveStatus(_wardrobe.Save());
+		};
+		_textInput.FocusExited += SavePendingText;
+		_textInput.TextSubmitted += _ => { SavePendingText(); _textInput.ReleaseFocus(); };
+		_textBackgroundCheck!.Toggled += visible =>
+		{
+			if (_syncingText || _wardrobe == null) return;
+			PrepareInspectorEdit(); PrepareDesktopEdit(); _wardrobe.SetTextBackgroundVisible(visible); ShowSaveStatus(_wardrobe.Save());
+		};
+		_resetColorButton!.Pressed += () => { OnAccessoryColorChanged(Colors.White); SavePendingColor(); };
+		ConfigureColorPicker();
+	}
+
+	private void ConfigureColorPicker()
+	{
+		var picker = _colorPicker!.GetPicker();
+		picker.PickerShape = ColorWheelShape;
+		picker.EditAlpha = false; picker.DeferredMode = false; picker.EditIntensity = false;
+		picker.PresetsVisible = false; picker.CanAddSwatches = false;
+		if (ColorControlsScene == null) throw new InvalidOperationException("Assign the color controls scene in the AccessoryEditor inspector.");
+		var controls = ColorControlsScene.Instantiate<AccessoryColorControls>();
+		picker.AddChild(controls);
+		_advancedColorButton = controls.AdvancedButton;
+		controls.ColorSelected += color => { _colorPicker.Color = color; OnAccessoryColorChanged(color); };
+		controls.AdvancedToggled += SetAdvancedColors;
+		controls.ResetRequested += () => { _colorPicker.Color = Colors.White; OnAccessoryColorChanged(Colors.White); };
+		controls.DoneRequested += () => _colorPicker.GetPopup().Hide();
+		SetAdvancedColors(false);
+		WoodlandTheme.ApplyPopup(_colorPicker.GetPopup());
+		_colorPicker.GetPopup().AboutToPopup += () =>
+		{
+			_advancedColorButton.SetPressedNoSignal(false); SetAdvancedColors(false);
+			WoodlandTheme.ApplyPopup(_colorPicker.GetPopup());
+		};
+		_colorPicker.ColorChanged += OnAccessoryColorChanged;
+		_colorPicker.PopupClosed += SavePendingColor;
+	}
+
+	private void PopulateCatalog()
+	{
+		if (_wardrobe == null) return;
+		var shelves = GetNode<VBoxContainer>("%AccessoryShelves");
+		foreach (var row in shelves.GetChildren().OfType<AccessoryCategoryRow>()) _categoryRows[row.Category] = row;
+		foreach (var category in AccessoryCategories.OrderedNames)
+		{
+			var items = _wardrobe.Catalog.Where(item => AccessoryCategories.For(item) == category).ToArray();
+			if (!_categoryRows.TryGetValue(category, out var row))
+			{
+				if (CategoryRowScene == null) throw new InvalidOperationException("Assign the category row scene in the AccessoryEditor inspector.");
+				row = CategoryRowScene.Instantiate<AccessoryCategoryRow>();
+				row.Category = category; shelves.AddChild(row); _categoryRows.Add(category, row);
+			}
+			row.Configure(category, items.Length);
+			foreach (var item in items) row.AddCard(CreateCard(item));
+		}
+		GetNode<Label>("%AccessoryCatalogHeading").Text = FormatCopy(CatalogHeadingFormat, "count", _wardrobe.Catalog.Count.ToString(System.Globalization.CultureInfo.InvariantCulture));
+	}
+
 	public override void _ExitTree()
 	{
+		if (Engine.IsEditorHint()) return;
 		SavePendingText();
 		FinishTransform();
 		SavePendingColor();
@@ -317,18 +254,6 @@ public partial class AccessoryEditor : VBoxContainer
 		if (_wardrobe.MoveLayer(id, direction)) ShowSaveStatus(_wardrobe.Save());
 	}
 
-	private Control CreateTransformRow(string label, double min, double max, double step, out Slider slider, out Label valueLabel)
-	{
-		var row = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; row.AddThemeConstantOverride("separation", 6);
-		var title = MakeLabel(label, TextColor, 12); title.HorizontalAlignment = HorizontalAlignment.Center; row.AddChild(title);
-		valueLabel = MakeLabel(string.Empty, MutedColor, 12); valueLabel.HorizontalAlignment = HorizontalAlignment.Center; row.AddChild(valueLabel);
-		slider = new VSlider { MinValue = min, MaxValue = max, Step = step, SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
-			CustomMinimumSize = new Vector2(28, 190) };
-		slider.DragStarted += () => { PrepareInspectorEdit(); SavePendingText(); SavePendingColor(); _transformDragging = true; _wardrobe?.BeginEdit("size / rotation"); };
-		slider.DragEnded += _ => FinishTransform();
-		slider.ValueChanged += _ => ApplyTransform(); row.AddChild(slider);
-		return row;
-	}
 	private void ApplyTransform()
 	{
 		if (_syncingTransform || _session?.SelectedId == null || _wardrobe == null) return;
@@ -359,6 +284,7 @@ public partial class AccessoryEditor : VBoxContainer
 	}
 	public override void _Process(double delta)
 	{
+		if (Engine.IsEditorHint()) return;
 		if (_transformDragging && (!Input.IsMouseButtonPressed(MouseButton.Left) || !GetWindow().Visible || !GetWindow().HasFocus())) FinishTransform();
 	}
 
@@ -396,9 +322,8 @@ public partial class AccessoryEditor : VBoxContainer
 		{
 			return;
 		}
-		_saveStatusLabel.Text = success ? "Outfit saved" : "Could not save outfit";
-		_saveStatusLabel.TooltipText = success ? "This outfit will return when you restart." : "Your outfit is applied for this session. Try moving an accessory to save again.";
-		_saveStatusLabel.AddThemeColorOverride("font_color", success ? MutedColor : WoodlandTheme.Accent);
+		_saveStatusLabel.Text = success ? OutfitSavedText : OutfitSaveFailedText;
+		_saveStatusLabel.TooltipText = success ? OutfitSavedTooltip : OutfitSaveFailedTooltip;
 	}
 
 	public override void _UnhandledKeyInput(InputEvent @event)
@@ -426,43 +351,13 @@ public partial class AccessoryEditor : VBoxContainer
 
 	private Button CreateCard(AccessoryDefinition accessory)
 	{
-		var card = MakeButton(string.Empty, $"Choose {accessory.Name}. Click the desktop dog to place it, or drag an equipped item directly.", "CardButton");
-		card.ToggleMode = true;
-		card.CustomMinimumSize = new Vector2(122, 112);
-		card.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
-		var margin = new MarginContainer { MouseFilter = MouseFilterEnum.Ignore };
-		margin.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-		margin.AddThemeConstantOverride("margin_left", 7);
-		margin.AddThemeConstantOverride("margin_right", 7);
-		margin.AddThemeConstantOverride("margin_top", 7);
-		margin.AddThemeConstantOverride("margin_bottom", 6);
-		card.AddChild(margin);
-		var content = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-		content.AddThemeConstantOverride("separation", 3);
-		margin.AddChild(content);
-		var image = new TextureRect
-		{
-			Texture = accessory.Texture,
-			Modulate = _wardrobe!.GetTint(accessory.Id),
-			TextureFilter = CanvasItem.TextureFilterEnum.Linear,
-			MouseFilter = MouseFilterEnum.Ignore,
-			CustomMinimumSize = new Vector2(0, 51),
-			SizeFlagsVertical = SizeFlags.ExpandFill,
-			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-			StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
-		};
-		content.AddChild(image);
-		_cardTextures.Add(accessory.Id, image);
-		var name = MakeLabel(accessory.Name, TextColor, 12);
-		name.HorizontalAlignment = HorizontalAlignment.Center;
-		name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
-		content.AddChild(name);
-		var status = MakeLabel("Click to place", MutedColor, 11);
-		status.HorizontalAlignment = HorizontalAlignment.Center;
-		content.AddChild(status);
+		if (CardScene == null) throw new InvalidOperationException("Assign the accessory card scene in the AccessoryEditor inspector.");
+		var card = CardScene.Instantiate<AccessoryCard>();
+		card.Configure(accessory, _wardrobe!.GetTint(accessory.Id));
 		card.Pressed += () => _session?.ChooseAccessory(accessory.Id);
 		_cards.Add(accessory.Id, card);
-		_cardStatuses.Add(accessory.Id, status);
+		_cardTextures.Add(accessory.Id, card.Preview);
+		_cardStatuses.Add(accessory.Id, card.Status);
 		return card;
 	}
 
@@ -505,7 +400,7 @@ public partial class AccessoryEditor : VBoxContainer
 			_colorAccessoryId = colorAccessoryId;
 		}
 		_colorControls!.Visible = colorAccessoryId != null;
-		_colorLabel!.Text = textSelected ? "Text color" : "Color";
+		_colorLabel!.Text = textSelected ? TextColorCaption : ItemColorCaption;
 		if (colorAccessoryId != null)
 		{
 			var color = _wardrobe.GetTint(colorAccessoryId);
@@ -532,12 +427,10 @@ public partial class AccessoryEditor : VBoxContainer
 			}
 			_cards[accessory.Id].SetPressedNoSignal(selected);
 			_cardTextures[accessory.Id].Modulate = _wardrobe.GetTint(accessory.Id);
-			_cardStatuses[accessory.Id].Text = selected && _session.IsPlacing ? accessory.IsText ? "Place near dog" : "Click the dog" : equippedIds.Contains(accessory.Id) ? "Equipped" : "Click to place";
-			_cardStatuses[accessory.Id].AddThemeColorOverride("font_color", equippedIds.Contains(accessory.Id) ? WoodlandTheme.Moss : MutedColor);
+			((AccessoryCard)_cards[accessory.Id]).RefreshStatus(selected && _session.IsPlacing, equippedIds.Contains(accessory.Id), accessory.IsText);
 		}
-		_selectionLabel!.Text = selectedName == null ? "No accessory selected" : selectedName;
-		_selectionLabel.TooltipText = _selectionLabel.Text;
-		_selectionLabel.AddThemeColorOverride("font_color", selectedName == null ? MutedColor : TextColor);
+		_selectionLabel!.Text = selectedName ?? NoSelectionText;
+		_selectionLabel.TooltipText = FormatCopy(SelectionTooltipFormat, "name", _selectionLabel.Text);
 		_removeButton!.Disabled = _session.SelectedId == null || !equippedIds.Contains(_session.SelectedId);
 		_layerControls!.Visible = !_removeButton.Disabled;
 		if (_session.SelectedId is string layerId && equippedIds.Contains(layerId))
@@ -545,29 +438,30 @@ public partial class AccessoryEditor : VBoxContainer
 			_layerUpButton!.Disabled = !_wardrobe.CanMoveLayer(layerId, 1);
 			_layerDownButton!.Disabled = !_wardrobe.CanMoveLayer(layerId, -1);
 			_layerLabel!.Text = _wardrobe.GetLayerIndex(layerId) < _wardrobe.GetLayerIndex(AccessoryWardrobe.DogLayerId)
-				? "Layers · Behind dog" : "Layers · In front of dog";
+				? LayerBehindDogText : LayerInFrontOfDogText;
 		}
 		_clearButton!.Disabled = equippedIds.Count == 0;
 		_removeButton.Visible = !_removeButton.Disabled;
 		_undoButton!.Disabled = !_wardrobe.CanUndo;
-		_undoButton.TooltipText = _wardrobe.CanUndo ? $"Undo {_wardrobe.UndoLabel} (Ctrl + Z)." : "No outfit changes to undo.";
+		_undoButton.TooltipText = _wardrobe.CanUndo ? FormatCopy(UndoTooltipFormat, "label", _wardrobe.UndoLabel) : EmptyUndoTooltip;
 		_transformControls!.Visible = _session.SelectedId != null;
 		if (_session.SelectedId is string transformId)
 		{
 			_syncingTransform = true;
 			_sizeSlider!.Value = _wardrobe.GetScale(transformId) * 100;
 			_rotationSlider!.Value = _wardrobe.GetRotationDegrees(transformId);
-			_sizeValueLabel!.Text = $"{Mathf.RoundToInt(_wardrobe.GetScale(transformId) * 100)}%";
-			_rotationValueLabel!.Text = $"{Mathf.RoundToInt(_wardrobe.GetRotationDegrees(transformId))}°";
+			_sizeValueLabel!.Text = FormatCopy(SizeValueFormat, "value", Mathf.RoundToInt(_wardrobe.GetScale(transformId) * 100).ToString(System.Globalization.CultureInfo.InvariantCulture));
+			_rotationValueLabel!.Text = FormatCopy(RotationValueFormat, "value", Mathf.RoundToInt(_wardrobe.GetRotationDegrees(transformId)).ToString(System.Globalization.CultureInfo.InvariantCulture));
 			_syncingTransform = false;
 		}
 		_cancelButton!.Visible = _session.IsPlacing || _session.IsDragging;
-		_instructions!.Text = _session.IsPlacing
-			? textSelected ? "Click near your desktop dog to place the text.\nEdit its message, color and background in the side panel."
-			: $"Click your desktop dog to place {selectedName}.\nPress Escape or Cancel to choose something else."
-			: _session.SelectedId != null ? $"Drag {selectedName} to move it; use its handles to resize or rotate.\nRight-click it or use the layer arrows to change what appears in front."
-			: "Choose an item, then click your desktop dog to place it.\nDrag the dog to move it; right-click the dog or an item for layer options.";
+		var instructions = _session.IsPlacing
+			? textSelected ? TextPlacementInstructions : ItemPlacementInstructionsFormat
+			: _session.SelectedId != null ? SelectedInstructionsFormat : IdleInstructions;
+		_instructions!.Text = FormatCopy(instructions, "name", selectedName ?? string.Empty);
 	}
+	private static string FormatCopy(string format, string token, string value) => (format ?? string.Empty).Replace("{" + token + "}", value);
+
 	private void SyncTextInput()
 	{
 		if (_textInput == null || _wardrobe == null) return;
@@ -584,39 +478,7 @@ public partial class AccessoryEditor : VBoxContainer
 		_textEditing = false; _wardrobe.CommitEdit(); ShowSaveStatus(_wardrobe.Save());
 	}
 
-	private static Label MakeLabel(string text, Color color, int size = 14)
-	{
-		var label = new Label { Text = text, MouseFilter = MouseFilterEnum.Ignore };
-		label.AddThemeColorOverride("font_color", color);
-		label.AddThemeFontSizeOverride("font_size", size);
-		return label;
-	}
 
-	private static TextureRect MakeIcon(string name, int size)
-	{
-		return new TextureRect
-		{
-			Texture = WoodlandTheme.Icon(name),
-			CustomMinimumSize = new Vector2(size, size),
-			SizeFlagsVertical = SizeFlags.ShrinkCenter,
-			MouseFilter = MouseFilterEnum.Ignore,
-			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-			StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
-		};
-	}
-
-	private static Button MakeButton(string text, string tooltip, string variation = "SecondaryButton")
-	{
-		var button = new Button { Text = text, TooltipText = tooltip, CustomMinimumSize = new Vector2(0, 30) };
-		WoodlandTheme.StyleButton(button, variation);
-		button.AddThemeFontSizeOverride("font_size", 13);
-		if (text is "Remove" or "Reset white")
-		{
-			button.Icon = WoodlandTheme.Icon(text == "Remove" ? "remove" : "reset");
-			button.AddThemeConstantOverride("icon_max_width", 14);
-		}
-		return button;
-	}
 }
 
 /// <summary>All preview input stays in its cosmetic viewport; it never enqueues a pet grant.</summary>

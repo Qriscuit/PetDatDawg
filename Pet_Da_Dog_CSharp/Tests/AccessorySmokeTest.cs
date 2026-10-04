@@ -1202,7 +1202,8 @@ public partial class AccessorySmokeTest : Node
 			window.Hide(); window.ShowStatusWindow();
 			Require(window.Size == sizeBeforePreference && window.Position == positionBeforePreference, "Reopening preserves the user's menu dimensions and position.");
 			window.EmitSignal(Window.SignalName.CloseRequested);
-			var restoredWindow = new StatusWindow(); AddChild(restoredWindow); restoredWindow.Configure(testSettings); restoredWindow.ShowStatusWindow();
+			var restoredWindow = ResourceLoader.Load<PackedScene>("res://StatusWindow.tscn").Instantiate<StatusWindow>();
+			restoredWindow.Visible = false; AddChild(restoredWindow); restoredWindow.Configure(testSettings); restoredWindow.ShowStatusWindow();
 			Require(restoredWindow.Size == sizeBeforePreference && restoredWindow.Position == positionBeforePreference,
 				"A new menu window restores saved dimensions and position from local preferences.");
 			restoredWindow.Free(); window.ShowStatusWindow();

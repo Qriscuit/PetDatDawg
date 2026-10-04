@@ -1,0 +1,209 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://Scripts/AccessoryColorControls.cs" id="1_controls"]
+
+[sub_resource type="StyleBoxFlat" id="Swatch_White"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.635294, 0.537255, 0.329412, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_left = 5
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="Swatch_Red"]
+bg_color = Color(0.890196, 0.337255, 0.313725, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.635294, 0.537255, 0.329412, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_left = 5
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="Swatch_Orange"]
+bg_color = Color(1, 0.607843, 0.247059, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.635294, 0.537255, 0.329412, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_left = 5
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="Swatch_Yellow"]
+bg_color = Color(0.960784, 0.843137, 0.360784, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.635294, 0.537255, 0.329412, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_left = 5
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="Swatch_Green"]
+bg_color = Color(0.384314, 0.686275, 0.462745, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.635294, 0.537255, 0.329412, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_left = 5
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="Swatch_Blue"]
+bg_color = Color(0.356863, 0.607843, 0.854902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.635294, 0.537255, 0.329412, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_left = 5
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="Swatch_Purple"]
+bg_color = Color(0.631373, 0.462745, 0.839216, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.635294, 0.537255, 0.329412, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_left = 5
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="Swatch_Pink"]
+bg_color = Color(0.921569, 0.568627, 0.729412, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.635294, 0.537255, 0.329412, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_left = 5
+corner_radius_bottom_right = 5
+
+[node name="AccessoryColorControls" type="VBoxContainer"]
+offset_right = 300.0
+offset_bottom = 70.0
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+script = ExtResource("1_controls")
+
+[node name="QuickColors" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="WhiteSwatch" type="Button" parent="QuickColors"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+tooltip_text = "White"
+theme_override_styles/normal = SubResource("Swatch_White")
+theme_override_styles/hover = SubResource("Swatch_White")
+theme_override_styles/pressed = SubResource("Swatch_White")
+
+[node name="RedSwatch" type="Button" parent="QuickColors"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+tooltip_text = "Red"
+theme_override_styles/normal = SubResource("Swatch_Red")
+theme_override_styles/hover = SubResource("Swatch_Red")
+theme_override_styles/pressed = SubResource("Swatch_Red")
+
+[node name="OrangeSwatch" type="Button" parent="QuickColors"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+tooltip_text = "Orange"
+theme_override_styles/normal = SubResource("Swatch_Orange")
+theme_override_styles/hover = SubResource("Swatch_Orange")
+theme_override_styles/pressed = SubResource("Swatch_Orange")
+
+[node name="YellowSwatch" type="Button" parent="QuickColors"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+tooltip_text = "Yellow"
+theme_override_styles/normal = SubResource("Swatch_Yellow")
+theme_override_styles/hover = SubResource("Swatch_Yellow")
+theme_override_styles/pressed = SubResource("Swatch_Yellow")
+
+[node name="GreenSwatch" type="Button" parent="QuickColors"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+tooltip_text = "Green"
+theme_override_styles/normal = SubResource("Swatch_Green")
+theme_override_styles/hover = SubResource("Swatch_Green")
+theme_override_styles/pressed = SubResource("Swatch_Green")
+
+[node name="BlueSwatch" type="Button" parent="QuickColors"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+tooltip_text = "Blue"
+theme_override_styles/normal = SubResource("Swatch_Blue")
+theme_override_styles/hover = SubResource("Swatch_Blue")
+theme_override_styles/pressed = SubResource("Swatch_Blue")
+
+[node name="PurpleSwatch" type="Button" parent="QuickColors"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+tooltip_text = "Purple"
+theme_override_styles/normal = SubResource("Swatch_Purple")
+theme_override_styles/hover = SubResource("Swatch_Purple")
+theme_override_styles/pressed = SubResource("Swatch_Purple")
+
+[node name="PinkSwatch" type="Button" parent="QuickColors"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+tooltip_text = "Pink"
+theme_override_styles/normal = SubResource("Swatch_Pink")
+theme_override_styles/hover = SubResource("Swatch_Pink")
+theme_override_styles/pressed = SubResource("Swatch_Pink")
+
+[node name="ColorActions" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AdvancedColor" type="Button" parent="ColorActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+tooltip_text = "Show numeric color controls."
+theme_type_variation = &"SecondaryButton"
+toggle_mode = true
+text = "Advanced"
+
+[node name="PopupResetColor" type="Button" parent="ColorActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+tooltip_text = "Restore the accessory's white color."
+theme_type_variation = &"SecondaryButton"
+text = "Reset"
+
+[node name="ColorActionSpacer" type="Control" parent="ColorActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="DoneColor" type="Button" parent="ColorActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+tooltip_text = "Keep this color and close the picker."
+theme_type_variation = &"SecondaryButton"
+text = "Done"

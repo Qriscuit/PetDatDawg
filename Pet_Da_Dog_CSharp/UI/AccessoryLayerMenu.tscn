@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/AccessoryLayerMenu.cs" id="1_script"]
+[ext_resource type="Theme" path="res://UI/Theme/DefaultTheme.tres" id="2_theme"]
+[ext_resource type="StyleBox" path="res://UI/Theme/Panel.tres" id="3_panel"]
+
+[node name="AccessoryLayerMenu" type="PopupMenu"]
+transparent_bg = false
+transparent = false
+shrink_height = false
+shrink_width = false
+size = Vector2i(246, 126)
+min_size = Vector2i(246, 126)
+visible = true
+theme = ExtResource("2_theme")
+theme_override_constants/v_separation = 10
+theme_override_styles/panel = ExtResource("3_panel")
+script = ExtResource("1_script")
+prefer_native_menu = false
+hide_on_item_selection = false
+item_count = 3
+item_0/text = "Accessory"
+item_0/id = -1
+item_0/separator = true
+item_1/text = "Move up one layer"
+item_1/id = 1
+item_2/text = "Move down one layer"
+item_2/id = 2

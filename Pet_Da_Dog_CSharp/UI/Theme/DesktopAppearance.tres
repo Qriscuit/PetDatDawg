@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="DesktopAppearance" format=3 uid="uid://cmdf5xxngpvl6"]
+
+[ext_resource type="Script" uid="uid://ed5e8mxxr4iu" path="res://Scripts/DesktopAppearance.cs" id="1"]
+[ext_resource type="StyleBox" path="res://UI/Theme/PlainPanel.tres" id="2"]
+[ext_resource type="StyleBox" path="res://UI/Theme/TextBubble.tres" id="3"]
+[ext_resource type="SystemFont" path="res://UI/Theme/BodyFont.tres" id="4"]
+
+[sub_resource type="SystemFont" id="TextFont"]
+font_names = PackedStringArray("Segoe UI", "Noto Sans", "Segoe UI Emoji")
+font_weight = 600
+
+[resource]
+resource_name = "Desktop UI appearance"
+script = ExtResource("1")
+MoveDogStyle = ExtResource("2")
+ControlFont = ExtResource("4")
+MarkerFont = ExtResource("4")
+TextBubbleStyle = ExtResource("3")
+TextFont = SubResource("TextFont")

@@ -5,6 +5,8 @@ using System.Threading;
 
 public partial class DesktopPet : Node2D
 {
+	[Export] public PackedScene? StatusScene { get; set; }
+	[Export] public PackedScene? TextAccessoryScene { get; set; }
 	private const string DogTexturePath = "res://Sprites/Doggo.png";
 	private const string HeartTexturePath = "res://Sprites/PetzHeart.png";
 	private const string FallbackTexturePath = "res://icon.svg";
@@ -129,13 +131,11 @@ public partial class DesktopPet : Node2D
 
 		_walkX = _windowSize.X * 0.5f;
 		AnimateDog();
-		_accessoryControls = new DesktopAccessoryControls();
-		AddChild(_accessoryControls);
+		_accessoryControls = GetNode<DesktopAccessoryControls>("AccessoryControls");
 		_accessoryControls.Configure(this, _wardrobe, _editingSession);
 		if (_patrolRoute != null)
 		{
-			_patrolEditor = new DesktopPatrolEditor();
-			AddChild(_patrolEditor);
+			_patrolEditor = GetNode<DesktopPatrolEditor>("PatrolEditor");
 			_patrolEditor.Configure(this, _patrolRoute);
 			_patrolRoute.Changed += OnPatrolRouteChanged;
 			_patrolRoute.EditingChanged += OnPatrolEditingChanged;
@@ -391,11 +391,12 @@ public partial class DesktopPet : Node2D
 				{
 					if (!_textAccessories.TryGetValue(placement.Id, out var textBox))
 					{
-						textBox = new PetTextAccessory(); _dogSprite.AddChild(textBox); _textAccessories.Add(placement.Id, textBox);
+						textBox = (TextAccessoryScene ?? ResourceLoader.Load<PackedScene>("res://UI/PetTextAccessory.tscn")).Instantiate<PetTextAccessory>();
+						_dogSprite.AddChild(textBox); _textAccessories.Add(placement.Id, textBox);
 					}
 					var textSize = definition.Size * _visibleDogLocalRect.Size.Y * placement.Scale;
 					textBox.Position = _visibleDogLocalRect.Position + _visibleDogLocalRect.Size * placement.Position;
-					textBox.Scale = textSize / PetTextAccessory.ReferenceSize * new Vector2(_direction, 1);
+					textBox.Scale = textSize / textBox.BubbleSize * new Vector2(_direction, 1);
 					textBox.RotationDegrees = placement.RotationDegrees;
 					textBox.Text = placement.Text; textBox.TextColor = placement.Tint;
 					textBox.BackgroundVisible = placement.BackgroundVisible; textBox.QueueRedraw();
@@ -908,7 +909,7 @@ public partial class DesktopPet : Node2D
 		if (_patrolEditing) _patrolRoute?.CancelEdit();
 		if (_statusWindow == null)
 		{
-			var scene = ResourceLoader.Load<PackedScene>(StatusWindowScenePath);
+			var scene = StatusScene ?? ResourceLoader.Load<PackedScene>(StatusWindowScenePath);
 			if (scene == null)
 			{
 				GD.PushError($"Could not load {StatusWindowScenePath}.");
@@ -916,6 +917,7 @@ public partial class DesktopPet : Node2D
 			}
 
 			_statusWindow = scene.Instantiate<StatusWindow>();
+			_statusWindow.Visible = false;
 			GetTree().Root.AddChild(_statusWindow);
 			_statusWindow.Configure(_settings);
 		}

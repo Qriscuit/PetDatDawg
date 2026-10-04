@@ -265,7 +265,17 @@ public partial class PatrolSmokeTest : Node
 				{
 					Require(target == (previousTarget + 1) % _route.Points.Count, "Patrol visits each numbered stop in order, including the wrap to stop one.");
 					targetTransitions.Add(target);
-					Require(pet.PatrolPointToViewport(_route.Points[previousTarget]).DistanceTo(current) <= distance + 0.1f, "Each transition actually reaches its stop before traveling toward the next.");
+					var stop = pet.PatrolPointToViewport(_route.Points[previousTarget]);
+					// A turn can make the direct displacement shorter than the distance
+					// traveled after the stop. Check the two segments against elapsed time.
+					var travelViaStop = previous.DistanceTo(stop) + stop.DistanceTo(current);
+					var frameBudget = 120f * (float)pet.GetProcessDeltaTime();
+					Require(Mathf.Abs(travelViaStop - frameBudget) <= 0.2f,
+						$"Each transition reaches its stop within the frame's travel budget (via={travelViaStop}, budget={frameBudget}).");
+					var outgoing = pet.PatrolPointToViewport(_route.Points[target]) - stop;
+					Require(Mathf.Abs(outgoing.Cross(current - stop)) < Math.Max(1, outgoing.Length() * 0.02f)
+						&& outgoing.Dot(current - stop) >= -0.05f,
+						"After reaching a stop, motion follows the next ordered segment.");
 				}
 				else
 				{

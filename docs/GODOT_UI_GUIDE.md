@@ -40,22 +40,28 @@ Godot node categories matter:
 | `PatrolRoute` | `/root/PatrolRoute` | Saves normalized screen stops, route enablement, and a separate route-editing draft. |
 | `NativeWindowBridge` | `/root/NativeWindowBridge` | Applies Windows overlay styles, tray menu, and hotkeys. |
 
-`Main.tscn` is tiny:
+`Main.tscn` keeps the dog hierarchy and two reusable desktop UI instances:
 
 ```text
 DesktopPet
   +-- FootAnchor
-        +-- VisualRoot
-              +-- PetSprite
+  |     +-- VisualRoot
+  |           +-- PetSprite
+  +-- AccessoryControls (UI/DesktopAccessoryControls.tscn)
+  +-- PatrolEditor (UI/DesktopPatrolEditor.tscn)
 ```
 
 `DesktopPet.cs` is the main controller. It loads the dog texture, manages the transparent desktop overlay, walks the dog normally or along its enabled patrol route, renders equipped accessories, checks dog-pixel clicks, opens the browser, spawns hearts, and coordinates Steam/backend pet grants. During Items editing it expands the overlay across the usable screen area and lets `DesktopAccessoryControls.cs` manipulate the actual desktop dog. Equipped accessory sprites are children of `PetSprite`, so they inherit dog movement, flipping, animation, scale, and transparency.
 
-`StatusWindow.tscn` contains a `Window` node with `StatusWindow.cs` attached. It is the portrait browser for Dogs, Items, Shop, and Settings. Its controls are built in C#. Items edits the real desktop dog through the shared editing session; the current runtime does not open a separate preview window.
+`StatusWindow.tscn` is the authored portrait browser for Dogs, Items, Shop, and Settings. Open it in Godot's 2D editor to select and change its controls, labels, spacing, and theme. `StatusWindow.cs` binds those nodes and updates runtime state; it does not rebuild the interface. Items edits the real desktop dog through the shared editing session; the current runtime does not open a separate preview window.
+
+Reusable controls and native window templates live under `UI/`: `AccessoryEditor.tscn`, `AccessoryCategoryRow.tscn`, `AccessoryCard.tscn`, `AccessoryColorControls.tscn`, `PatrolRouteToolbar.tscn`, and `AccessoryLayerMenu.tscn`. Desktop drawing templates are `DesktopAccessoryControls.tscn`, `DesktopPatrolEditor.tscn`, and `PetTextAccessory.tscn`. Main's root exports Status Scene and Text Accessory Scene, while its desktop instances export Layer Menu Scene and Toolbar Scene. The shared theme and desktop drawing appearance live under `UI/Theme/`. See [UI_EDITOR_GUIDE.md](UI_EDITOR_GUIDE.md) for the scene/resource editing workflow.
+
+The Items templates expose live captions and instruction/status formats in the Inspector. Category is a catalog identity: retain one Wings, Collars, Glasses, Decorations, and Text shelf, and use Display Title to change its visible name. Card Editor Sample properties provide preview content; State Captions controls its runtime status wording. Preserve named format tokens to keep live item names, counts, and values visible.
 
 ## 3. How The Browser And Desktop Editing Work
 
-`StatusWindow.cs` builds its UI in `BuildUi()`. The pattern is:
+`StatusWindow.tscn` contains the browser's control tree. `StatusWindow.cs` resolves named controls, connects actions, and refreshes live data. The pattern is:
 
 ```text
 StatusWindow: portrait browser
@@ -64,14 +70,15 @@ StatusWindow: portrait browser
               +-- VBoxContainer root
                     +-- header: tab buttons + confirmed pets + waiting clicks
                     +-- dismissible first-use hint
-                    +-- page container
+                    +-- Pages: DogsPage, ItemsPage, ShopPage, SettingsPage
+                          +-- ItemsPage instances UI/AccessoryEditor.tscn
 
 Main transparent overlay during Items editing
   +-- actual desktop dog and equipped accessories
   +-- DesktopAccessoryControls: selection, handles, placement ghost, Move dog pill
 ```
 
-The browser starts at 640 × 780 pixels, with a 560 × 600 minimum at the default menu scale. It is a normal resizable window. The desktop dog itself is the editing surface, so it can be moved around the usable desktop while choosing its outfit.
+The authored browser starts at 640 × 780 pixels, with a 560 × 600 minimum at the default menu scale. Its root Size, Min Size, theme, and content scaling are editable in the Inspector and supply the runtime defaults; saved browser layout and the player's Menu size preference still apply. It is a normal resizable window. The desktop dog itself is the editing surface, so it can be moved around the usable desktop while choosing its outfit. The root's Initial Tab property previews Dogs, Items, Shop, or Settings directly in the editor without activating desktop editing or writing settings.
 
 The header keeps navigation, the game name, confirmed pets, and waiting clicks visible. Quit Pet Da Dog belongs to Settings and the tray menu; closing the browser keeps the desktop dog running. First-time launches open it with a hint explaining right-click and tray access; Got it remembers its dismissal.
 
@@ -124,11 +131,21 @@ Done commits a valid draft, enables the patrol, and starts following its loop. C
 
 `PatrolRoute.cs` stores screen-relative coordinates from 0–1 in `user://patrol_route.cfg`, so the stops adapt to the primary usable screen size instead of saving absolute pixels. Stops represent the dog's feet and are clamped to allow room for its outfit. The saved enablement also survives restarts. Invalid coordinates and consecutive duplicate stops are rejected or normalized on load, and a route with fewer than two distinct stops cannot be enabled. If saving fails, the route remains usable for the current run and the UI reports that it was not saved.
 
-`DesktopPatrolEditor.cs` draws the numbered stops and handles route gestures; `PatrolRouteToolbar.cs` provides a separate native control window. While drawing, the usable desktop captures route gestures and the dog is held still, fully visible, and on top. Done or Cancel restores saved interaction preferences. During ordinary patrol playback, transparent space passes through and original dog pixels still accept normal pet clicks.
+`DesktopPatrolEditor.cs` draws the numbered stops and handles route gestures; `UI/PatrolRouteToolbar.tscn` authors the separate native control window, while `PatrolRouteToolbar.cs` binds its controls. The toolbar's scene Size supplies its runtime baseline; its dynamic summaries and screen placement have exported Inspector properties. `UI/AccessoryLayerMenu.tscn` similarly authors the layer popup's items and styling; its caption changes for the clicked dog/accessory, while action labels stay as authored. While drawing, the usable desktop captures route gestures and the dog is held still, fully visible, and on top. Done or Cancel restores saved interaction preferences. During ordinary patrol playback, transparent space passes through and original dog pixels still accept normal pet clicks.
+
+The layer PopupMenu authors Shrink Width and Shrink Height as false so its Inspector Size and Min Size survive native opening. Keep those flags off for a chosen popup size; enable them if you want Godot to shrink it to the content minimum.
 
 ### Woodland Workshop Theme
 
-`WoodlandTheme.cs` owns the shared earthy palette, fonts, button states, focus rings, checkbox and slider styling, and popup presentation. The browser's Dogs, Items, Shop, and Settings pages, desktop editing controls, and the native Godot color wheel use this theme. Use its button variations and panel helpers when extending the UI instead of adding unrelated colors or white styleboxes.
+`UI/Theme/DefaultTheme.tres` owns the shared fonts, button states, focus rings, checkbox and slider styling, and popup presentation. The browser, reusable item controls, native layer popup, patrol toolbar, and Godot color wheel use this authored theme. `WoodlandTheme.cs` is a compatibility/resource lookup helper rather than a runtime theme builder. Edit the Theme resource in Godot to change shared controls, or assign a Theme Override to an individual node. Preserve button variations such as SecondaryButton, ActionButton, TabButton, and CardButton when extending the UI.
+
+Windows title bars and the Win32 tray menu retain operating-system styling; Godot's Theme resources style the game controls inside its windows.
+
+`project.godot` assigns this Theme as the GUI custom theme. The browser keeps its authored Theme when Menu size changes; scaling uses its authored Content Scale Factor. StatusWindow's Dynamic Captions exports provide the Show/Hide technical details and Set/Edit route wording, with separate Inspector groups for live pet, connection, and patrol status formats. AccessoryEditor exposes Color Wheel Shape alongside its reusable scene exports.
+
+Shared nine-slice style resources are `Window.tres`, `Panel.tres`, `PlainPanel.tres`, `Catalog.tres`, and `Focus.tres` under `UI/Theme/`. They control the outer frame, framed panels, plain surfaces, catalog trays, and focus rings. `DesktopAppearance.tres` exposes the code-drawn desktop UI: selection colors and widths, resize/rotation handles and optional icons, the Move dog pill, patrol markers/lines/arrows, placement opacity, and text accessory presentation. `TextBubble.tres` and the font resources are also editable. These drawings stay procedural, with their presentation configured through Inspector resources.
+
+Open the standalone desktop templates to see their Tool previews while editing Appearance. DesktopAccessoryControls has Show Editor Preview and Editor Preview Bounds; DesktopPatrolEditor has Show Editor Preview and Editor Preview Points. PetTextAccessory previews its Text, Text Color, and Background Visible properties. Main disables the sample desktop drawings on its child instances. These previews draw without activating customization, native windows, model bindings, or saves.
 
 The generated raster art lives in `Art/UI/Woodland/`: moss cloth with a wood border, a wood-framed parchment panel, and a neutral stitched surface. Godot nine-slice styleboxes preserve corners while panels resize; import size limits keep border details appropriate for small controls. The neutral stitched surface is tinted for sage catalog trays and terracotta selections. Production prompts and asset notes are saved beside the artwork. Dog and accessory source textures stay unchanged.
 
@@ -136,7 +153,7 @@ Concept mockups remain under `Art/UI/Concepts/` and are excluded from import wit
 
 ## 4. Containers And Controls Used Here
 
-Godot UI layout is mostly container-driven. You add controls as children, then the container decides where they go.
+Godot UI layout is mostly container-driven. Add or move controls in the authored scene tree, then use container separation, margins, size flags, and minimum sizes to arrange them. Containers determine the child positions at runtime, so moving a container-managed child by dragging its rectangle will not establish its final position.
 
 | Control | What it does here |
 | --- | --- |
@@ -194,7 +211,7 @@ To extend dog or accessory content:
 
 1. Keep confirmed pets and pending grants visible in the persistent header.
 2. Add accessory artwork under `Sprites/Accessories/`; use `AccessoryWardrobe` for outfit changes and `AccessoryEditingSession` for shared selection and gesture state.
-3. Keep category shelves horizontal and the category stack vertically scrollable so the browser does not grow with content.
+3. Edit reusable card/category/color scenes rather than constructing new controls in runtime scripts. Keep category shelves horizontal and the category stack vertically scrollable so the browser does not grow with content.
 4. Use backend-confirmed data for anything authoritative.
 5. Do not store or fake pet totals in client settings.
 
@@ -211,7 +228,7 @@ StatusWindow control changes
   -> DesktopPet applies the visual/window behavior
 ```
 
-Do not make `StatusWindow` mutate dog visuals directly. Keeping settings changes centralized makes the overlay, native window styles, and UI refresh behavior easier to reason about.
+Edit preference labels, layout, and theme in `StatusWindow.tscn`; keep value changes flowing through the settings setters. `StatusWindow` should not mutate dog visuals directly. Keeping settings changes centralized makes the overlay, native window styles, and UI refresh behavior easier to reason about. Bound controls use unique node names, so preserve those names when moving or styling nodes. Tool scripts return before runtime bindings, native window operations, autoload access, or saves while the editor previews scenes.
 
 ## 9. Build And Smoke Test
 
@@ -231,7 +248,7 @@ The runner imports resources and builds the client, disables Steam and tray inte
 
 Woodland and UX checks cover Dogs / Items / Shop / Settings switching, category collapse and horizontal scrolling, percentage preference sliders, theme retention during menu-size changes, native basic/advanced color controls, equipped-card selection, undo gestures and keys, first-use dismissal, connection detail disclosure, confirmed/waiting status separation, and persisted browser geometry. Reviewed capture copies live under `docs/previews/`.
 
-For a manual check, choose Items, move the actual dog by its body and Move dog pill, and resize it with its corner handle. Place an accessory, then drag, resize, and rotate it with the desktop handles and inspector. Test colors, text, and Show textbox background, then removal, clearing, and Undo. Check category collapse and horizontal scrolling. Leave Items, hide/close the browser, and minimize it during a gesture: the gesture should cancel, the dog should fall and resume walking, and saved visibility/click-through/always-on-top preferences should return. Restart to check the outfit, dog size, and browser layout. Check desktop click-through around transparent pixels and editing controls, and confirm editing never changes waiting pet clicks. During normal play, pet the visible dog to check hearts and syncing.
+For a manual check, open `StatusWindow.tscn` in Godot and preview each Initial Tab. Inspect reusable item scenes, the layer popup, patrol toolbar, theme, and DesktopAppearance resource. Then run the main project, choose Items, move the actual dog by its body and Move dog pill, and resize it with its corner handle. Place an accessory, then drag, resize, and rotate it with the desktop handles and inspector. Test colors, text, and Show textbox background, then removal, clearing, and Undo. Check category collapse and horizontal scrolling. Leave Items, hide/close the browser, and minimize it during a gesture: the gesture should cancel, saved preferences should return, and an enabled patrol should resume or the dog should fall back to ordinary walking. Restart to check the outfit, route, dog size, and browser layout. Check desktop click-through around transparent pixels and editing controls, and confirm editing never changes waiting pet clicks. During normal play, pet the visible dog to check hearts and syncing.
 
 Smoke test the main scene with Steam and tray disabled:
 

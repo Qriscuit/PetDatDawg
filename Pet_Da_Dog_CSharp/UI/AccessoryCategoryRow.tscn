@@ -1,0 +1,51 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/AccessoryCategoryRow.cs" id="1_row"]
+[ext_resource type="StyleBox" path="res://UI/Theme/Catalog.tres" id="2_catalog"]
+
+[node name="AccessoryCategoryRow" type="VBoxContainer"]
+offset_right = 390.0
+offset_bottom = 166.0
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_constants/separation = 6
+script = ExtResource("1_row")
+Category = "Accessories"
+
+[node name="CategoryHeader" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 14
+toggle_mode = true
+button_pressed = true
+text = "▾  Accessories · 0"
+alignment = 0
+
+[node name="CategoryScroll" type="ScrollContainer" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 126)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_styles/panel = ExtResource("2_catalog")
+follow_focus = true
+vertical_scroll_mode = 0
+
+[node name="CategoryCards" type="HBoxContainer" parent="CategoryScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/separation = 8
+
+[node name="EmptyCategoryLabel" type="Label" parent="CategoryScroll/CategoryCards"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+text = "No accessories in this category yet."
+vertical_alignment = 1

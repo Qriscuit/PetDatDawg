@@ -1,8 +1,568 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://Scripts/StatusWindow.cs" id="1_status"]
+[ext_resource type="Theme" path="res://UI/Theme/DefaultTheme.tres" id="2_theme"]
+[ext_resource type="StyleBox" path="res://UI/Theme/Window.tres" id="3_window"]
+[ext_resource type="StyleBox" path="res://UI/Theme/Panel.tres" id="4_panel"]
+[ext_resource type="StyleBox" path="res://UI/Theme/PlainPanel.tres" id="5_plain"]
+[ext_resource type="PackedScene" path="res://UI/AccessoryEditor.tscn" id="6_accessories"]
+[ext_resource type="Texture2D" path="res://Sprites/Doggo.png" id="7_dog"]
+
+[sub_resource type="AtlasTexture" id="Atlas_dog"]
+atlas = ExtResource("7_dog")
+region = Rect2(122, 136, 766, 746)
+filter_clip = true
 
 [node name="StatusWindow" type="Window"]
+transparent_bg = false
+transparent = false
 title = "Pet Da Dog"
 size = Vector2i(640, 780)
+min_size = Vector2i(560, 600)
+visible = true
+theme = ExtResource("2_theme")
 script = ExtResource("1_status")
+InitialTab = 1
+
+[node name="Background" type="PanelContainer" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1
+anchor_bottom = 1
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("3_window")
+
+[node name="Margin" type="MarginContainer" parent="Background"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Layout" type="VBoxContainer" parent="Background/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="Header" type="PanelContainer" parent="Background/Margin/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("5_plain")
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="BrandRow" type="HBoxContainer" parent="Background/Margin/Layout/Header/Content"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Background/Margin/Layout/Header/Content/BrandRow"]
+layout_mode = 2
+size_flags_horizontal = 1
+text = "Pet Da Dog"
+theme_type_variation = "WoodlandHeading"
+size_flags_vertical = 4
+
+[node name="Spacer" type="Control" parent="Background/Margin/Layout/Header/Content/BrandRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PetStatus" type="VBoxContainer" parent="Background/Margin/Layout/Header/Content/BrandRow"]
+layout_mode = 2
+
+[node name="PetsValue" type="Label" parent="Background/Margin/Layout/Header/Content/BrandRow/PetStatus"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pets: Waiting to sync"
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 2
+
+[node name="PendingPets" type="Label" parent="Background/Margin/Layout/Header/Content/BrandRow/PetStatus"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0 clicks waiting to sync"
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+visible = false
+horizontal_alignment = 2
+tooltip_text = "Waiting clicks retry while this app is open. They are not yet confirmed pets and are cleared when you quit."
+
+[node name="Tabs" type="HBoxContainer" parent="Background/Margin/Layout/Header/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DogsTab" type="Button" parent="Background/Margin/Layout/Header/Content/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "TabButton"
+text = "Dogs"
+custom_minimum_size = Vector2(80, 36)
+size_flags_horizontal = 3
+toggle_mode = true
+
+[node name="ItemsTab" type="Button" parent="Background/Margin/Layout/Header/Content/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "TabButton"
+text = "Items"
+custom_minimum_size = Vector2(80, 36)
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+
+[node name="ShopTab" type="Button" parent="Background/Margin/Layout/Header/Content/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "TabButton"
+text = "Shop"
+custom_minimum_size = Vector2(80, 36)
+size_flags_horizontal = 3
+toggle_mode = true
+
+[node name="SettingsTab" type="Button" parent="Background/Margin/Layout/Header/Content/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "TabButton"
+text = "Settings"
+custom_minimum_size = Vector2(80, 36)
+size_flags_horizontal = 3
+toggle_mode = true
+
+[node name="WelcomePanel" type="PanelContainer" parent="Background/Margin/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("5_plain")
+
+[node name="WelcomeRow" type="HBoxContainer" parent="Background/Margin/Layout/WelcomePanel"]
+layout_mode = 2
+
+[node name="WelcomeMessage" type="Label" parent="Background/Margin/Layout/WelcomePanel/WelcomeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Welcome! Right-click your desktop dog to customize it.\nYou can also choose Open Pet Da Dog from its tray icon. Closing this menu keeps your dog on the desktop."
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="DismissWelcome" type="Button" parent="Background/Margin/Layout/WelcomePanel/WelcomeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "SecondaryButton"
+text = "Got it"
+size_flags_vertical = 4
+
+[node name="Pages" type="VBoxContainer" parent="Background/Margin/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DogsPage" type="PanelContainer" parent="Background/Margin/Layout/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+visible = false
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/DogsPage"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Your desktop dog"
+theme_type_variation = "WoodlandHeading"
+
+[node name="DogPortrait" type="TextureRect" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 220)
+size_flags_vertical = 3
+texture = SubResource("Atlas_dog")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DogDescription" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Your current dog is ready for the desktop.\nVisit Items to change its look, or Settings to adjust its visibility and size."
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="CustomizeDog" type="Button" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "ActionButton"
+text = "Customize this dog"
+size_flags_horizontal = 4
+
+[node name="ItemsPage" type="PanelContainer" parent="Background/Margin/Layout/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("5_plain")
+size_flags_vertical = 3
+
+[node name="AccessoryEditor" parent="Background/Margin/Layout/Pages/ItemsPage" instance=ExtResource("6_accessories")]
+unique_name_in_owner = true
+
+[node name="ShopPage" type="PanelContainer" parent="Background/Margin/Layout/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+visible = false
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/ShopPage"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Shop is coming soon"
+theme_type_variation = "WoodlandHeading"
+
+[node name="ShopDescription" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "There are no items for purchase yet.\nYou can use the bundled accessories in Items to create your dog's look."
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="SettingsPage" type="ScrollContainer" parent="Background/Margin/Layout/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = false
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="PatrolRouteSettings" type="PanelContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Patrol route"
+theme_type_variation = "WoodlandHeading"
+
+[node name="PatrolHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Choose stops on your desktop. Your dog visits them in order, then loops back to the first stop."
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="PatrolRouteSummary" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "No patrol route set. Your dog uses its usual walk."
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="Actions" type="HBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EditPatrolRoute" type="Button" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "ActionButton"
+text = "Set patrol route"
+size_flags_horizontal = 3
+
+[node name="ClearPatrolRoute" type="Button" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "SecondaryButton"
+text = "Clear route"
+tooltip_text = "Remove the saved route and return to the usual walk."
+
+[node name="UsePatrolRoute" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Use patrol route"
+tooltip_text = "Turn off to return to the usual walk without removing your route."
+
+[node name="PatrolToggleHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Turn this off to return to your dog's usual walk."
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="PatrolRouteSaveStatus" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Could not save patrol settings. This change applies for this session; try again to save it."
+theme_override_colors/font_color = Color(0.643137, 0.313725, 0.192157, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+visible = false
+
+[node name="AppearanceSettings" type="PanelContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Your desktop dog"
+theme_type_variation = "WoodlandHeading"
+
+[node name="AlwaysOnTop" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Keep dog above other windows"
+button_pressed = true
+
+[node name="DogClickThrough" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Let clicks pass through the dog"
+
+[node name="ClickThroughHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "When enabled, you cannot pet or right-click the dog.\nPress Alt + backtick to toggle this, or reopen the menu from the tray icon."
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="DogTransparencySetting" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+
+[node name="TitleRow" type="HBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/DogTransparencySetting"]
+layout_mode = 2
+
+[node name="Caption" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/DogTransparencySetting/TitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dog visibility"
+
+[node name="DogTransparencyValue" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/DogTransparencySetting/TitleRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100%"
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="DogTransparency" type="HSlider" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/DogTransparencySetting"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 28)
+size_flags_horizontal = 3
+min_value = 0
+max_value = 1
+step = 0.01
+value = 1
+
+[node name="DogTransparencyHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100% is fully visible; 0% hides the dog."
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="DogScaleSetting" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+
+[node name="TitleRow" type="HBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/DogScaleSetting"]
+layout_mode = 2
+
+[node name="Caption" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/DogScaleSetting/TitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dog size"
+
+[node name="DogScaleValue" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/DogScaleSetting/TitleRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100%"
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="DogScale" type="HSlider" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/DogScaleSetting"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 28)
+size_flags_horizontal = 3
+min_value = 0.5
+max_value = 2
+step = 0.01
+value = 1
+
+[node name="UiScaleSetting" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+
+[node name="TitleRow" type="HBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/UiScaleSetting"]
+layout_mode = 2
+
+[node name="Caption" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/UiScaleSetting/TitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Menu size"
+
+[node name="UiScaleValue" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/UiScaleSetting/TitleRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100%"
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="UiScale" type="HSlider" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/UiScaleSetting"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 28)
+size_flags_horizontal = 3
+min_value = 0.75
+max_value = 1.75
+step = 0.01
+value = 1
+
+[node name="ConnectionSettings" type="PanelContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/ConnectionSettings"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/ConnectionSettings/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/ConnectionSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Connection"
+theme_type_variation = "WoodlandHeading"
+
+[node name="ConnectionSummary" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/ConnectionSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Connecting…"
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="ConnectionDetailsToggle" type="Button" parent="Background/Margin/Layout/Pages/SettingsPage/Content/ConnectionSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "SecondaryButton"
+text = "Show technical details"
+toggle_mode = true
+size_flags_horizontal = 0
+
+[node name="ConnectionDetails" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/ConnectionSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = false
+
+[node name="BackendStatus" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/ConnectionSettings/Margin/Content/ConnectionDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Service: Starting"
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="SteamStatus" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/ConnectionSettings/Margin/Content/ConnectionDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Steam: Starting"
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="QuitPetDaDog" type="Button" parent="Background/Margin/Layout/Pages/SettingsPage/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = "SecondaryButton"
+text = "Quit Pet Da Dog"
+tooltip_text = "Closes the app and removes the desktop dog. Waiting clicks are not kept after quitting."
+size_flags_horizontal = 8
+
+[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor"]

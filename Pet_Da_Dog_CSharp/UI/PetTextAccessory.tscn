@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PetTextAccessory.cs" id="1"]
+[ext_resource type="Resource" path="res://UI/Theme/DesktopAppearance.tres" id="2"]
+
+[node name="TextAccessory" type="Node2D"]
+script = ExtResource("1")
+Appearance = ExtResource("2")
+Text = "Hello!"

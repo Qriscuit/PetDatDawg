@@ -2,9 +2,15 @@ using System;
 using Godot;
 
 /// <summary>Numbered desktop stops. Captures input only during explicit route editing.</summary>
+[Tool]
 public partial class DesktopPatrolEditor : Node2D
 {
-	private const float MarkerRadius = 18;
+	[Export] public DesktopAppearance? Appearance { get; set; }
+	[Export] public PackedScene? ToolbarScene { get; set; }
+	[Export] public bool ShowEditorPreview { get; set; } = true;
+	[Export] public Godot.Collections.Array<Vector2> EditorPreviewPoints { get; set; } = new() { new(110, 120), new(290, 250), new(410, 140) };
+	private DesktopAppearance Look => Appearance ?? DesktopAppearance.Default;
+	private float MarkerRadius => Mathf.Max(8, Look.MarkerRadius);
 	private DesktopPet? _pet;
 	private PatrolRoute? _route;
 	private PatrolRouteToolbar? _toolbar;
@@ -14,12 +20,14 @@ public partial class DesktopPatrolEditor : Node2D
 
 	public void Configure(DesktopPet pet, PatrolRoute route)
 	{
+		if (Engine.IsEditorHint()) return;
 		_pet = pet;
 		_route = route;
-		ZIndex = 200;
 		_route.Changed += OnChanged;
 		_route.EditingChanged += OnEditingChanged;
-		_toolbar = new PatrolRouteToolbar { Visible = false, ForceNative = true };
+		_toolbar = (ToolbarScene ?? ResourceLoader.Load<PackedScene>("res://UI/PatrolRouteToolbar.tscn")).Instantiate<PatrolRouteToolbar>();
+		_toolbar.Visible = false;
+		_toolbar.ForceNative = true;
 		AddChild(_toolbar);
 		_toolbar.Configure(route);
 		RefreshLayout(DisplayServer.ScreenGetUsableRect((int)DisplayServer.ScreenPrimary));
@@ -45,7 +53,8 @@ public partial class DesktopPatrolEditor : Node2D
 		_draggedPoint = -1;
 		QueueRedraw();
 	}
-	public Vector2 GetMarkerPosition(int index) => _pet != null && _route != null && index >= 0 && index < _route.DraftPoints.Count
+	public Vector2 GetMarkerPosition(int index) => Engine.IsEditorHint() && index >= 0 && index < EditorPreviewPoints.Count
+		? EditorPreviewPoints[index] : _pet != null && _route != null && index >= 0 && index < _route.DraftPoints.Count
 		? _pet.PatrolPointToViewport(_route.DraftPoints[index]) : Vector2.Zero;
 	private int HitMarker(Vector2 point)
 	{
@@ -95,8 +104,8 @@ public partial class DesktopPatrolEditor : Node2D
 	}
 	public override void _Draw()
 	{
-		if (!Active || _route == null) return;
-		var count = _route.DraftPoints.Count;
+		if (Engine.IsEditorHint() ? !ShowEditorPreview : !Active || _route == null) return;
+		var count = Engine.IsEditorHint() ? EditorPreviewPoints.Count : _route!.DraftPoints.Count;
 		for (var i = 0; i < count; i++)
 		{
 			if (i + 1 >= count && count < 2) continue;
@@ -107,21 +116,23 @@ public partial class DesktopPatrolEditor : Node2D
 			var direction = offset.Normalized();
 			start += direction * (MarkerRadius + 3);
 			end -= direction * (MarkerRadius + 3);
-			DrawLine(start, end, new Color(0.08f, 0.13f, 0.07f, 0.75f), 5, true);
-			DrawLine(start, end, new Color(0.84f, 0.89f, 0.55f, 0.9f), 2, true);
-			var middle = start.Lerp(end, 0.6f);
-			DrawPolyline(new[] { middle - direction.Rotated(-0.55f) * 10, middle, middle - direction.Rotated(0.55f) * 10 }, WoodlandTheme.Parchment, 3, true);
+			DrawLine(start, end, Look.RouteShadowColor, Look.RouteShadowWidth, true);
+			DrawLine(start, end, Look.RouteLineColor, Look.RouteLineWidth, true);
+			var middle = start.Lerp(end, Look.ArrowPosition);
+			DrawPolyline(new[] { middle - direction.Rotated(-Look.ArrowAngle) * Look.ArrowSize, middle,
+				middle - direction.Rotated(Look.ArrowAngle) * Look.ArrowSize }, Look.ArrowColor, Look.ArrowWidth, true);
 		}
-		var font = ThemeDB.FallbackFont;
+		var font = Look.MarkerFont ?? ThemeDB.FallbackFont;
 		for (var i = 0; i < count; i++)
 		{
 			var center = GetMarkerPosition(i);
-			DrawCircle(center + new Vector2(1, 2), MarkerRadius + 3, new Color(0, 0, 0, 0.35f));
-			DrawCircle(center, MarkerRadius + 2, WoodlandTheme.Parchment);
-			DrawCircle(center, MarkerRadius, WoodlandTheme.Moss);
+			DrawCircle(center + Look.MarkerShadowOffset, MarkerRadius + Look.MarkerShadowSize, Look.MarkerShadowColor);
+			DrawCircle(center, MarkerRadius + Look.MarkerBorderWidth, Look.MarkerBorderColor);
+			DrawCircle(center, MarkerRadius, Look.MarkerFillColor);
 			var label = (i + 1).ToString();
-			var width = font.GetStringSize(label, HorizontalAlignment.Left, -1, 17).X;
-			DrawString(font, center + new Vector2(-width * 0.5f, 6), label, HorizontalAlignment.Left, -1, 17, WoodlandTheme.Parchment);
+			var width = font.GetStringSize(label, HorizontalAlignment.Left, -1, Look.MarkerFontSize).X;
+			DrawString(font, center + new Vector2(-width * 0.5f, Look.MarkerTextBaseline), label, HorizontalAlignment.Left, -1, Look.MarkerFontSize, Look.MarkerTextColor);
 		}
 	}
+	public override void _Process(double delta) { if (Engine.IsEditorHint()) QueueRedraw(); }
 }

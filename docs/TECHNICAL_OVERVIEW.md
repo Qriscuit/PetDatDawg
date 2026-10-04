@@ -209,13 +209,14 @@ DesktopPet follows feet positions in order: 1 -> 2 -> 3 -> 1
 | Name | What it is | Main responsibility |
 | --- | --- | --- |
 | Godot | Game engine/runtime | Opens the window, loads scenes, calls `_Ready`, `_Process`, `_Input`, and `_ExitTree`. |
-| `project.godot` | Client project config | Registers autoloads and default window settings. |
-| `Main.tscn` | Main client scene | Contains `DesktopPet -> FootAnchor -> VisualRoot -> PetSprite`. |
+| `project.godot` | Client project config | Registers autoloads, the shared authored Theme, and default window settings. |
+| `Main.tscn` | Main client scene | Contains the dog hierarchy and authored desktop-control instances; exports the browser and text-accessory templates. |
 | `DesktopPet.cs` | Main client controller | Moves/hops the dog, manages overlay size, dog-pixel clicks, status window, Steam ticking, and backend retries. |
 | `PetSettings.cs` | Local settings autoload | Loads/saves user preferences only. It must never save pets or currency totals. |
 | `AccessoryWardrobe.cs` | Local cosmetic autoload | Discovers accessory textures and manages equipped IDs, normalized positions, the shared dog/accessory layer stack, and local persistence. |
-| `AccessoryEditor.cs` | Items browser and inspector | Builds categorized shelves and inspector controls; shares selection and gesture state with the desktop editing session. |
-| `AccessoryCategoryRow.cs` | Collapsible category shelf | Provides a themed heading and a horizontally scrolling card row; includes the shared category classifier. |
+| `AccessoryEditor.cs` | Items browser and inspector | Binds `UI/AccessoryEditor.tscn`, populates reusable catalog templates, and shares selection and gesture state with the desktop editing session. |
+| `AccessoryCategoryRow.cs` | Collapsible category shelf | Binds its authored heading and horizontal card row; includes the shared category classifier. |
+| `AccessoryCard.cs` / `AccessoryColorControls.cs` | Reusable Items controls | Bind authored card and color-popup templates, with editor sample data and live wardrobe state. |
 | `AccessoryEditingSession.cs` | Shared local editing autoload | Tracks Items activity, selection, pending placement, and outfit transactions; cancels gestures when editing ends. |
 | `AccessoryLayerMenu.cs` | Native Godot layer popup | Moves the clicked accessory or dog one step up/down in the shared stack; disables moves at its boundaries. |
 | `DesktopAccessoryControls.cs` | Direct desktop editing controls | Draws selection/handles/ghost and handles moving/resizing the dog plus moving/resizing/rotating accessories. |
@@ -223,9 +224,10 @@ DesktopPet follows feet positions in order: 1 -> 2 -> 3 -> 1
 | `DesktopPatrolEditor.cs` | Desktop route editor | Draws numbered stops and loop arrows; adds, drags, and removes draft stops. |
 | `PatrolRouteToolbar.cs` | Native route controls | Provides Done, Cancel, Undo last, and Clear without sharing the dog's canvas. |
 | `PetTextAccessory.cs` | Dynamic accessory artwork | Draws editable, wrapping, colored text with an optional rounded background in the desktop overlay. |
+| `DesktopAppearance.cs` | Inspector-editable drawing resource | Exposes desktop selection, handles, patrol paths, Move dog, placement preview, and text presentation through `UI/Theme/DesktopAppearance.tres`. |
 | `NativeWindowBridge.cs` | Windows bridge | Uses Win32 APIs for tray menu, no-activate overlay behavior, passthrough styles, topmost state, and Alt+` hotkey. |
-| `StatusWindow.cs` | Portrait browser window | Provides Dogs / Items / Shop / Settings navigation, confirmed pets, pending grants, backend/Steam status, and local preferences; controls Items editing activity. |
-| `WoodlandTheme.cs` | Shared UI presentation | Applies generated wood/parchment/stitched skins, fonts, control states, and color-picker styling. |
+| `StatusWindow.cs` | Portrait browser window | Binds the authored browser scene, navigation, live status, and local preferences; previews tabs in the editor and controls Items activity during play. |
+| `WoodlandTheme.cs` | Shared UI resource helper | Loads `DefaultTheme.tres` and external style resources; supplies palette/icon lookups and color-picker integration. |
 | `SteamIntegration.cs` | Steamworks.NET wrapper | Initializes Steam, requests Web API auth tickets, runs callbacks, and shuts Steam down. |
 | `BackendPetClient.cs` | Client HTTP queue | Authenticates with the backend, stores pending grant GUIDs in memory, retries failures, and keeps the last confirmed pets total. |
 | `Program.cs` | Backend entrypoint | Defines HTTP routes, validates config, verifies Steam tickets, signs sessions, grants pets, and reads inventory totals. |
@@ -244,7 +246,7 @@ S:/CodexProjects/PetDaDog
   |     short project rules for future Codex sessions
   |
   +-- docs/
-  |     TECHNICAL_OVERVIEW.md and GODOT_UI_GUIDE.md
+  |     TECHNICAL_OVERVIEW.md, GODOT_UI_GUIDE.md, and UI_EDITOR_GUIDE.md
   |
   +-- Pet_Da_Dog_CSharp/
   |     Godot 4.6.3 C# desktop overlay client
@@ -257,14 +259,23 @@ S:/CodexProjects/PetDaDog
   |     |     bundled equipable accessory artwork
   |     +-- Art/UI/Woodland/
   |     |     generated UI textures, SVG controls, and final generation prompts
+  |     +-- UI/
+  |     |     AccessoryEditor.tscn, AccessoryCategoryRow.tscn, AccessoryCard.tscn
+  |     |     AccessoryColorControls.tscn, AccessoryLayerMenu.tscn
+  |     |     DesktopAccessoryControls.tscn, DesktopPatrolEditor.tscn
+  |     |     PatrolRouteToolbar.tscn, PetTextAccessory.tscn
+  |     |     Theme/DefaultTheme.tres and shared style/font/appearance resources
   |     +-- Scripts/
+  |           AccessoryCard.cs
   |           AccessoryCategoryRow.cs
+  |           AccessoryColorControls.cs
   |           AccessoryEditor.cs
   |           AccessoryEditingSession.cs
   |           AccessoryGeometry.cs
   |           AccessoryLayerMenu.cs
   |           AccessoryWardrobe.cs
   |           DesktopAccessoryControls.cs
+  |           DesktopAppearance.cs
   |           DesktopPatrolEditor.cs
   |           DesktopPet.cs
   |           NativeWindowBridge.cs
@@ -289,9 +300,9 @@ S:/CodexProjects/PetDaDog
 
 ## 4. Runtime Flow By File
 
-`project.godot` starts the Godot app with transparent window support and loads autoload singletons: `/root/PetSettings`, `/root/AccessoryWardrobe`, `/root/AccessoryEditingSession`, `/root/PatrolRoute`, and `/root/NativeWindowBridge`.
+`project.godot` starts the Godot app with transparent window support, sets `UI/Theme/DefaultTheme.tres` as the GUI custom theme, and loads autoload singletons: `/root/PetSettings`, `/root/AccessoryWardrobe`, `/root/AccessoryEditingSession`, `/root/PatrolRoute`, and `/root/NativeWindowBridge`.
 
-`Main.tscn` creates the visible pet scene. `DesktopPet` is the root script. The dog sprite sits under `FootAnchor/VisualRoot/PetSprite` so movement, hopping, scale, and opacity can be applied cleanly without changing unrelated scene nodes.
+`Main.tscn` creates the visible pet scene. `DesktopPet` is the root script. The dog sprite sits under `FootAnchor/VisualRoot/PetSprite` so movement, hopping, scale, and opacity can be applied cleanly without changing unrelated scene nodes. Root children `AccessoryControls` and `PatrolEditor` instance `UI/DesktopAccessoryControls.tscn` and `UI/DesktopPatrolEditor.tscn`; their sample drawings are disabled in Main. The root's exported `StatusScene` and `TextAccessoryScene` select `StatusWindow.tscn` and `UI/PetTextAccessory.tscn` for runtime instantiation.
 
 `DesktopPet.cs` is the central coordinator. On startup it reads settings, configures the desktop overlay, connects tray/hotkey, accessory-editing, and patrol signals, initializes Steam, and starts backend auth. When Items is visible in a nonminimized browser, it expands the transparent overlay to the usable screen area and holds the real dog upright for direct manipulation. Leaving Items, hiding/closing the browser, or minimizing it cancels the active accessory gesture and restores normal preferences. An enabled patrol resumes smoothly from the edited position; otherwise the dog falls under gravity before ordinary walking resumes. Dogs, Shop, and Settings allow walking while the browser remains open, except during explicit patrol editing. Every frame still animates existing hearts, recomputes rendering bounds, polls cursor hit tests, runs Steam callbacks, retries queued grants, and refreshes browser status.
 
@@ -319,17 +330,19 @@ Pet feedback uses the original heart sprite cropped at runtime to its opaque bou
 
 `RecolorableIds` explicitly enables the three neutral JPG assets. Their black backgrounds are removed into runtime RGBA textures with softened edges, preserving gray and white artwork for RGB tinting. `SetTint` rejects nonfinite colors and fixed-color assets, clamps RGB, and keeps alpha opaque. Color preferences can be set before placement and survive unequipping. The editor uses a native HSV wheel with immediate desktop/thumbnail updates, then saves on popup close, selection/page changes, or Reset white. Desktop sprites inherit the dog's opacity, with full visibility temporarily applied during Items editing.
 
-`StatusWindow.cs` builds a portrait browser in code: 640 × 780 pixels with a 560 × 600 minimum at the default menu scale. Its four tabs are Dogs, Items, Shop, and Settings, with Items selected initially. Dogs presents only the current original dog. Shop is a noninteractive coming-soon page without a purchase flow. Preferences precede the connection summary and expandable technical details in Settings. Confirmed pets and waiting clicks remain separate; Quit is in Settings and the tray. First-use hints explain browser access and closing without quitting. Changes flow through `PetSettings` or `AccessoryWardrobe`.
+`StatusWindow.tscn` authors the portrait browser, initially 640 × 780 pixels with a 560 × 600 minimum. Its four tabs are Dogs, Items, Shop, and Settings, with Items selected initially. `StatusWindow.cs` binds named controls and updates live state without rebuilding the layout. The root's exported Initial Tab previews each page in the editor; runtime sizing uses the authored Size, Min Size, and Content Scale Factor as its baseline, then applies the player's Menu size and saved layout. Dogs presents only the current original dog. Shop is a noninteractive coming-soon page without a purchase flow. Preferences precede the connection summary and expandable technical details in Settings. Confirmed pets and waiting clicks remain separate; Quit is in Settings and the tray. First-use hints explain browser access and closing without quitting. Changes flow through `PetSettings` or `AccessoryWardrobe`.
 
-`AccessoryEditor.cs` supplies Items with a compact side inspector and a vertically scrolling category stack. The inspector uses vertical Size and Rotation sliders, contextual text/color and Show textbox background controls, layer Up/Down buttons, Remove, Undo, and Clear all. Layer controls show whether the selected equipped item is behind or in front of the dog and disable boundary moves. Selecting its catalog card makes these controls available even if desktop artwork is fully covered. `AccessoryCategoryRow.cs` creates the collapsible Wings, Collars, Glasses, Decorations, and Text headings and a single horizontally scrolling card row per category. Empty Collars starts collapsed. Its classifier checks built-in text, then wing, collar, and glasses/goggle names; remaining artwork goes in Decorations. Equipped catalog cards select for editing rather than starting placement. The basic color wheel has eight swatches, Reset, and Done; Advanced reveals numeric modes and hex entry.
+`UI/AccessoryEditor.tscn` supplies Items with a compact side inspector and a vertically scrolling category stack. Its script binds the vertical Size and Rotation sliders, contextual text/color and Show textbox background controls, layer Up/Down buttons, Remove, Undo, and Clear all. Layer controls show whether the selected equipped item is behind or in front of the dog and disable boundary moves. Selecting its catalog card makes these controls available even if desktop artwork is fully covered. Authored `AccessoryCategoryRow.tscn` instances provide collapsible Wings, Collars, Glasses, Decorations, and Text shelves, each with one horizontal card row. Empty Collars starts collapsed. Its classifier checks built-in text, then wing, collar, and glasses/goggle names; remaining artwork goes in Decorations. The editor's exported Card Scene, Category Row Scene, and Color Controls Scene select the reusable templates. Editor sample cards are replaced with live wardrobe cards at runtime; their layout and theme remain authored. Equipped cards select for editing rather than starting placement. `AccessoryColorControls.tscn` authors the eight swatches, Reset, Done, and Advanced actions around Godot's color picker; Advanced reveals numeric modes and hex entry.
 
-`AccessoryEditingSession.cs` shares active mode, selection, placement state, and gesture transactions between the browser and desktop. It flushes inspector-owned edits before desktop transactions start and cancels active manipulation when editing deactivates. `DesktopAccessoryControls.cs` draws the Move dog pill, selection outline, resize/rotation handles, and placement ghost. Dog body/pill dragging repositions the actual dog; its corner handle persists Dog size through `PetSettings`. Accessory dragging and resize/rotation handles update `AccessoryWardrobe` within its transform limits. The current runtime edits the real desktop dog and does not instantiate a preview window.
+`AccessoryEditingSession.cs` shares active mode, selection, placement state, and gesture transactions between the browser and desktop. It flushes inspector-owned edits before desktop transactions start and cancels active manipulation when editing deactivates. The authored `DesktopAccessoryControls.tscn` instance draws the Move dog pill, selection outline, resize/rotation handles, and placement ghost using its exported Appearance resource. Dog body/pill dragging repositions the actual dog; its corner handle persists Dog size through `PetSettings`. Accessory dragging and resize/rotation handles update `AccessoryWardrobe` within its transform limits. The current runtime edits the real desktop dog and does not instantiate a preview window.
 
-`DesktopAccessoryControls._layerMenu` owns `AccessoryLayerMenu`, opened by right-clicking the visible accessory or dog while Items is active. The popup completes current gestures and flushes inspector edits before changing layers, saves successful moves, and closes when editing ends or its target is no longer valid. It owns a separate `World2D` (`World2D = new World2D()`) so the desktop dog's canvas does not bleed into its native window. It uses the shared Woodland theme and an opaque background.
+`DesktopAccessoryControls._layerMenu` instances its exported `LayerMenuScene`, normally `UI/AccessoryLayerMenu.tscn`, when models are bound. Right-clicking the visible accessory or dog while Items is active opens it. The popup's actions, styling, Size, and Min Size are authored. Native Shrink Width/Height flags are false so opening preserves its dimensions; runtime changes its target heading and boundary disabled states. Action IDs 1 and 2 map to up/down. It completes current gestures and flushes inspector edits before changing layers, saves successful moves, and closes when editing ends or its target is no longer valid. It owns a separate `World2D` (`World2D = new World2D()`) so the desktop dog's canvas does not bleed into its native window. It uses the shared Woodland theme and an opaque background.
 
-`DesktopPatrolEditor.cs` draws numbered markers and directional loop lines over the desktop, with click-to-add, drag-to-move, and right-click-to-remove gestures. During route editing, `DesktopPet._Input` routes input here and returns before dog petting or browser actions. `PatrolRouteToolbar.cs` is a separate opaque native window with its own `World2D`, offering Undo last, Clear draft, Cancel/Escape, and Done/Enter; Backspace undoes the last stop. The Settings Patrol route card offers Set patrol route or Edit route, Use patrol route, and Clear route. Edits started from this card hide the browser and return to Settings after finishing or canceling.
+`UI/DesktopPatrolEditor.tscn` draws numbered markers and directional loop lines from its Appearance resource. Its script handles click-to-add, drag-to-move, and right-click-to-remove gestures. During route editing, `DesktopPet._Input` routes input here and returns before dog petting or browser actions. Its exported Toolbar Scene selects `UI/PatrolRouteToolbar.tscn`, a separate opaque native window with its own `World2D`. `PatrolRouteToolbar.cs` binds its authored Undo last, Clear draft, Cancel/Escape, and Done/Enter buttons; Backspace undoes the last stop. The authored Size supplies its runtime baseline, and exported dynamic-text/placement properties control route summaries and screen positioning. Opening remains deferred through native frames. The Settings Patrol route card offers Set patrol route or Edit route, Use patrol route, and Clear route. Edits started from this card hide the browser and return to Settings after finishing or canceling.
 
-`WoodlandTheme.cs` shares Woodland Workshop presentation across the browser, desktop editing controls, and color picker. UI textures use stretchable nine-slice styleboxes; SVG icons and native labels stay separate. Menu-size changes rebuild the theme and apply the new minimum before resizing. Category shelves scroll horizontally when cards exceed their available width. UI art is excluded from the wardrobe catalog; dog and accessory source artwork is unchanged.
+`UI/Theme/DefaultTheme.tres` authors shared fonts, colors, button variations and states, sliders, checkboxes, and popup styling. `WoodlandTheme.cs` loads this resource and the external Window, Panel, PlainPanel, Catalog, and Focus style resources, with palette/icon lookups and color-picker integration. Browser Menu size changes apply authored Content Scale Factor and sizing without replacing its theme. Stretchable nine-slice styleboxes reuse the three Woodland PNG surfaces; the theme references 14 SVG icon resources, including spare legacy icons. Labels remain actual controls. Windows title bars and the Win32 tray menu retain operating-system styling. Category shelves scroll horizontally when cards exceed their available width. UI art is excluded from the wardrobe catalog; dog and accessory source artwork is unchanged.
+
+`DesktopAppearance.cs` is a Tool/GlobalClass resource backed by `UI/Theme/DesktopAppearance.tres`. Its exported fields configure code-drawn selection outlines, handles and optional icons, Move dog styling/text, patrol markers/lines/arrows, text bubble padding/fonts/outlines, and placement opacity. `DesktopAccessoryControls.tscn` and `DesktopPatrolEditor.tscn` expose Show Editor Preview with sample bounds or route points; `PetTextAccessory.tscn` previews sample text and background. Tool previews draw from these authored properties without activating live models, saving preferences, or showing runtime windows. Native toolbar/menu scripts return before model bindings and native show/focus operations in editor mode. StatusWindow exports dynamic captions and live pet/connection/patrol text formats. Items templates export inspector instructions/status formats, card state captions/tooltips, and category header formats; the editor also exports its Color Wheel Shape. Category identities still match the classifier, while Display Title independently changes the visible shelf heading. See [UI_EDITOR_GUIDE.md](UI_EDITOR_GUIDE.md) for Inspector editing and bound-node rules.
 
 `SteamIntegration.cs` wraps Steamworks.NET. It uses `PDD_STEAM_APP_ID` or `steam_appid.txt`, calls `SteamAPI.Init`, requests a Web API ticket for `petdadog-backend`, runs callbacks every frame, and calls `SteamAPI.Shutdown` on exit.
 

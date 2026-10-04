@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using Godot;
 
 /// <summary>Direct manipulation of the desktop dog. Editing never queues pet grants.</summary>
+[Tool]
 public partial class DesktopAccessoryControls : Node2D
 {
-	private const float HandleRadius = 11;
+	[Export] public DesktopAppearance? Appearance { get; set; }
+	[Export] public PackedScene? LayerMenuScene { get; set; }
+	[Export] public bool ShowEditorPreview { get; set; } = true;
+	[Export] public Rect2 EditorPreviewBounds { get; set; } = new(140, 90, 128, 128);
+	private DesktopAppearance Look => Appearance ?? DesktopAppearance.Default;
+	private float HandleRadius => Mathf.Max(4, Look.HandleRadius);
 	private enum Gesture { None, MoveDog, ResizeDog, MoveAccessory, ResizeAccessory, RotateAccessory }
 	private DesktopPet? _pet;
 	private AccessoryWardrobe? _wardrobe;
@@ -19,8 +25,8 @@ public partial class DesktopAccessoryControls : Node2D
 
 	public void Configure(DesktopPet pet, AccessoryWardrobe? wardrobe, AccessoryEditingSession? session)
 	{
+		if (Engine.IsEditorHint()) return;
 		_pet = pet; _wardrobe = wardrobe; _session = session;
-		ZIndex = 100;
 		if (_session != null)
 		{
 			_session.StateChanged += OnStateChanged;
@@ -29,7 +35,9 @@ public partial class DesktopAccessoryControls : Node2D
 		if (_wardrobe != null) _wardrobe.Changed += QueueRedraw;
 		if (_wardrobe != null && _session != null)
 		{
-			_layerMenu = new AccessoryLayerMenu();
+			_layerMenu = (LayerMenuScene ?? ResourceLoader.Load<PackedScene>("res://UI/AccessoryLayerMenu.tscn")).Instantiate<AccessoryLayerMenu>();
+			_layerMenu.Visible = false;
+			_layerMenu.ForceNative = true;
 			AddChild(_layerMenu);
 			_layerMenu.Configure(_wardrobe, _session);
 			_layerMenu.OutfitSaved += OnLayerOutfitSaved;
@@ -50,40 +58,40 @@ public partial class DesktopAccessoryControls : Node2D
 	private void OnLayerOutfitSaved(bool success) => _session?.ReportOutfitSave(success);
 
 	private bool Active => _pet?.IsAccessoryEditing == true && _session?.Active == true;
-	private Rect2 DogBounds => _pet == null ? new Rect2() : AccessoryGeometry.BoundsFromCorners(_pet.EditableDog, _pet.EditableDogRect);
+	private Rect2 DogBounds => Engine.IsEditorHint() ? EditorPreviewBounds : _pet == null ? new Rect2() : AccessoryGeometry.BoundsFromCorners(_pet.EditableDog, _pet.EditableDogRect);
 	private Node2D? SelectedNode => _session?.SelectedId is string id ? _pet?.AccessoryNode(id) : null;
 	private static Rect2 NodeRect(Node2D node) => node is Sprite2D sprite ? sprite.GetRect()
-		: new Rect2(-PetTextAccessory.ReferenceSize * 0.5f, PetTextAccessory.ReferenceSize);
+		: node is PetTextAccessory text ? new Rect2(-text.BubbleSize * 0.5f, text.BubbleSize) : new Rect2();
 
 	public Rect2 GetDogMoveRect()
 	{
 		var dog = DogBounds;
 		// Keep this explicit dog control clear of equipped text and rotation handles.
 		var top = Mathf.Min(dog.Position.Y, _pet?.EditableOutfitBounds.Position.Y ?? dog.Position.Y);
-		return new Rect2(new Vector2(dog.GetCenter().X - 49, top - 82), new Vector2(98, 25));
+		return new Rect2(new Vector2(dog.GetCenter().X - Look.MoveDogSize.X * 0.5f, top - Look.MoveDogGap), Look.MoveDogSize);
 	}
-	public Vector2 GetDogResizeHandle() => DogBounds.End + new Vector2(17, 17);
+	public Vector2 GetDogResizeHandle() => DogBounds.End + Look.DogResizeOffset;
 	public Vector2[] GetSelectionCorners()
 	{
 		var node = SelectedNode;
 		if (node == null) return Array.Empty<Vector2>();
-		var rect = NodeRect(node).Grow(node is PetTextAccessory ? 4 : 4 / Mathf.Max(0.001f, node.GlobalScale.Abs().X));
+		var rect = NodeRect(node).Grow(node is PetTextAccessory ? Look.SelectionPadding : Look.SelectionPadding / Mathf.Max(0.001f, node.GlobalScale.Abs().X));
 		return new[] { node.ToGlobal(rect.Position), node.ToGlobal(new Vector2(rect.End.X, rect.Position.Y)),
 			node.ToGlobal(rect.End), node.ToGlobal(new Vector2(rect.Position.X, rect.End.Y)) };
 	}
 	public Vector2 GetAccessoryResizeHandle()
 	{
 		var corners = GetSelectionCorners();
-		return corners.Length == 0 ? Vector2.Zero : corners[2] + (corners[2] - SelectedNode!.GlobalPosition).Normalized() * 13;
+		return corners.Length == 0 ? Vector2.Zero : corners[2] + (corners[2] - SelectedNode!.GlobalPosition).Normalized() * Look.AccessoryResizeOffset;
 	}
 	public Vector2 GetAccessoryRotationHandle()
 	{
 		var corners = GetSelectionCorners();
 		if (corners.Length == 0) return Vector2.Zero;
 		var middle = (corners[0] + corners[1]) * 0.5f;
-		return middle + (middle - SelectedNode!.GlobalPosition).Normalized() * 29;
+		return middle + (middle - SelectedNode!.GlobalPosition).Normalized() * Look.RotationHandleOffset;
 	}
-	private static bool Near(Vector2 point, Vector2 handle) => point.DistanceSquaredTo(handle) <= (HandleRadius + 4) * (HandleRadius + 4);
+	private bool Near(Vector2 point, Vector2 handle) => point.DistanceSquaredTo(handle) <= (HandleRadius + 4) * (HandleRadius + 4);
 	private Rect2 PlacementArea(string id)
 	{
 		if (_pet == null) return new Rect2();
@@ -266,14 +274,22 @@ public partial class DesktopAccessoryControls : Node2D
 	public Rect2? GetRenderBounds()
 	{
 		if (!Active) return null;
-		var bounds = DogBounds.Grow(7).Merge(GetDogMoveRect());
-		if (SelectedNode == null) bounds = bounds.Merge(new Rect2(GetDogResizeHandle() - Vector2.One * 15, Vector2.One * 30));
+		var padding = Mathf.Max(HandleRadius + Look.HandleBorderWidth + 4, Look.HandleIconSize.Length() * 0.5f + 4);
+		padding = Mathf.Max(padding, Mathf.Abs(Look.HandleGlyphSize) * 1.2f + Mathf.Abs(Look.HandleGlyphWidth) * 0.5f + 4);
+		padding = Mathf.Max(padding, Mathf.Abs(Look.SelectionWidth) * 0.5f + 2);
+		var bounds = DogBounds.Grow(Look.DogOutlinePadding + Look.DogOutlineWidth + 2).Merge(GetDogMoveRect());
+		var controlFont = Look.ControlFont ?? ThemeDB.FallbackFont;
+		var textOrigin = GetDogMoveRect().Position + Look.MoveDogTextOffset;
+		var textSize = controlFont.GetStringSize(Look.MoveDogText, HorizontalAlignment.Left, -1, Look.ControlFontSize);
+		bounds = bounds.Merge(new Rect2(textOrigin - new Vector2(0, controlFont.GetAscent(Look.ControlFontSize)), textSize).Grow(2));
+		if (SelectedNode == null) bounds = bounds.Merge(new Rect2(GetDogResizeHandle() - Vector2.One * padding, Vector2.One * padding * 2));
 		if (SelectedNode is Node2D node)
 		{
 			bounds = bounds.Merge(AccessoryGeometry.BoundsFromCorners(node, NodeRect(node)));
-			foreach (var corner in GetSelectionCorners()) bounds = bounds.Expand(corner);
+			foreach (var corner in GetSelectionCorners())
+				bounds = bounds.Merge(new Rect2(corner, Vector2.Zero).Grow(Mathf.Abs(Look.SelectionWidth) * 0.5f + 2));
 			foreach (var handle in new[] { GetAccessoryResizeHandle(), GetAccessoryRotationHandle() })
-				bounds = bounds.Merge(new Rect2(handle - Vector2.One * 16, Vector2.One * 32));
+				bounds = bounds.Merge(new Rect2(handle - Vector2.One * padding, Vector2.One * padding * 2));
 		}
 		if (_session!.IsPlacing && _session.SelectedId is string id && PlacementArea(id).HasPoint(_pointer))
 		{
@@ -285,18 +301,22 @@ public partial class DesktopAccessoryControls : Node2D
 
 	public override void _Draw()
 	{
+		if (Engine.IsEditorHint())
+		{
+			if (!ShowEditorPreview) return;
+			DrawDogControls();
+			DrawHandle(GetDogResizeHandle(), false);
+			DrawHandle(DogBounds.Position + new Vector2(64, -Look.RotationHandleOffset), true);
+			return;
+		}
 		if (!Active || _pet == null || _session == null || _wardrobe == null) return;
-		var dog = DogBounds;
-		DrawRect(dog.Grow(5), new Color(WoodlandTheme.Parchment, 0.75f), false, 1);
-		var move = GetDogMoveRect();
-		DrawStyleBox(WoodlandTheme.PanelStyle(), move);
-		DrawString(ThemeDB.FallbackFont, move.Position + new Vector2(14, 17), "Move dog", HorizontalAlignment.Left, -1, 12, WoodlandTheme.Text);
+		DrawDogControls();
 		if (SelectedNode == null) DrawHandle(GetDogResizeHandle(), false);
 		if (SelectedNode != null)
 		{
 			var corners = GetSelectionCorners();
-			for (var i = 0; i < 4; i++) DrawLine(corners[i], corners[(i + 1) % 4], WoodlandTheme.Accent, 2, true);
-			DrawLine((corners[0] + corners[1]) * 0.5f, GetAccessoryRotationHandle(), WoodlandTheme.Accent, 2, true);
+			for (var i = 0; i < 4; i++) DrawLine(corners[i], corners[(i + 1) % 4], Look.SelectionColor, Look.SelectionWidth, true);
+			DrawLine((corners[0] + corners[1]) * 0.5f, GetAccessoryRotationHandle(), Look.SelectionColor, Look.SelectionWidth, true);
 			DrawHandle(GetAccessoryResizeHandle(), false);
 			DrawHandle(GetAccessoryRotationHandle(), true);
 		}
@@ -305,28 +325,41 @@ public partial class DesktopAccessoryControls : Node2D
 			var definition = _wardrobe.Find(id)!;
 			var direction = Mathf.Sign(_pet.EditableDog.GlobalTransform.Determinant());
 			var size = definition.Size * DogBounds.Size.Y * _wardrobe.GetScale(id);
-			var tint = _wardrobe.GetTint(id); tint.A = 0.55f;
+			var tint = _wardrobe.GetTint(id); tint.A = Look.PlacementOpacity;
 			var rotation = direction * Mathf.DegToRad(_wardrobe.GetRotationDegrees(id));
-			DrawSetTransform(_pointer, rotation, definition.IsText ? size / PetTextAccessory.ReferenceSize : new Vector2(direction, 1));
-			if (definition.IsText) PetTextAccessory.DrawTextBox(this, _wardrobe.GetText(), tint, _wardrobe.GetTextBackgroundVisible());
+			DrawSetTransform(_pointer, rotation, definition.IsText ? size / Look.TextCanvasSize : new Vector2(direction, 1));
+			if (definition.IsText) PetTextAccessory.DrawTextBox(this, _wardrobe.GetText(), tint, _wardrobe.GetTextBackgroundVisible(), Look);
 			else DrawTextureRect(definition.Texture, new Rect2(-size * 0.5f, size), false, tint);
 			DrawSetTransform(Vector2.Zero);
 		}
 	}
+	public override void _Process(double delta) { if (Engine.IsEditorHint()) QueueRedraw(); }
+	private void DrawDogControls()
+	{
+		DrawRect(DogBounds.Grow(Look.DogOutlinePadding), Look.DogOutlineColor, false, Look.DogOutlineWidth);
+		var move = GetDogMoveRect();
+		if (Look.MoveDogStyle != null) DrawStyleBox(Look.MoveDogStyle, move);
+		DrawString(Look.ControlFont ?? ThemeDB.FallbackFont, move.Position + Look.MoveDogTextOffset, Look.MoveDogText,
+			HorizontalAlignment.Left, -1, Look.ControlFontSize, Look.ControlTextColor);
+	}
 	private void DrawHandle(Vector2 point, bool rotation)
 	{
-		DrawCircle(point, HandleRadius + 2, WoodlandTheme.Border, true, -1, true);
-		DrawCircle(point, HandleRadius, Near(_pointer, point) ? WoodlandTheme.Parchment.Lightened(0.18f) : WoodlandTheme.Parchment, true, -1, true);
+		DrawCircle(point, HandleRadius + Look.HandleBorderWidth, Look.HandleBorderColor, true, -1, true);
+		DrawCircle(point, HandleRadius, Near(_pointer, point) ? Look.HandleHoverColor : Look.HandleFillColor, true, -1, true);
+		var icon = rotation ? Look.RotationIcon : Look.ResizeIcon;
+		if (icon != null) { DrawTextureRect(icon, new Rect2(point - Look.HandleIconSize * 0.5f, Look.HandleIconSize), false); return; }
+		var size = Look.HandleGlyphSize;
 		if (rotation)
 		{
-			DrawArc(point, 5, -Mathf.Pi * 0.9f, Mathf.Pi * 0.7f, 16, WoodlandTheme.Text, 1.5f, true);
-			DrawLine(point + new Vector2(-5, -2), point + new Vector2(-5, -6), WoodlandTheme.Text, 1.5f, true);
+			DrawArc(point, size, -Mathf.Pi * 0.9f, Mathf.Pi * 0.7f, 16, Look.HandleGlyphColor, Look.HandleGlyphWidth, true);
+			DrawLine(point + new Vector2(-size, -size * 0.4f), point + new Vector2(-size, -size * 1.2f), Look.HandleGlyphColor, Look.HandleGlyphWidth, true);
 		}
 		else
 		{
-			DrawLine(point - new Vector2(4, 4), point + new Vector2(4, 4), WoodlandTheme.Text, 1.5f, true);
-			DrawLine(point + new Vector2(4, 0), point + new Vector2(4, 4), WoodlandTheme.Text, 1.5f, true);
-			DrawLine(point + new Vector2(0, 4), point + new Vector2(4, 4), WoodlandTheme.Text, 1.5f, true);
+			var diagonal = size * 0.8f;
+			DrawLine(point - new Vector2(diagonal, diagonal), point + new Vector2(diagonal, diagonal), Look.HandleGlyphColor, Look.HandleGlyphWidth, true);
+			DrawLine(point + new Vector2(diagonal, 0), point + new Vector2(diagonal, diagonal), Look.HandleGlyphColor, Look.HandleGlyphWidth, true);
+			DrawLine(point + new Vector2(0, diagonal), point + new Vector2(diagonal, diagonal), Look.HandleGlyphColor, Look.HandleGlyphWidth, true);
 		}
 	}
 }
