@@ -1,6 +1,6 @@
 [gd_resource type="StyleBoxTexture" format=3]
 
-[ext_resource type="Texture2D" path="res://Art/UI/Woodland/woodland-stitched.png" id="1_gm0vf"]
+[ext_resource type="Texture2D" uid="uid://cwgjafmg0acsm" path="res://Art/UI/Paws/BorderBackground.png" id="1_gm0vf"]
 
 [resource]
 resource_name = "Catalog"

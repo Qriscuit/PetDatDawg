@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cwgjafmg0acsm"
-path="res://.godot/imported/woodland-stitched.png-fd8cfb9dc4af286301219ffd4927d1d6.ctex"
+path="res://.godot/imported/BorderBackground.png-351bf5a2d681d5ec738a5dfa6de345a9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Woodland/woodland-stitched.png"
-dest_files=["res://.godot/imported/woodland-stitched.png-fd8cfb9dc4af286301219ffd4927d1d6.ctex"]
+source_file="res://Art/UI/Paws/BorderBackground.png"
+dest_files=["res://.godot/imported/BorderBackground.png-351bf5a2d681d5ec738a5dfa6de345a9.ctex"]
 
 [params]
 

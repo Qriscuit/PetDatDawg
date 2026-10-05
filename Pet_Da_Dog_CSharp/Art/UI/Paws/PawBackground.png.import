@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chhf5yihia4qa"
-path="res://.godot/imported/up.svg-0c3c8c76e8fdb76c08b5f76a993bcbd1.ctex"
+uid="uid://c4jnuf35t0m7g"
+path="res://.godot/imported/PawBackground.png-b7b829f63bba9b867caacef8e9eee6bf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Woodland/Icons/up.svg"
-dest_files=["res://.godot/imported/up.svg-0c3c8c76e8fdb76c08b5f76a993bcbd1.ctex"]
+source_file="res://Art/UI/Paws/PawBackground.png"
+dest_files=["res://.godot/imported/PawBackground.png-b7b829f63bba9b867caacef8e9eee6bf.ctex"]
 
 [params]
 
@@ -36,8 +36,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=384
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

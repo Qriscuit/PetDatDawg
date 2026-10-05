@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://i58xxa3hi7m"
-path="res://.godot/imported/checked.svg-6c98441ad825d0075b9f6fd3e5128012.ctex"
+uid="uid://hoi6mdi4c2pu"
+path="res://.godot/imported/PanelBackground.png-191fbdfe1188832512ce8869f841f59b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Woodland/Icons/checked.svg"
-dest_files=["res://.godot/imported/checked.svg-6c98441ad825d0075b9f6fd3e5128012.ctex"]
+source_file="res://Art/UI/Paws/PanelBackground.png"
+dest_files=["res://.godot/imported/PanelBackground.png-191fbdfe1188832512ce8869f841f59b.ctex"]
 
 [params]
 
@@ -36,8 +36,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=0
+process/size_limit=256
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

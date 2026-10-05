@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c4jnuf35t0m7g"
-path="res://.godot/imported/woodland-window.png-1ea372dc34a91eba2b61ae02021d99d3.ctex"
+uid="uid://xn6p4rc0d7wn"
+path="res://.godot/imported/remove.svg-c1a33950b9a1e4413fd3cdf8a6e36321.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Woodland/woodland-window.png"
-dest_files=["res://.godot/imported/woodland-window.png-1ea372dc34a91eba2b61ae02021d99d3.ctex"]
+source_file="res://Art/UI/Paws/Icons/remove.svg"
+dest_files=["res://.godot/imported/remove.svg-c1a33950b9a1e4413fd3cdf8a6e36321.ctex"]
 
 [params]
 
@@ -36,5 +36,8 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=384
+process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

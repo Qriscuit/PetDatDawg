@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cditpd8or22fa"
-path="res://.godot/imported/unchecked.svg-3c9ab9dbb6831ff4032c68c03fa46106.ctex"
+uid="uid://chhf5yihia4qa"
+path="res://.godot/imported/up.svg-91ad3fee4a0bd4038338bfa5885e340d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Woodland/Icons/unchecked.svg"
-dest_files=["res://.godot/imported/unchecked.svg-3c9ab9dbb6831ff4032c68c03fa46106.ctex"]
+source_file="res://Art/UI/Paws/Icons/up.svg"
+dest_files=["res://.godot/imported/up.svg-91ad3fee4a0bd4038338bfa5885e340d.ctex"]
 
 [params]
 

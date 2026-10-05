@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfn37hygycc1c"
-path="res://.godot/imported/sparkle.svg-54612b8088d92aba215742a6e4662f0b.ctex"
+path="res://.godot/imported/sparkle.svg-1d74a1e6d7af3de639ebe939d9ecac90.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Woodland/Icons/sparkle.svg"
-dest_files=["res://.godot/imported/sparkle.svg-54612b8088d92aba215742a6e4662f0b.ctex"]
+source_file="res://Art/UI/Paws/Icons/sparkle.svg"
+dest_files=["res://.godot/imported/sparkle.svg-1d74a1e6d7af3de639ebe939d9ecac90.ctex"]
 
 [params]
 

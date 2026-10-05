@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bxi8inv2vx34t"
-path="res://.godot/imported/updown.svg-cc8c28b33b3c2954d2ef4e684cfce176.ctex"
+uid="uid://73840m66c052"
+path="res://.godot/imported/down.svg-b315709933a9df35e91a16cd3b60e62a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Woodland/Icons/updown.svg"
-dest_files=["res://.godot/imported/updown.svg-cc8c28b33b3c2954d2ef4e684cfce176.ctex"]
+source_file="res://Art/UI/Paws/Icons/down.svg"
+dest_files=["res://.godot/imported/down.svg-b315709933a9df35e91a16cd3b60e62a.ctex"]
 
 [params]
 

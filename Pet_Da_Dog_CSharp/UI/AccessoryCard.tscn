@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://Scripts/AccessoryCard.cs" id="1_card"]
-[ext_resource type="Texture2D" path="res://Art/UI/Woodland/Icons/text-box.svg" id="2_sample"]
+[ext_resource type="Script" uid="uid://bi5ocvgt8sijh" path="res://Scripts/AccessoryCard.cs" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://4hvlnftq7e1i" path="res://Art/UI/Paws/Icons/text-box.svg" id="2_sample"]
 
 [node name="AccessoryCard" type="Button"]
 custom_minimum_size = Vector2(122, 112)

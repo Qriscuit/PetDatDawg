@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="DesktopAppearance" format=3 uid="uid://cmdf5xxngpvl6"]
+[gd_resource type="Resource" format=3 uid="uid://cmdf5xxngpvl6"]
 
 [ext_resource type="Script" uid="uid://ed5e8mxxr4iu" path="res://Scripts/DesktopAppearance.cs" id="1"]
-[ext_resource type="StyleBox" path="res://UI/Theme/PlainPanel.tres" id="2"]
+[ext_resource type="StyleBox" uid="uid://ctu4cqgwtk78" path="res://UI/Theme/PlainPanel.tres" id="2"]
 [ext_resource type="StyleBox" path="res://UI/Theme/TextBubble.tres" id="3"]
 [ext_resource type="SystemFont" path="res://UI/Theme/BodyFont.tres" id="4"]
 

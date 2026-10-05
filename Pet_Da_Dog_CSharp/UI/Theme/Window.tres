@@ -1,15 +1,17 @@
-[gd_resource type="StyleBoxTexture" format=3]
+[gd_resource type="StyleBoxTexture" format=3 uid="uid://s80r2t15hoia"]
 
-[ext_resource type="Texture2D" path="res://Art/UI/Woodland/woodland-window.png" id="1_0jql8"]
+[ext_resource type="Texture2D" uid="uid://b2wl0okckggo6" path="res://Art/UI/Paws/PawBackground.png" id="1_0jql8"]
 
 [resource]
 resource_name = "Window"
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 texture = ExtResource("1_0jql8")
-texture_margin_left = 48.0
-texture_margin_top = 48.0
-texture_margin_right = 48.0
-texture_margin_bottom = 48.0
+texture_margin_left = 190.0
+texture_margin_top = 166.0
+texture_margin_right = 178.0
+texture_margin_bottom = 180.0
+axis_stretch_horizontal = 2
+axis_stretch_vertical = 2

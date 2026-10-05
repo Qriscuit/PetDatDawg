@@ -1,6 +1,7 @@
-[gd_resource type="StyleBoxTexture" format=3]
+[gd_resource type="StyleBoxTexture" format=3 uid="uid://ctu4cqgwtk78"]
 
-[ext_resource type="Texture2D" path="res://Art/UI/Woodland/woodland-stitched.png" id="1_qn1c2"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_h6eml"]
+load_path = "res://.godot/imported/BorderBackground.png-351bf5a2d681d5ec738a5dfa6de345a9.ctex"
 
 [resource]
 resource_name = "PlainPanel"
@@ -8,8 +9,10 @@ content_margin_left = 10.0
 content_margin_top = 10.0
 content_margin_right = 10.0
 content_margin_bottom = 10.0
-texture = ExtResource("1_qn1c2")
-texture_margin_left = 9.0
-texture_margin_top = 9.0
-texture_margin_right = 9.0
-texture_margin_bottom = 9.0
+texture = SubResource("CompressedTexture2D_h6eml")
+texture_margin_left = 108.0
+texture_margin_top = 50.0
+texture_margin_right = 128.0
+texture_margin_bottom = 192.0
+axis_stretch_horizontal = 2
+axis_stretch_vertical = 2
