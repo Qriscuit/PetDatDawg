@@ -1,0 +1,13 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<!-- Created using Krita: https://krita.org -->
+<svg xmlns="http://www.w3.org/2000/svg" 
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:krita="http://krita.org/namespaces/svg/krita"
+    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+    width="30.72pt"
+    height="30.72pt"
+    viewBox="0 0 30.72 30.72">
+<defs/>
+<path id="shape0" transform="translate(15.916407978684, 3.6077816592826)" sodipodi:type="arc" sodipodi:rx="12.12" sodipodi:ry="12" sodipodi:cx="-0.43640797868407" sodipodi:cy="11.9922183407174" sodipodi:start="4.74840402459982" sodipodi:end="0.757681651363445" sodipodi:open="true" d="M8.36794 20.2391C11.6405 16.8142 12.5842 11.8093 10.7802 7.44606C8.97615 3.08281 4.75875 0.169763 -6.71685e-15 -1.06581e-14" fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="square" stroke-linejoin="bevel"/><path id="shape1" transform="translate(20.3965985733175, 20.2096397206344)" fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="2" d="M3.72977 3.37846C3.03796 2.7268 1.7947 1.60064 0 0" sodipodi:nodetypes="cc"/><rect id="shape2" transform="translate(37.44, 0.239999999999998)" fill="none" stroke="#b3b3b3" stroke-width="5.76" stroke-linecap="square" stroke-linejoin="bevel" width="0.240000000000002" height="0.72"/><path id="shape3" transform="matrix(-1 0 0 -1 16.6483387364944 26.9113681482705)" sodipodi:type="arc" sodipodi:rx="12.12" sodipodi:ry="12" sodipodi:cx="0.355096095029633" sodipodi:cy="12.0000400264454" sodipodi:start="4.68308642950112" sodipodi:end="0.892271332442228" sodipodi:open="true" d="M7.96216 21.342C12.0135 18.1081 13.5275 12.6744 11.7239 7.84118C9.92036 3.00798 5.20182 -0.145769 -4.44089e-16 0.00519149" fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="square" stroke-linejoin="bevel"/><path id="shape4" transform="matrix(-1 0 0 -1 12.3382787400574 9.84948409386909)" fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="2" d="M3.63682 4.19521L0 0" sodipodi:nodetypes="cc"/><rect id="shape5" transform="matrix(-0.983894289073136 0.178751301895323 0.178751301895323 0.983894289073136 -19.360508805593 31.5827512121682)" fill="none" stroke="#b3b3b3" stroke-width="5.76" stroke-linecap="square" stroke-linejoin="bevel" width="1.52993867357151" height="1.1941286922267" rx="0.0937627724254081" ry="0.0687891434170604"/>
+</svg>

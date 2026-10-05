@@ -4,11 +4,13 @@
 [ext_resource type="PackedScene" path="res://UI/AccessoryCard.tscn" id="2_card"]
 [ext_resource type="PackedScene" path="res://UI/AccessoryCategoryRow.tscn" id="3_row"]
 [ext_resource type="PackedScene" path="res://UI/AccessoryColorControls.tscn" id="4_colors"]
+[ext_resource type="Texture2D" uid="uid://dim7vb4km4ysh" path="res://Art/Vector/PawPrint.svg" id="5_6b7uq"]
 [ext_resource type="StyleBox" uid="uid://dfl6oj2bmqyc5" path="res://UI/Theme/Panel.tres" id="5_panel"]
 [ext_resource type="StyleBox" path="res://UI/Theme/Catalog.tres" id="6_catalog"]
-[ext_resource type="Texture2D" uid="uid://cgdio7wr0u3ns" path="res://Art/UI/Paws/Icons/leaf.svg" id="7_leaf"]
-[ext_resource type="Texture2D" uid="uid://xn6p4rc0d7wn" path="res://Art/UI/Paws/Icons/remove.svg" id="8_remove"]
+[ext_resource type="Texture2D" uid="uid://cn0eqtjwo2t8j" path="res://Art/Vector/Trashcan.svg" id="7_pkvd0"]
+[ext_resource type="Texture2D" uid="uid://bil7fu8ryhcc5" path="res://Art/Vector/SliderHandle.svg" id="8_7tyts"]
 [ext_resource type="Texture2D" uid="uid://dt5qdaabr6ga0" path="res://Art/UI/Paws/Icons/reset.svg" id="9_reset"]
+[ext_resource type="Texture2D" uid="uid://kneqpxvl3vrj" path="res://Art/Vector/X.svg" id="9_yvh0h"]
 [ext_resource type="Texture2D" uid="uid://cb8rpat8qy6yl" path="res://Sprites/Accessories/DragonWing.jpg" id="asset_0"]
 [ext_resource type="Texture2D" uid="uid://df1riaycnp6n3" path="res://Sprites/Accessories/FairyWing.jpg" id="asset_1"]
 [ext_resource type="Texture2D" uid="uid://dif3rh22vyl6h" path="res://Sprites/Accessories/SafetyGlasses.jpg" id="asset_2"]
@@ -78,11 +80,12 @@ layout_mode = 2
 theme_override_constants/separation = 9
 
 [node name="InstructionsIcon" type="TextureRect" parent="InstructionsRow" unique_id=1889488040]
+modulate = Color(0.31764707, 0.47843137, 0.21176471, 1)
 custom_minimum_size = Vector2(22, 22)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("7_leaf")
+texture = ExtResource("5_6b7uq")
 expand_mode = 1
 stretch_mode = 5
 
@@ -151,7 +154,7 @@ theme_type_variation = &"SecondaryButton"
 theme_override_constants/icon_max_width = 14
 theme_override_font_sizes/font_size = 13
 text = "Remove"
-icon = ExtResource("8_remove")
+icon = ExtResource("7_pkvd0")
 
 [node name="OutfitActions" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=2101730394]
 layout_mode = 2
@@ -245,6 +248,9 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 190)
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_icons/grabber = ExtResource("8_7tyts")
+theme_override_icons/grabber_highlight = ExtResource("8_7tyts")
+theme_override_icons/grabber_disabled = ExtResource("9_yvh0h")
 min_value = 50.0
 max_value = 200.0
 value = 100.0
@@ -274,6 +280,9 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 190)
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_icons/grabber = ExtResource("8_7tyts")
+theme_override_icons/grabber_highlight = ExtResource("8_7tyts")
+theme_override_icons/grabber_disabled = ExtResource("9_yvh0h")
 min_value = -180.0
 max_value = 180.0
 
@@ -360,11 +369,12 @@ layout_mode = 2
 theme_override_constants/separation = 7
 
 [node name="CatalogHeadingIcon" type="TextureRect" parent="Workspace/CatalogColumn/CatalogHeadingRow" unique_id=236326192]
+modulate = Color(0.31764707, 0.47843137, 0.21176471, 1)
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("7_leaf")
+texture = ExtResource("5_6b7uq")
 expand_mode = 1
 stretch_mode = 5
 

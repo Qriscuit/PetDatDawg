@@ -2,16 +2,26 @@
 
 [ext_resource type="Script" uid="uid://crqqhdywlff07" path="res://Scripts/StatusWindow.cs" id="1_status"]
 [ext_resource type="Theme" uid="uid://c2qo58y1i4pyu" path="res://UI/Theme/DefaultTheme.tres" id="2_theme"]
-[ext_resource type="StyleBox" path="res://UI/Theme/Window.tres" id="3_window"]
-[ext_resource type="StyleBox" path="res://UI/Theme/Panel.tres" id="4_panel"]
-[ext_resource type="StyleBox" path="res://UI/Theme/PlainPanel.tres" id="5_plain"]
-[ext_resource type="PackedScene" path="res://UI/AccessoryEditor.tscn" id="6_accessories"]
+[ext_resource type="StyleBox" uid="uid://s80r2t15hoia" path="res://UI/Theme/Window.tres" id="3_window"]
+[ext_resource type="StyleBox" uid="uid://dfl6oj2bmqyc5" path="res://UI/Theme/Panel.tres" id="4_panel"]
+[ext_resource type="StyleBox" uid="uid://ctu4cqgwtk78" path="res://UI/Theme/PlainPanel.tres" id="5_plain"]
+[ext_resource type="PackedScene" uid="uid://b0d6vg1y4eby2" path="res://UI/AccessoryEditor.tscn" id="6_accessories"]
 [ext_resource type="Texture2D" uid="uid://sb7kiefiv3cc" path="res://Sprites/Doggo.png" id="7_dog"]
+[ext_resource type="Texture2D" uid="uid://datqp7v77pdp6" path="res://Art/Vector/CheckedBox.svg" id="8_g10cw"]
+[ext_resource type="Texture2D" uid="uid://cdbhk6bwqg31r" path="res://Art/Vector/UncheckedBox.svg" id="9_2trwr"]
+[ext_resource type="Texture2D" uid="uid://bil7fu8ryhcc5" path="res://Art/Vector/SliderHandle.svg" id="10_2m0yt"]
+[ext_resource type="Texture2D" uid="uid://kneqpxvl3vrj" path="res://Art/Vector/X.svg" id="11_7l34o"]
 
 [sub_resource type="AtlasTexture" id="Atlas_dog"]
 atlas = ExtResource("7_dog")
 region = Rect2(122, 136, 766, 746)
 filter_clip = true
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_ntckc"]
+load_path = "res://.godot/imported/PawPrint.svg-0246e2dccdcb1c1543af1b0c0f00c8a5.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_me600"]
+load_path = "res://.godot/imported/PawPrint.svg-0246e2dccdcb1c1543af1b0c0f00c8a5.ctex"
 
 [node name="StatusWindow" type="Window" unique_id=2099561445]
 oversampling_override = 1.0
@@ -162,7 +172,6 @@ size_flags_vertical = 3
 
 [node name="DogsPage" type="PanelContainer" parent="Background/Margin/Layout/Pages" unique_id=335468779]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -212,6 +221,7 @@ text = "Customize this dog"
 
 [node name="ItemsPage" type="PanelContainer" parent="Background/Margin/Layout/Pages" unique_id=2118073526]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -220,6 +230,13 @@ theme_override_styles/panel = ExtResource("5_plain")
 [node name="AccessoryEditor" parent="Background/Margin/Layout/Pages/ItemsPage" unique_id=533840356 instance=ExtResource("6_accessories")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="InstructionsIcon" parent="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/InstructionsRow" parent_id_path=PackedInt32Array(533840356, 762991107) index="0" unique_id=1889488040]
+modulate = Color(0.31871995, 0.48, 0.2112, 1)
+texture = SubResource("CompressedTexture2D_ntckc")
+
+[node name="CatalogHeadingIcon" parent="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/CatalogHeadingRow" parent_id_path=PackedInt32Array(533840356, 123407669) index="0" unique_id=236326192]
+texture = SubResource("CompressedTexture2D_me600")
 
 [node name="ShopPage" type="PanelContainer" parent="Background/Margin/Layout/Pages" unique_id=1913922211]
 unique_name_in_owner = true
@@ -329,8 +346,13 @@ text = "Clear route"
 
 [node name="UsePatrolRoute" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content" unique_id=617333478]
 unique_name_in_owner = true
+modulate = Color(0.89411765, 0.9098039, 0.5568628, 1)
 layout_mode = 2
 tooltip_text = "Turn off to return to the usual walk without removing your route."
+theme_override_icons/checked = ExtResource("8_g10cw")
+theme_override_icons/unchecked = ExtResource("9_2trwr")
+theme_override_icons/checked_disabled = ExtResource("8_g10cw")
+theme_override_icons/unchecked_disabled = ExtResource("9_2trwr")
 text = "Use patrol route"
 
 [node name="PatrolToggleHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content" unique_id=500538296]
@@ -376,13 +398,23 @@ text = "Your desktop dog"
 
 [node name="AlwaysOnTop" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=169955784]
 unique_name_in_owner = true
+modulate = Color(0.89225507, 0.91, 0.5551, 1)
 layout_mode = 2
+theme_override_icons/checked = ExtResource("8_g10cw")
+theme_override_icons/unchecked = ExtResource("9_2trwr")
+theme_override_icons/checked_disabled = ExtResource("8_g10cw")
+theme_override_icons/unchecked_disabled = ExtResource("9_2trwr")
 button_pressed = true
 text = "Keep dog above other windows"
 
 [node name="DogClickThrough" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=1378207004]
 unique_name_in_owner = true
+modulate = Color(0.89411765, 0.9098039, 0.5568628, 1)
 layout_mode = 2
+theme_override_icons/checked = ExtResource("8_g10cw")
+theme_override_icons/unchecked = ExtResource("9_2trwr")
+theme_override_icons/checked_disabled = ExtResource("8_g10cw")
+theme_override_icons/unchecked_disabled = ExtResource("9_2trwr")
 text = "Let clicks pass through the dog"
 
 [node name="ClickThroughHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=855078397]
@@ -420,6 +452,9 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_icons/grabber = ExtResource("10_2m0yt")
+theme_override_icons/grabber_highlight = ExtResource("10_2m0yt")
+theme_override_icons/grabber_disabled = ExtResource("11_7l34o")
 max_value = 1.0
 step = 0.01
 value = 1.0
@@ -458,6 +493,9 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_icons/grabber = ExtResource("10_2m0yt")
+theme_override_icons/grabber_highlight = ExtResource("10_2m0yt")
+theme_override_icons/grabber_disabled = ExtResource("11_7l34o")
 min_value = 0.5
 max_value = 2.0
 step = 0.01
@@ -489,6 +527,9 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_icons/grabber = ExtResource("10_2m0yt")
+theme_override_icons/grabber_highlight = ExtResource("10_2m0yt")
+theme_override_icons/grabber_disabled = ExtResource("11_7l34o")
 min_value = 0.75
 max_value = 1.75
 step = 0.01
