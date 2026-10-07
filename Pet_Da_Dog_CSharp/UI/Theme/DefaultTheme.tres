@@ -2,24 +2,21 @@
 
 [ext_resource type="Texture2D" uid="uid://cwgjafmg0acsm" path="res://Art/UI/Paws/BorderBackground.png" id="1_pvth0"]
 [ext_resource type="StyleBox" path="res://UI/Theme/Focus.tres" id="2_4c0jr"]
-[ext_resource type="Texture2D" uid="uid://i58xxa3hi7m" path="res://Art/UI/Paws/Icons/checked.svg" id="2_u1jq0"]
-[ext_resource type="Texture2D" uid="uid://cditpd8or22fa" path="res://Art/UI/Paws/Icons/unchecked.svg" id="3_ecwv5"]
-[ext_resource type="Texture2D" uid="uid://c0rsg5bv778a" path="res://Art/UI/Paws/Icons/grabber.svg" id="4_3icrt"]
+[ext_resource type="Texture2D" uid="uid://datqp7v77pdp6" path="res://Art/Vector/CheckedBox.svg" id="3_2fixt"]
+[ext_resource type="Texture2D" uid="uid://cdbhk6bwqg31r" path="res://Art/Vector/UncheckedBox.svg" id="4_p5tf5"]
 [ext_resource type="StyleBox" uid="uid://ctu4cqgwtk78" path="res://UI/Theme/PlainPanel.tres" id="5_axj5d"]
-[ext_resource type="Texture2D" uid="uid://c61t6tplu8vui" path="res://Art/UI/Paws/Icons/close.svg" id="5_d2mvp"]
-[ext_resource type="Texture2D" uid="uid://73840m66c052" path="res://Art/UI/Paws/Icons/down.svg" id="6_fn11u"]
-[ext_resource type="Texture2D" uid="uid://d0hgplnsiqfp" path="res://Art/UI/Paws/Icons/gear.svg" id="7_4c0jr"]
-[ext_resource type="Texture2D" uid="uid://cgdio7wr0u3ns" path="res://Art/UI/Paws/Icons/leaf.svg" id="8_axj5d"]
-[ext_resource type="Texture2D" uid="uid://dpwphwyhskff8" path="res://Art/UI/Paws/Icons/paw.svg" id="9_2fixt"]
-[ext_resource type="Texture2D" uid="uid://xn6p4rc0d7wn" path="res://Art/UI/Paws/Icons/remove.svg" id="10_p5tf5"]
-[ext_resource type="Texture2D" uid="uid://dt5qdaabr6ga0" path="res://Art/UI/Paws/Icons/reset.svg" id="11_lei60"]
-[ext_resource type="Texture2D" uid="uid://bfn37hygycc1c" path="res://Art/UI/Paws/Icons/sparkle.svg" id="12_5r1ae"]
-[ext_resource type="Texture2D" uid="uid://chhf5yihia4qa" path="res://Art/UI/Paws/Icons/up.svg" id="13_sbt4t"]
-[ext_resource type="Texture2D" uid="uid://4hvlnftq7e1i" path="res://Art/UI/Paws/Icons/text-box.svg" id="13_u1jq0"]
-[ext_resource type="Texture2D" uid="uid://bxi8inv2vx34t" path="res://Art/UI/Paws/Icons/updown.svg" id="14_qbosf"]
+[ext_resource type="Texture2D" uid="uid://d0dx7paiyt42i" path="res://Art/Vector/SliderHandleG.svg" id="6_lei60"]
+[ext_resource type="Texture2D" uid="uid://kneqpxvl3vrj" path="res://Art/Vector/X.svg" id="7_5r1ae"]
+[ext_resource type="Texture2D" uid="uid://dgxn8wyd21crs" path="res://Art/Vector/DownCarrot.svg" id="8_sbt4t"]
+[ext_resource type="Texture2D" uid="uid://cgx80857wyrrb" path="res://Art/Vector/Gear.svg" id="9_qbosf"]
+[ext_resource type="Texture2D" uid="uid://dim7vb4km4ysh" path="res://Art/Vector/PawPrint.svg" id="10_743bc"]
+[ext_resource type="Texture2D" uid="uid://cn0eqtjwo2t8j" path="res://Art/Vector/Trashcan.svg" id="11_ki06v"]
+[ext_resource type="Texture2D" uid="uid://dcdtnfw6g06og" path="res://Art/Vector/Refresh.svg" id="12_dbgi3"]
+[ext_resource type="Texture2D" uid="uid://bnxqvdwth1wch" path="res://Art/Vector/Diamond.svg" id="13_5yvoj"]
+[ext_resource type="Texture2D" uid="uid://b47iijvflnyl7" path="res://Art/Vector/TextBox.svg" id="14_nbsux"]
+[ext_resource type="Texture2D" uid="uid://cs3pe8rron3ho" path="res://Art/Vector/UpCarrot.svg" id="15_1ppmb"]
+[ext_resource type="Texture2D" uid="uid://dm4g3krtvjnus" path="res://Art/Vector/UpDownCarrot.svg" id="16_qal0s"]
 [ext_resource type="StyleBox" uid="uid://dfl6oj2bmqyc5" path="res://UI/Theme/Panel.tres" id="18_2fixt"]
-[ext_resource type="StyleBox" path="res://UI/Theme/Catalog.tres" id="19_p5tf5"]
-[ext_resource type="SystemFont" path="res://UI/Theme/HeadingFont.tres" id="20_lei60"]
 [ext_resource type="SystemFont" path="res://UI/Theme/BodyFont.tres" id="21_5r1ae"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sbt4t"]
@@ -732,23 +729,30 @@ CardButton/styles/hover = SubResource("StyleBoxTexture_b6juh")
 CardButton/styles/hover_pressed = SubResource("StyleBoxTexture_n34sj")
 CardButton/styles/normal = SubResource("StyleBoxTexture_f8tj7")
 CardButton/styles/pressed = SubResource("StyleBoxTexture_mgn70")
+CheckBox/colors/checkbox_checked_color = Color(0.96862745, 0.89411765, 0.65882355, 1)
+CheckBox/colors/checkbox_unchecked_color = Color(0.97, 0.8924, 0.6596, 1)
 CheckBox/colors/font_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
 CheckBox/colors/font_disabled_color = Color(0.37254903, 0.39607844, 0.29803923, 1)
 CheckBox/colors/font_focus_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
 CheckBox/colors/font_hover_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
 CheckBox/colors/font_hover_pressed_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
+CheckBox/colors/font_outline_color = Color(0, 0, 0, 1)
 CheckBox/colors/font_pressed_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
+CheckBox/constants/check_v_offset = 0
 CheckBox/constants/h_separation = 9
-CheckBox/icons/checked = ExtResource("2_u1jq0")
-CheckBox/icons/checked_disabled = ExtResource("2_u1jq0")
-CheckBox/icons/unchecked = ExtResource("3_ecwv5")
-CheckBox/icons/unchecked_disabled = ExtResource("3_ecwv5")
+CheckBox/constants/outline_size = 0
+CheckBox/icons/checked = ExtResource("3_2fixt")
+CheckBox/icons/checked_disabled = ExtResource("3_2fixt")
+CheckBox/icons/unchecked = ExtResource("4_p5tf5")
+CheckBox/icons/unchecked_disabled = ExtResource("4_p5tf5")
 CheckBox/styles/disabled = SubResource("StyleBoxEmpty_675w7")
 CheckBox/styles/focus = ExtResource("2_4c0jr")
 CheckBox/styles/hover = SubResource("StyleBoxFlat_0ufi5")
 CheckBox/styles/hover_pressed = SubResource("StyleBoxFlat_ncxq5")
 CheckBox/styles/normal = SubResource("StyleBoxEmpty_ydjqh")
 CheckBox/styles/pressed = SubResource("StyleBoxEmpty_p4l3i")
+CheckButton/colors/button_checked_color = Color(0.96862745, 0.89411765, 0.65882355, 1)
+CheckButton/colors/button_unchecked_color = Color(0.96862745, 0.89411765, 0.65882355, 1)
 CheckButton/colors/font_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
 CheckButton/colors/font_disabled_color = Color(0.37254903, 0.39607844, 0.29803923, 1)
 CheckButton/colors/font_focus_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
@@ -756,10 +760,10 @@ CheckButton/colors/font_hover_color = Color(0.16078432, 0.23529412, 0.15686275, 
 CheckButton/colors/font_hover_pressed_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
 CheckButton/colors/font_pressed_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
 CheckButton/constants/h_separation = 9
-CheckButton/icons/checked = ExtResource("2_u1jq0")
-CheckButton/icons/checked_disabled = ExtResource("2_u1jq0")
-CheckButton/icons/unchecked = ExtResource("3_ecwv5")
-CheckButton/icons/unchecked_disabled = ExtResource("3_ecwv5")
+CheckButton/icons/checked = ExtResource("3_2fixt")
+CheckButton/icons/checked_disabled = ExtResource("3_2fixt")
+CheckButton/icons/unchecked = ExtResource("4_p5tf5")
+CheckButton/icons/unchecked_disabled = ExtResource("4_p5tf5")
 CheckButton/styles/disabled = SubResource("StyleBoxEmpty_xh67f")
 CheckButton/styles/focus = ExtResource("2_4c0jr")
 CheckButton/styles/hover = SubResource("StyleBoxFlat_j8g7y")
@@ -789,9 +793,8 @@ HScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_3hpl8")
 HScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_7sku2")
 HScrollBar/styles/scroll = SubResource("StyleBoxFlat_3pwps")
 HSeparator/styles/separator = SubResource("StyleBoxFlat_dsuup")
-HSlider/icons/grabber = ExtResource("4_3icrt")
-HSlider/icons/grabber_disabled = ExtResource("3_ecwv5")
-HSlider/icons/grabber_highlight = ExtResource("4_3icrt")
+HSlider/icons/grabber = ExtResource("6_lei60")
+HSlider/icons/grabber_highlight = ExtResource("6_lei60")
 HSlider/styles/grabber_area = SubResource("StyleBoxFlat_7jano")
 HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_yut3s")
 HSlider/styles/slider = SubResource("StyleBoxFlat_xtq1e")
@@ -811,20 +814,20 @@ MutedLabel/colors/font_color = Color(0.37254903, 0.39607844, 0.29803923, 1)
 MutedLabel/font_sizes/font_size = 13
 Panel/styles/panel = ExtResource("5_axj5d")
 PanelContainer/styles/panel = ExtResource("5_axj5d")
-PetIcons/icons/checked = ExtResource("2_u1jq0")
-PetIcons/icons/close = ExtResource("5_d2mvp")
-PetIcons/icons/down = ExtResource("6_fn11u")
-PetIcons/icons/gear = ExtResource("7_4c0jr")
-PetIcons/icons/grabber = ExtResource("4_3icrt")
-PetIcons/icons/leaf = ExtResource("8_axj5d")
-PetIcons/icons/paw = ExtResource("9_2fixt")
-PetIcons/icons/remove = ExtResource("10_p5tf5")
-PetIcons/icons/reset = ExtResource("11_lei60")
-PetIcons/icons/sparkle = ExtResource("12_5r1ae")
-PetIcons/icons/text_box = ExtResource("13_u1jq0")
-PetIcons/icons/unchecked = ExtResource("3_ecwv5")
-PetIcons/icons/up = ExtResource("13_sbt4t")
-PetIcons/icons/updown = ExtResource("14_qbosf")
+PetIcons/icons/checked = ExtResource("3_2fixt")
+PetIcons/icons/close = ExtResource("7_5r1ae")
+PetIcons/icons/down = ExtResource("8_sbt4t")
+PetIcons/icons/gear = ExtResource("9_qbosf")
+PetIcons/icons/grabber = ExtResource("6_lei60")
+PetIcons/icons/leaf = ExtResource("10_743bc")
+PetIcons/icons/paw = ExtResource("10_743bc")
+PetIcons/icons/remove = ExtResource("11_ki06v")
+PetIcons/icons/reset = ExtResource("12_dbgi3")
+PetIcons/icons/sparkle = ExtResource("13_5yvoj")
+PetIcons/icons/text_box = ExtResource("14_nbsux")
+PetIcons/icons/unchecked = ExtResource("4_p5tf5")
+PetIcons/icons/up = ExtResource("15_1ppmb")
+PetIcons/icons/updown = ExtResource("16_qal0s")
 PetPalette/colors/accent = Color(0.6431373, 0.3137255, 0.19215687, 1)
 PetPalette/colors/border = Color(0.63529414, 0.5372549, 0.32941177, 1)
 PetPalette/colors/cream = Color(1, 0.94509804, 0.8156863, 1)
@@ -860,10 +863,9 @@ SecondaryButton/styles/pressed = SubResource("StyleBoxTexture_pmqef")
 SmallLabel/base_type = &"Label"
 SmallLabel/colors/font_color = Color(0.37254903, 0.39607844, 0.29803923, 1)
 SmallLabel/font_sizes/font_size = 12
+SpinBox/colors/down_icon_modulate = Color(0.28235295, 0.3764706, 0.21960784, 1)
 SpinBox/colors/font_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
-SpinBox/icons/down = ExtResource("6_fn11u")
-SpinBox/icons/up = ExtResource("13_sbt4t")
-SpinBox/icons/updown = ExtResource("14_qbosf")
+SpinBox/colors/up_icon_modulate = Color(0.28235295, 0.3764706, 0.21960784, 1)
 TabBar/colors/font_hovered_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
 TabBar/colors/font_selected_color = Color(0.16078432, 0.23529412, 0.15686275, 1)
 TabBar/colors/font_unselected_color = Color(0.37254903, 0.39607844, 0.29803923, 1)
@@ -893,14 +895,8 @@ VScrollBar/styles/grabber = SubResource("StyleBoxFlat_i27fi")
 VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_lsc3e")
 VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_thfvn")
 VScrollBar/styles/scroll = SubResource("StyleBoxFlat_7le3h")
-VSlider/icons/grabber = ExtResource("4_3icrt")
-VSlider/icons/grabber_disabled = ExtResource("3_ecwv5")
-VSlider/icons/grabber_highlight = ExtResource("4_3icrt")
+VSlider/icons/grabber = ExtResource("6_lei60")
+VSlider/icons/grabber_highlight = ExtResource("6_lei60")
 VSlider/styles/grabber_area = SubResource("StyleBoxFlat_8cn0y")
 VSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_0u23y")
 VSlider/styles/slider = SubResource("StyleBoxFlat_wc0k7")
-WoodlandCatalog/base_type = &"ScrollContainer"
-WoodlandCatalog/styles/panel = ExtResource("19_p5tf5")
-WoodlandHeading/base_type = &"Label"
-WoodlandHeading/font_sizes/font_size = 19
-WoodlandHeading/fonts/font = ExtResource("20_lei60")

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0rsg5bv778a"
-path="res://.godot/imported/grabber.svg-ec66146f262997652f396d9cc046fb29.ctex"
+uid="uid://b47iijvflnyl7"
+path="res://.godot/imported/TextBox.svg-4b04ec761341031787bc3955ee12bb58.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Paws/Icons/grabber.svg"
-dest_files=["res://.godot/imported/grabber.svg-ec66146f262997652f396d9cc046fb29.ctex"]
+source_file="res://Art/Vector/TextBox.svg"
+dest_files=["res://.godot/imported/TextBox.svg-4b04ec761341031787bc3955ee12bb58.ctex"]
 
 [params]
 

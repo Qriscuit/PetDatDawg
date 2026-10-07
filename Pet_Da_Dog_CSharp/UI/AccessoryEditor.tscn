@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b0d6vg1y4eby2"]
 
 [ext_resource type="Script" uid="uid://cl7owahltf76q" path="res://Scripts/AccessoryEditor.cs" id="1_editor"]
-[ext_resource type="PackedScene" path="res://UI/AccessoryCard.tscn" id="2_card"]
+[ext_resource type="PackedScene" uid="uid://bq6vuiglkev18" path="res://UI/AccessoryCard.tscn" id="2_card"]
 [ext_resource type="PackedScene" path="res://UI/AccessoryCategoryRow.tscn" id="3_row"]
 [ext_resource type="PackedScene" path="res://UI/AccessoryColorControls.tscn" id="4_colors"]
 [ext_resource type="Texture2D" uid="uid://dim7vb4km4ysh" path="res://Art/Vector/PawPrint.svg" id="5_6b7uq"]
@@ -9,8 +9,8 @@
 [ext_resource type="StyleBox" path="res://UI/Theme/Catalog.tres" id="6_catalog"]
 [ext_resource type="Texture2D" uid="uid://cn0eqtjwo2t8j" path="res://Art/Vector/Trashcan.svg" id="7_pkvd0"]
 [ext_resource type="Texture2D" uid="uid://bil7fu8ryhcc5" path="res://Art/Vector/SliderHandle.svg" id="8_7tyts"]
-[ext_resource type="Texture2D" uid="uid://dt5qdaabr6ga0" path="res://Art/UI/Paws/Icons/reset.svg" id="9_reset"]
 [ext_resource type="Texture2D" uid="uid://kneqpxvl3vrj" path="res://Art/Vector/X.svg" id="9_yvh0h"]
+[ext_resource type="Texture2D" uid="uid://dcdtnfw6g06og" path="res://Art/Vector/Refresh.svg" id="10_6b7uq"]
 [ext_resource type="Texture2D" uid="uid://cb8rpat8qy6yl" path="res://Sprites/Accessories/DragonWing.jpg" id="asset_0"]
 [ext_resource type="Texture2D" uid="uid://df1riaycnp6n3" path="res://Sprites/Accessories/FairyWing.jpg" id="asset_1"]
 [ext_resource type="Texture2D" uid="uid://dif3rh22vyl6h" path="res://Sprites/Accessories/SafetyGlasses.jpg" id="asset_2"]
@@ -350,6 +350,7 @@ edit_alpha = false
 
 [node name="ResetAccessoryColor" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack" unique_id=9366974]
 unique_name_in_owner = true
+modulate = Color(0.28235295, 0.3764706, 0.21960784, 1)
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 tooltip_text = "Restore the accessory's original white color."
@@ -357,7 +358,7 @@ theme_type_variation = &"SecondaryButton"
 theme_override_constants/icon_max_width = 14
 theme_override_font_sizes/font_size = 13
 text = "Reset white"
-icon = ExtResource("9_reset")
+icon = ExtResource("10_6b7uq")
 
 [node name="CatalogColumn" type="VBoxContainer" parent="Workspace" unique_id=116524959]
 layout_mode = 2
@@ -415,7 +416,7 @@ layout_mode = 2
 DisplayName = "Dragon Wing"
 PreviewTexture = SubResource("Sample_0")
 
-[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" index="0"]
+[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(218463489, 189187757) index="0" unique_id=1274156670]
 material = SubResource("SampleJpegCutoutMaterial")
 
 [node name="SampleCard2" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" index="2" unique_id=139211442 instance=ExtResource("2_card")]
@@ -423,7 +424,7 @@ layout_mode = 2
 DisplayName = "Fairy Wing"
 PreviewTexture = SubResource("Sample_1")
 
-[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2/CardMargin/CardContent" index="0"]
+[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2/CardMargin/CardContent" parent_id_path=PackedInt32Array(139211442, 189187757) index="0" unique_id=1274156670]
 material = SubResource("SampleJpegCutoutMaterial")
 
 [node name="Collars" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" unique_id=629546523 instance=ExtResource("3_row")]
@@ -443,7 +444,7 @@ layout_mode = 2
 DisplayName = "Safety Glasses"
 PreviewTexture = SubResource("Sample_2")
 
-[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" index="0"]
+[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(81356807, 189187757) index="0" unique_id=1274156670]
 material = SubResource("SampleJpegCutoutMaterial")
 
 [node name="Decorations" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" unique_id=100832166 instance=ExtResource("3_row")]

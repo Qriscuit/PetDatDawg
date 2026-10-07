@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chhf5yihia4qa"
-path="res://.godot/imported/up.svg-91ad3fee4a0bd4038338bfa5885e340d.ctex"
+uid="uid://d0dx7paiyt42i"
+path="res://.godot/imported/SliderHandleG.svg-434d5b466ffe083ae3b49754437b3e10.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/UI/Paws/Icons/up.svg"
-dest_files=["res://.godot/imported/up.svg-91ad3fee4a0bd4038338bfa5885e340d.ctex"]
+source_file="res://Art/Vector/SliderHandleG.svg"
+dest_files=["res://.godot/imported/SliderHandleG.svg-434d5b466ffe083ae3b49754437b3e10.ctex"]
 
 [params]
 
@@ -38,6 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
+svg/scale=0.7
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false
