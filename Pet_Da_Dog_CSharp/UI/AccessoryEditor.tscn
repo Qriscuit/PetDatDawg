@@ -8,8 +8,7 @@
 [ext_resource type="StyleBox" uid="uid://dfl6oj2bmqyc5" path="res://UI/Theme/Panel.tres" id="5_panel"]
 [ext_resource type="StyleBox" path="res://UI/Theme/Catalog.tres" id="6_catalog"]
 [ext_resource type="Texture2D" uid="uid://cn0eqtjwo2t8j" path="res://Art/Vector/Trashcan.svg" id="7_pkvd0"]
-[ext_resource type="Texture2D" uid="uid://bil7fu8ryhcc5" path="res://Art/Vector/SliderHandle.svg" id="8_7tyts"]
-[ext_resource type="Texture2D" uid="uid://kneqpxvl3vrj" path="res://Art/Vector/X.svg" id="9_yvh0h"]
+[ext_resource type="Theme" uid="uid://c2qo58y1i4pyu" path="res://UI/Theme/DefaultTheme.tres" id="8_fvo2w"]
 [ext_resource type="Texture2D" uid="uid://dcdtnfw6g06og" path="res://Art/Vector/Refresh.svg" id="10_6b7uq"]
 [ext_resource type="Texture2D" uid="uid://cb8rpat8qy6yl" path="res://Sprites/Accessories/DragonWing.jpg" id="asset_0"]
 [ext_resource type="Texture2D" uid="uid://df1riaycnp6n3" path="res://Sprites/Accessories/FairyWing.jpg" id="asset_1"]
@@ -248,9 +247,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 190)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_icons/grabber = ExtResource("8_7tyts")
-theme_override_icons/grabber_highlight = ExtResource("8_7tyts")
-theme_override_icons/grabber_disabled = ExtResource("9_yvh0h")
+theme = ExtResource("8_fvo2w")
 min_value = 50.0
 max_value = 200.0
 value = 100.0
@@ -280,9 +277,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 190)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_icons/grabber = ExtResource("8_7tyts")
-theme_override_icons/grabber_highlight = ExtResource("8_7tyts")
-theme_override_icons/grabber_disabled = ExtResource("9_yvh0h")
+theme = ExtResource("8_fvo2w")
 min_value = -180.0
 max_value = 180.0
 
@@ -291,6 +286,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 tooltip_text = "Restore this accessory to 100% size and no rotation."
+theme = ExtResource("8_fvo2w")
 theme_type_variation = &"SecondaryButton"
 theme_override_font_sizes/font_size = 13
 text = "Reset fit"
@@ -314,6 +310,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Up to 64 characters. Changes save automatically."
+theme = ExtResource("8_fvo2w")
 placeholder_text = "What should your dog say?"
 
 [node name="TextBackgroundToggle" type="CheckBox" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack" unique_id=1505607296]
@@ -409,7 +406,13 @@ theme_override_constants/separation = 10
 layout_mode = 2
 Category = "Wings"
 PreviewCount = 2
-Expanded = true
+
+[node name="CategoryHeader" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings" index="0"]
+tooltip_text = "Collapse wings accessories."
+text = "▾  Wings · 2"
+
+[node name="EmptyCategoryLabel" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" index="0"]
+visible = false
 
 [node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" index="1" unique_id=218463489 instance=ExtResource("2_card")]
 layout_mode = 2
@@ -418,6 +421,10 @@ PreviewTexture = SubResource("Sample_0")
 
 [node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(218463489, 189187757) index="0" unique_id=1274156670]
 material = SubResource("SampleJpegCutoutMaterial")
+texture = SubResource("Sample_0")
+
+[node name="CardName" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(218463489, 189187757) index="1" unique_id=1714582797]
+text = "Dragon Wing"
 
 [node name="SampleCard2" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" index="2" unique_id=139211442 instance=ExtResource("2_card")]
 layout_mode = 2
@@ -426,18 +433,35 @@ PreviewTexture = SubResource("Sample_1")
 
 [node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2/CardMargin/CardContent" parent_id_path=PackedInt32Array(139211442, 189187757) index="0" unique_id=1274156670]
 material = SubResource("SampleJpegCutoutMaterial")
+texture = SubResource("Sample_1")
+
+[node name="CardName" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2/CardMargin/CardContent" parent_id_path=PackedInt32Array(139211442, 189187757) index="1" unique_id=1714582797]
+text = "Fairy Wing"
 
 [node name="Collars" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" unique_id=629546523 instance=ExtResource("3_row")]
 layout_mode = 2
 Category = "Collars"
-PreviewCount = 0
 Expanded = false
+
+[node name="CategoryHeader" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Collars" index="0"]
+tooltip_text = "Expand collars accessories."
+button_pressed = false
+text = "▸  Collars · 0"
+
+[node name="CategoryScroll" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Collars" index="1"]
+visible = false
 
 [node name="Glasses" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" unique_id=1293674031 instance=ExtResource("3_row")]
 layout_mode = 2
 Category = "Glasses"
 PreviewCount = 1
-Expanded = true
+
+[node name="CategoryHeader" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses" index="0"]
+tooltip_text = "Collapse glasses accessories."
+text = "▾  Glasses · 1"
+
+[node name="EmptyCategoryLabel" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards" index="0"]
+visible = false
 
 [node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards" index="1" unique_id=81356807 instance=ExtResource("2_card")]
 layout_mode = 2
@@ -446,12 +470,22 @@ PreviewTexture = SubResource("Sample_2")
 
 [node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(81356807, 189187757) index="0" unique_id=1274156670]
 material = SubResource("SampleJpegCutoutMaterial")
+texture = SubResource("Sample_2")
+
+[node name="CardName" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(81356807, 189187757) index="1" unique_id=1714582797]
+text = "Safety Glasses"
 
 [node name="Decorations" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" unique_id=100832166 instance=ExtResource("3_row")]
 layout_mode = 2
 Category = "Decorations"
 PreviewCount = 3
-Expanded = true
+
+[node name="CategoryHeader" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations" index="0"]
+tooltip_text = "Collapse decorations accessories."
+text = "▾  Decorations · 3"
+
+[node name="EmptyCategoryLabel" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" index="0"]
+visible = false
 
 [node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" index="1" unique_id=1933480894 instance=ExtResource("2_card")]
 layout_mode = 2
@@ -472,7 +506,13 @@ PreviewTexture = SubResource("Sample_5")
 layout_mode = 2
 Category = "Text"
 PreviewCount = 1
-Expanded = true
+
+[node name="CategoryHeader" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text" index="0"]
+tooltip_text = "Collapse text accessories."
+text = "▾  Text · 1"
+
+[node name="EmptyCategoryLabel" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text/CategoryScroll/CategoryCards" index="0"]
+visible = false
 
 [node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text/CategoryScroll/CategoryCards" index="1" unique_id=1648123568 instance=ExtResource("2_card")]
 layout_mode = 2

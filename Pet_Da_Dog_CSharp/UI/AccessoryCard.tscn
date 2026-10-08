@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://bq6vuiglkev18"]
 
 [ext_resource type="Script" uid="uid://bi5ocvgt8sijh" path="res://Scripts/AccessoryCard.cs" id="1_card"]
-[ext_resource type="Texture2D" uid="uid://4hvlnftq7e1i" path="res://Art/UI/Paws/Icons/text-box.svg" id="2_sample"]
 [ext_resource type="Texture2D" uid="uid://b47iijvflnyl7" path="res://Art/Vector/TextBox.svg" id="3_iuab0"]
 
 [node name="AccessoryCard" type="Button" unique_id=1800422206]
@@ -14,7 +13,6 @@ theme_override_font_sizes/font_size = 13
 toggle_mode = true
 script = ExtResource("1_card")
 DisplayName = "Text Box"
-PreviewTexture = ExtResource("2_sample")
 
 [node name="CardMargin" type="MarginContainer" parent="." unique_id=1793177979]
 layout_mode = 1
