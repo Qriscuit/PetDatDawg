@@ -210,12 +210,25 @@ text = "Your current dog is ready for the desktop.
 Visit Items to change its look, or Settings to adjust its visibility and size."
 autowrap_mode = 3
 
-[node name="CustomizeDog" type="Button" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content" unique_id=1028198424]
+[node name="DogActions" type="HBoxContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="CustomizeDog" type="Button" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content/DogActions" unique_id=1028198424]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 theme_type_variation = &"ActionButton"
 text = "Customize this dog"
+
+[node name="OpenDogPresets" type="Button" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content/DogActions"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Presets"
+tooltip_text = "Choose a saved dog and accessory look."
+disabled = true
 
 [node name="DogChoices" type="OptionButton" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
 unique_name_in_owner = true

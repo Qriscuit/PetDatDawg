@@ -57,7 +57,7 @@ public partial class AccessoryWardrobe : Node
 	private string _text = DefaultText;
 	private bool _textBackgroundVisible = true;
 	private sealed record OutfitState(AccessoryPlacement[] Equipped, string[] LayerOrder, Dictionary<string, Color> Colors,
-		Dictionary<string, float> Scales, Dictionary<string, float> Rotations, string Text, bool TextBackgroundVisible);
+		Dictionary<string, float> Scales, Dictionary<string, float> Rotations, string Text, bool TextBackgroundVisible, int DogItemDefId);
 	private readonly List<(OutfitState State, string Label)> _history = new();
 	private OutfitState? _editStart;
 	private string _editLabel = string.Empty;
@@ -67,7 +67,8 @@ public partial class AccessoryWardrobe : Node
 	[Export] public string StoragePath { get; set; } = "user://accessories.cfg";
 	public IReadOnlyList<AccessoryDefinition> Catalog => _catalog.AsReadOnly();
 	public IReadOnlyList<AccessoryPlacement> Equipped => _equipped.FindAll(item => CanEquip(item.Id)).AsReadOnly();
-	public int SelectedDogItemDefId => _ownedSteamItems.Contains(_selectedDogItemDefId) ? _selectedDogItemDefId : 0;
+	public int SelectedDogItemDefId => _ownedSteamItems.Contains(_selectedDogItemDefId)
+		&& SteamCosmeticCatalog.Find(_selectedDogItemDefId)?.Kind == "dog" ? _selectedDogItemDefId : 0;
 	public string CurrentDogTexturePath => SteamCosmeticCatalog.Find(SelectedDogItemDefId)?.AssetPath ?? "res://Sprites/Doggo.png";
 	// Bottom-to-top drawing order. The dog is present even with an empty outfit.
 	public IReadOnlyList<string> LayerOrder => _layerOrder.AsReadOnly();
@@ -88,6 +89,7 @@ public partial class AccessoryWardrobe : Node
 			_catalog.Add(new AccessoryDefinition(item.AccessoryId, item.Name, texture, size) { SteamItemDefId = item.ItemDefId });
 		}
 		LoadPlacements();
+		LoadPresets();
 	}
 
 	public override void _ExitTree()
@@ -220,11 +222,11 @@ public partial class AccessoryWardrobe : Node
 		Changed?.Invoke();
 	}
 
-	private OutfitState CaptureState() => new(_equipped.ToArray(), _layerOrder.ToArray(), new(_colors), new(_scales), new(_rotations), _text, _textBackgroundVisible);
+	private OutfitState CaptureState() => new(_equipped.ToArray(), _layerOrder.ToArray(), new(_colors), new(_scales), new(_rotations), _text, _textBackgroundVisible, _selectedDogItemDefId);
 	private bool MatchesState(OutfitState state) => System.Linq.Enumerable.SequenceEqual(_equipped, state.Equipped)
 		&& System.Linq.Enumerable.SequenceEqual(_layerOrder, state.LayerOrder)
 		&& SameDictionary(_colors, state.Colors) && SameDictionary(_scales, state.Scales) && SameDictionary(_rotations, state.Rotations)
-		&& _text == state.Text && _textBackgroundVisible == state.TextBackgroundVisible;
+		&& _text == state.Text && _textBackgroundVisible == state.TextBackgroundVisible && _selectedDogItemDefId == state.DogItemDefId;
 	private static bool SameDictionary<T>(Dictionary<string, T> left, Dictionary<string, T> right)
 		=> left.Count == right.Count && System.Linq.Enumerable.All(left, pair => right.TryGetValue(pair.Key, out var value)
 			&& EqualityComparer<T>.Default.Equals(pair.Value, value));
@@ -248,6 +250,7 @@ public partial class AccessoryWardrobe : Node
 		_rotations.Clear(); foreach (var pair in state.Rotations) _rotations.Add(pair.Key, pair.Value);
 		_text = state.Text;
 		_textBackgroundVisible = state.TextBackgroundVisible;
+		_selectedDogItemDefId = state.DogItemDefId;
 		NotifyChanged();
 	}
 

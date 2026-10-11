@@ -99,6 +99,41 @@ text = "Choose an item, then click your desktop dog to place it.
 Drag equipped items to move them; use the handles to resize or rotate."
 autowrap_mode = 3
 
+[node name="PresetActions" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PresetName" type="LineEdit" parent="PresetActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Preset name (optional)"
+max_length = 48
+tooltip_text = "Give this dog and its accessories a name."
+
+[node name="SavePreset" type="Button" parent="PresetActions"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ActionButton"
+text = "Save Preset"
+tooltip_text = "Save your selected dog and its complete accessory look."
+disabled = true
+
+[node name="OpenPresets" type="Button" parent="PresetActions"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Presets"
+disabled = true
+
+[node name="PresetSaveStatus" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
 [node name="Workspace" type="HBoxContainer" parent="." unique_id=712838]
 layout_mode = 2
 size_flags_horizontal = 3

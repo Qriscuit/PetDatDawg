@@ -239,6 +239,11 @@ public partial class AccessoryEditor : VBoxContainer
 		_colorPicker?.GetPopup().Hide();
 		_session?.CancelInteraction();
 	}
+	public void FinishPendingEdits()
+	{
+		PrepareDesktopEdit();
+		_session?.CompleteGesture();
+	}
 	private void PrepareDesktopEdit()
 	{
 		// The desktop overlay does not take keyboard focus from the inspector.

@@ -50,6 +50,7 @@ public partial class StatusWindow
 	{
 		_inventoryBackend = backend;
 		_inventoryWardrobe = wardrobe;
+		ConfigurePresetWardrobe(wardrobe);
 		_inventoryCancellation = cancellation;
 		_displayedInventory = null;
 		UpdateInventoryControls();

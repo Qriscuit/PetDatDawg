@@ -73,6 +73,7 @@ public partial class StatusWindow : Window
 		_baseContentScaleFactor = ContentScaleFactor;
 		BindScene(); ConnectControls();
 		BindInventoryControls();
+		BindPresetControls();
 		_editingSession = GetNodeOrNull<AccessoryEditingSession>("/root/AccessoryEditingSession");
 		_patrolRoute = GetNodeOrNull<PatrolRoute>("/root/PatrolRoute");
 		CloseRequested += () => { _editingSession?.SetActive(false); SaveLayout(); Hide(); };
@@ -165,6 +166,7 @@ public partial class StatusWindow : Window
 		if (Engine.IsEditorHint()) return;
 		_editingSession?.SetActive(false);
 		SaveLayout();
+		ReleasePresetControls();
 		if (_settings != null) _settings.SettingsChanged -= OnSettingsChanged;
 		_returnFromPatrolEdit = false;
 		if (_patrolRoute != null)

@@ -114,6 +114,25 @@ opening boxes, and checking Steam ownership before equipping cosmetics. Follow
 [the Cloudflare setup guide](CLOUDFLARE_SETUP.md) to deploy the Worker, add its
 secrets, set the client's URL, and verify the flow against real Steam inventory.
 
+## Dog and accessory presets
+
+In **Items**, optionally enter a preset name and click **Save Preset**. Open
+**Presets** from Items or Dogs to see a preview of each saved look. Clicking a
+preview switches the desktop dog and replaces its complete outfit, including
+positions, sizes, rotations, tint, text, text background, and layer order.
+Applying a preset can be undone as one outfit change. Deleting a preset removes
+the saved look without changing the current dog.
+
+Presets survive restarts in `user://dog-presets.cfg`. They contain local cosmetic
+preferences only; they do not save Pets balances or Steam ownership. A saved
+preset whose Steam dog or accessories are no longer owned remains visible but
+cannot be applied until ownership is confirmed again. The Dogs selector itself
+continues to show only owned dogs and the starter dog.
+
+Run `Pet_Da_Dog_CSharp/Tests/Run-DogPresetSmoke.ps1` with Godot 4.6.3 to validate
+save/load, complete outfit application, undo, ownership gates, and preset UI
+previews using isolated preferences and fake ownership.
+
 ## Upload and images
 
 1. Open the Inventory Service configuration for app **4817200**:
