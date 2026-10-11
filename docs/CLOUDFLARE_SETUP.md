@@ -19,7 +19,7 @@ check the upload results, and enable Inventory Service. The schema includes:
 
 | Item | Definition ID | Use |
 | --- | --- | --- |
-| Pets | 100 | One accepted dog click earns one unit |
+| Pets | 100 | One accepted mouse-button or keyboard press earns one unit |
 | Dog Box | 1001 | Costs 1 Pet; opens into one of 45 dog variants |
 | Accessories Box | 1000 | Costs 2 Pets; opens into one of 43 accessories |
 
@@ -213,19 +213,23 @@ The client uses these routes automatically:
 | Route | Purpose |
 | --- | --- |
 | `POST /v1/auth/steam` | Verify a Steam ticket and create an API session |
-| `POST /v1/pets/grant` | Confirm one queued click and grant one Pets unit |
+| `POST /v1/pets/grant` | Confirm one queued input and grant one Pets unit |
 | `GET /v1/inventory` | Read the Pets balance, boxes, and owned cosmetics |
 | `POST /v1/boxes/buy` | Exchange Pets for an unopened Dog or Accessories Box |
 | `POST /v1/boxes/open` | Consume a specific box and return its random reward |
 
-One visible dog click creates one GUID in the client's current-run pending
-queue. The Worker validates the player's Steam ticket for identity
+One physical mouse-button click or keyboard press anywhere on the Windows
+desktop creates one GUID in the client's current-run pending queue. The app
+observes counts without consuming input or recording typed text. Key repeats,
+releases, pointer motion, wheel scrolling, and injected input do not count.
+Dog clicks still show heart feedback, but local dog events cannot duplicate a
+background grant. The Worker validates the player's Steam ticket for identity
 `petdadog-backend`, issues a signed session, and grants one Pets unit through
 Steam `AddItem`. Retried click grants reuse the same Steam request ID.
 
-The displayed Pets balance comes from Steam. Pending click grants are shown
-separately and retry while this run remains open. Session expiry triggers
-reauthentication. Offline clicks do not become a locally authoritative balance,
+The displayed Pets balance comes from Steam. Pending input grants stay internal
+and retry while this run remains open. Session expiry triggers
+reauthentication. Offline inputs do not become a locally authoritative balance,
 and an unsent pending queue is not carried across a restart.
 
 Buying a Dog Box spends **1 Pet**; buying an Accessories Box spends **2 Pets**.
@@ -395,8 +399,9 @@ Use a fresh test account balance or record the starting balance before each
 check. Inspect both the game display and Steam Inventory.
 
 1. Launch the game with Steam running. Confirm it signs in and reads inventory.
-2. Click visible dog pixels once. Pending grants should clear and Pets increase
-   by exactly one. Clicking transparent overlay space should grant nothing.
+2. Click once outside the dog or press and release a key while another app has
+   focus. Pending inputs should clear and Pets increase by exactly one. Holding
+   a key must not add repeated grants. A dog click earns once and shows a heart.
 3. Earn enough Pets and buy a Dog Box. Pets should decrease by one and the
    owned Dog Box count increase by one.
 4. Open that Dog Box. Its count should decrease by one, and one of the 45 dog

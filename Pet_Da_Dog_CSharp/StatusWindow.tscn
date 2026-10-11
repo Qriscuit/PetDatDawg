@@ -6,12 +6,7 @@
 [ext_resource type="StyleBox" uid="uid://dfl6oj2bmqyc5" path="res://UI/Theme/Panel.tres" id="4_panel"]
 [ext_resource type="StyleBox" uid="uid://ctu4cqgwtk78" path="res://UI/Theme/PlainPanel.tres" id="5_plain"]
 [ext_resource type="PackedScene" uid="uid://b0d6vg1y4eby2" path="res://UI/AccessoryEditor.tscn" id="6_accessories"]
-[ext_resource type="Texture2D" uid="uid://sb7kiefiv3cc" path="res://Sprites/Doggo.png" id="7_dog"]
-
-[sub_resource type="AtlasTexture" id="Atlas_dog"]
-atlas = ExtResource("7_dog")
-region = Rect2(122, 136, 766, 746)
-filter_clip = true
+[ext_resource type="PackedScene" path="res://UI/DogChoiceCard.tscn" id="8_dog_card"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_ntckc"]
 load_path = "res://.godot/imported/PawPrint.svg-0246e2dccdcb1c1543af1b0c0f00c8a5.ctex"
@@ -82,18 +77,6 @@ theme_override_font_sizes/font_size = 13
 text = "Pets: Waiting to sync"
 horizontal_alignment = 2
 
-[node name="PendingPets" type="Label" parent="Background/Margin/Layout/Header/Content/BrandRow/PetStatus" unique_id=379133815]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-tooltip_text = "Waiting clicks retry while this app is open. They are not yet confirmed pets and are cleared when you quit."
-theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
-theme_override_font_sizes/font_size = 12
-text = "0 clicks waiting to sync"
-horizontal_alignment = 2
-autowrap_mode = 3
-
 [node name="Tabs" type="HBoxContainer" parent="Background/Margin/Layout/Header/Content" unique_id=1631545867]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -150,7 +133,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 13
-text = "Welcome! Right-click your desktop dog to customize it.
+text = "Welcome! Earn Pets from mouse clicks and key presses while Pet Da Dog runs. Right-click your desktop dog to customize it.
 You can also choose Open Pet Da Dog from its tray icon. Closing this menu keeps your dog on the desktop."
 autowrap_mode = 3
 
@@ -181,65 +164,100 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin" unique_id=1697451800]
+[node name="DogsScroll" type="ScrollContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 3
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll" unique_id=1697451800]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="PresetsHeadingRow" type="HBoxContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content" unique_id=1464198261]
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content/PresetsHeadingRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"WoodlandHeading"
-text = "Your desktop dog"
+text = "Your saved presets"
 
-[node name="DogPortrait" type="TextureRect" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content" unique_id=1232923849]
+[node name="OpenDogPresets" type="Button" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content/PresetsHeadingRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
-size_flags_vertical = 3
-texture = SubResource("Atlas_dog")
-expand_mode = 1
-stretch_mode = 5
+theme_type_variation = &"SecondaryButton"
+text = "Manage presets"
+tooltip_text = "Save or manage your dog and accessory looks."
+disabled = true
 
-[node name="DogDescription" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content" unique_id=1210411516]
+[node name="EmptyDogPresets" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 13
-text = "Your current dog is ready for the desktop.
-Visit Items to change its look, or Settings to adjust its visibility and size."
+text = "No presets yet. Dress your dog in Items and save its look, or choose Manage presets."
 autowrap_mode = 3
 
-[node name="DogActions" type="HBoxContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 8
-
-[node name="CustomizeDog" type="Button" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content/DogActions" unique_id=1028198424]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 4
-theme_type_variation = &"ActionButton"
-text = "Customize this dog"
-
-[node name="OpenDogPresets" type="Button" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content/DogActions"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"SecondaryButton"
-text = "Presets"
-tooltip_text = "Choose a saved dog and accessory look."
-disabled = true
-
-[node name="DogChoices" type="OptionButton" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+[node name="DogPresetGrid" type="GridContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-tooltip_text = "Choose a dog you own in Steam. Unlock more dogs by opening Dog Boxes."
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 2
 
-[node name="CollectionHint" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+[node name="DogPresetStatus" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
-text = "Unlock more dogs by opening Dog Boxes in Shop."
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
 autowrap_mode = 3
+
+[node name="Separator" type="HSeparator" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
+layout_mode = 2
+
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content" unique_id=1464198261]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"WoodlandHeading"
+text = "Your dogs"
+
+[node name="DogSelectionStatus" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Selected: Starter dog"
+autowrap_mode = 3
+
+[node name="DogGrid" type="GridContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="StarterDog" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content/DogGrid" instance=ExtResource("8_dog_card")]
+layout_mode = 2
+button_pressed = true
+
+[node name="CollectionHint" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
+layout_mode = 2
+text = "Choose a dog above. Unlock more dogs by opening Dog Boxes in Shop."
+autowrap_mode = 3
+
+[node name="CustomizeDog" type="Button" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content" unique_id=1028198424]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"ActionButton"
+text = "Customize this dog"
 
 [node name="ItemsPage" type="PanelContainer" parent="Background/Margin/Layout/Pages" unique_id=2118073526]
 unique_name_in_owner = true
@@ -291,7 +309,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 13
-text = "Pet your desktop dog to earn Pets. Spend them on boxes, then open a box to unlock one random dog or accessory."
+text = "Earn Pets from mouse clicks and key presses anywhere on your desktop while Pet Da Dog runs. Spend them on boxes, then open a box to unlock one random dog or accessory."
 autowrap_mode = 3
 
 [node name="BuyDogBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
@@ -378,7 +396,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 13
-text = "Choose stops on your desktop. Your dog visits them in order, then loops back to the first stop."
+text = "Choose stops on your desktop. Your dog can loop through them or walk back and forth along the same route."
 autowrap_mode = 3
 
 [node name="PatrolRouteSummary" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content" unique_id=1722010906]
@@ -422,6 +440,21 @@ theme_override_font_sizes/font_size = 13
 text = "Turn this off to return to your dog's usual walk."
 autowrap_mode = 3
 
+[node name="TraversalCaption" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+layout_mode = 2
+text = "Patrol movement"
+
+[node name="PatrolTraversalMode" type="OptionButton" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Loop returns from the last stop to the first. Back and forth visits the same stops in reverse."
+item_count = 2
+selected = 0
+popup/item_0/text = "Loop"
+popup/item_0/id = 0
+popup/item_1/text = "Back and forth"
+popup/item_1/id = 1
+
 [node name="PatrolRouteSaveStatus" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content" unique_id=1462196916]
 unique_name_in_owner = true
 visible = false
@@ -455,6 +488,19 @@ size_flags_horizontal = 3
 theme_type_variation = &"WoodlandHeading"
 text = "Your desktop dog"
 
+[node name="Stationary" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Pause automatic walking while keeping your saved patrol route. You can still move the dog in Items."
+text = "Keep dog stationary"
+
+[node name="BounceEnabled" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+tooltip_text = "Turn off the bouncing animation while your dog walks."
+text = "Bounce while moving"
+
 [node name="AlwaysOnTop" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=169955784]
 unique_name_in_owner = true
 layout_mode = 2
@@ -471,7 +517,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 13
-text = "When enabled, you cannot pet or right-click the dog.
+text = "When enabled, you cannot interact with or right-click the dog. Mouse clicks and key presses still earn Pets in the background.
 Press Alt + backtick to toggle this, or reopen the menu from the tray icon."
 autowrap_mode = 3
 
@@ -642,7 +688,7 @@ autowrap_mode = 3
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 8
-tooltip_text = "Closes the app and removes the desktop dog. Waiting clicks are not kept after quitting."
+tooltip_text = "Closes the app and removes the desktop dog. Waiting inputs are not kept after quitting."
 theme_type_variation = &"SecondaryButton"
 text = "Quit Pet Da Dog"
 

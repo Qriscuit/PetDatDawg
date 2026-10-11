@@ -13,11 +13,13 @@ Main client entrypoints:
 
 - `Pet_Da_Dog_CSharp/project.godot` configures the transparent always-on-top window and autoloads `NativeWindowBridge`.
 - `Pet_Da_Dog_CSharp/Main.tscn` contains the simple dog scene: `DesktopPet -> FootAnchor -> VisualRoot -> PetSprite`.
-- `Pet_Da_Dog_CSharp/Scripts/DesktopPet.cs` drives dog layout, walking, hopping, dog-only click handling, Steam callbacks, and backend grant retries.
+- `Pet_Da_Dog_CSharp/Scripts/DesktopPet.cs` drives dog layout, walking, optional bouncing, dog feedback, Steam callbacks, and backend grant retries.
+- `Pet_Da_Dog_CSharp/Scripts/GlobalInputMonitor.cs` observes Windows keyboard/mouse press edges without consuming them and delivers only activity counts to the main thread.
 - `Pet_Da_Dog_CSharp/Scripts/NativeWindowBridge.cs` applies Windows overlay styles and owns the native tray menu.
 - `Pet_Da_Dog_CSharp/Scripts/SteamIntegration.cs` wraps Steamworks.NET initialization and Web API ticket requests.
 - `Pet_Da_Dog_CSharp/Scripts/BackendPetClient.cs` talks to the backend and keeps pending pet grants in memory.
 - `Pet_Da_Dog_CSharp/Scripts/SteamCosmeticCatalog.cs` maps the 88 Steam cosmetic itemdefs to local art; `StatusWindow.Inventory.cs` binds Shop and dog selection controls.
+- The Dogs tab places the saved outfit preview grid before the owned dog selection grid. `UI/DogChoiceCard.tscn` and `UI/DogPresetCard.tscn` author their reusable cards. Items hides unowned Steam accessory cards and counts only usable accessories; starter cosmetics and Text Box remain available.
 
 Main backend entrypoint:
 
@@ -28,20 +30,23 @@ Main backend entrypoint:
 - The dog is a transparent, borderless, always-on-top Windows desktop overlay.
 - Transparent overlay space should pass clicks through to windows behind it.
 - Only visible dog pixels should accept left-clicks.
-- Each valid dog click enqueues exactly one pending pet grant.
+- Each physical mouse-button or keyboard press anywhere on the desktop enqueues exactly one pending pet grant. Holding a key, releases, motion, wheel scrolling, and injected input do not count.
+- Local dog input adds feedback or opens menus; it must never duplicate a background input grant. Background earning continues during click-through, invisible-dog, stationary, and editing modes.
 - Pets are Steam-authoritative. The client must never store, edit, or fake an authoritative pets total.
-- Confirmed pet totals must come from backend/Steam responses.
+- The player-facing Pets total must come from backend/Steam responses; pending grant counts remain internal.
 - Failed pet grants retry from an in-memory queue for the current run only.
 - The Steam publisher key is backend-only and must never be added to the Godot client build.
 - Steam Inventory, not Steam Stats, is the authority for the pets currency.
 
 ## How It Works
 
-The click path is:
+The earning path is:
 
-`visible dog click -> client GUID queue -> Steam Web API auth ticket -> backend session token -> Steam Inventory AddItem -> Steam Inventory GetInventory -> confirmed pets total`
+`Windows mouse/key press -> activity count -> client GUID queue -> Steam Web API auth ticket -> backend session token -> Steam Inventory AddItem -> Steam Inventory GetInventory -> confirmed pets total`
 
-`DesktopPet` updates Godot's mouse passthrough polygon every frame so the window only catches input over the moving dog. `_Input` then checks the clicked texture pixel alpha before enqueueing a grant.
+`DesktopPet` updates Godot's mouse passthrough polygon every frame so transparent desktop space remains usable. `_Input` checks dog texture alpha only for feedback/menu interaction. `GlobalInputMonitor` independently observes press edges, and `DesktopPet.RecordInputActivity` enqueues one GUID per observed press.
+
+Movement preferences are saved locally: Stationary pauses walking/patrol and movement animation, BounceEnabled controls hop/squash/rotation, and patrol traversal can Loop or go BackAndForth. Existing routes default to Loop. Stationary preserves the current patrol target and direction; ordinary post-edit falling still lands the dog.
 
 `SteamIntegration` initializes Steam with `PDD_STEAM_APP_ID` or local `steam_appid.txt`, requests a Web API ticket for identity `petdadog-backend`, runs Steam callbacks each frame, and shuts Steam down on exit.
 
@@ -83,6 +88,7 @@ Client config:
 - The client defaults to the real app, `4817200`; set the development file to this AppID for real Steam inventory tests.
 - `PDD_DISABLE_STEAM=1` for local smoke/debug runs without Steam
 - `PDD_DISABLE_TRAY=1` for local smoke/debug runs without the tray icon
+- `PDD_DISABLE_GLOBAL_INPUT=1` for deterministic smoke/debug runs without observing desktop input. All test runners and export launch checks set it, including live read-only checks.
 
 Backend config:
 
@@ -104,4 +110,4 @@ Client HTTP tests: `dotnet run --project Tests/BackendClientHarness/BackendClien
 - Do not make the whole overlay window mouse-transparent with `WS_EX_TRANSPARENT`; the dog must still receive clicks.
 - Keep Windows tray behavior in `NativeWindowBridge` isolated from the Godot scene logic.
 - Use Godot 4.6.3 C# tooling for build/smoke validation unless the project is intentionally upgraded.
-- If adding user-visible pet status, show backend-confirmed totals and pending in-memory grants separately.
+- Show only backend-confirmed Pets totals in user-visible pet status. Keep the in-memory grant queue and retry counts internal.

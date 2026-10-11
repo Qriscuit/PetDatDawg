@@ -179,9 +179,10 @@ foreach ($required in @('PetDaDogCSharp.dll', 'GodotSharp.dll', 'Steamworks.NET.
 [IO.File]::WriteAllText((Join-Path $packagePath 'steam_appid.txt'), $steamAppId + [Environment]::NewLine)
 
 $savedEnvironment = @{}
-foreach ($name in @('PDD_DISABLE_STEAM', 'PDD_DISABLE_TRAY', 'APPDATA', 'LOCALAPPDATA')) { $savedEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
+foreach ($name in @('PDD_DISABLE_STEAM', 'PDD_DISABLE_GLOBAL_INPUT', 'PDD_DISABLE_TRAY', 'APPDATA', 'LOCALAPPDATA')) { $savedEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
 try {
     $env:PDD_DISABLE_STEAM = '1'
+    $env:PDD_DISABLE_GLOBAL_INPUT = '1'
     $env:PDD_DISABLE_TRAY = '1'
     $env:APPDATA = Join-Path $runRoot 'smoke-profile/Roaming'
     $env:LOCALAPPDATA = Join-Path $runRoot 'smoke-profile/Local'

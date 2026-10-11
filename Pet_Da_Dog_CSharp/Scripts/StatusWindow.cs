@@ -25,8 +25,6 @@ public partial class StatusWindow : Window
 	[Export] public string PetsTotalFormat { get; set; } = "Pets: {count}";
 	[Export] public string PetsAwaitingText { get; set; } = "Pets: Waiting to sync";
 	[Export] public string PetsUnavailableText { get; set; } = "Pets: Steam unavailable";
-	[Export] public string PendingClickFormat { get; set; } = "{count} click waiting to sync";
-	[Export] public string PendingClicksFormat { get; set; } = "{count} clicks waiting to sync";
 	[Export] public string ServiceStatusFormat { get; set; } = "Service: {status}";
 	[Export] public string SteamStatusFormat { get; set; } = "{status}";
 	[Export] public string UnavailableStatusText { get; set; } = "Unavailable";
@@ -41,6 +39,7 @@ public partial class StatusWindow : Window
 	[Export] public string PatrolRouteFormat { get; set; } = "{count} stops · {loop}";
 	[Export] public string PatrolEnabledText { get; set; } = "Patrol is on.";
 	[Export] public string PatrolDisabledText { get; set; } = "Patrol is off; your dog uses its usual walk.";
+	[Export] public string StationaryPatrolText { get; set; } = "Your dog is stationary. Turn off Keep dog stationary to resume walking.";
 	[Export(PropertyHint.MultilineText)] public string PatrolSummaryFormat { get; set; } = "{route}\n{state}";
 	private const string LayoutPath = "user://menu_layout.cfg";
 	private enum StatusTab { Dogs, Items, Shop, Settings }
@@ -50,15 +49,16 @@ public partial class StatusWindow : Window
 	private bool _syncingPatrol, _returnFromPatrolEdit;
 	private Button? _editPatrolButton, _clearPatrolButton;
 	private CheckBox? _usePatrolCheck;
+	private OptionButton? _patrolTraversalMode;
 	private Label? _patrolSummary, _patrolSaveStatus;
 	private bool _refreshingControls, _placed;
 	private float _appliedUiScale = -1;
 	private StatusTab _activeTab = StatusTab.Items;
-	private Label? _petsValueLabel, _pendingLabel, _backendStatusLabel, _steamStatusLabel, _connectionSummary;
+	private Label? _petsValueLabel, _backendStatusLabel, _steamStatusLabel, _connectionSummary;
 	private Button? _dogsTabButton, _itemsTabButton, _shopTabButton, _settingsTabButton;
 	private Control? _dogsPage, _accessoriesPage, _shopPage, _settingsPage, _welcomePanel;
 	private AccessoryEditor? _accessoryEditor;
-	private CheckBox? _alwaysOnTopCheck, _dogClickThroughCheck;
+	private CheckBox? _alwaysOnTopCheck, _dogClickThroughCheck, _stationaryCheck, _bounceEnabledCheck;
 	private HSlider? _dogTransparencySlider, _dogScaleSlider, _uiScaleSlider;
 	private Label? _dogTransparencyValueLabel, _dogScaleValueLabel, _uiScaleValueLabel;
 
@@ -105,7 +105,6 @@ public partial class StatusWindow : Window
 	private void BindScene()
 	{
 		_petsValueLabel = GetNode<Label>("%PetsValue");
-		_pendingLabel = GetNode<Label>("%PendingPets");
 		_backendStatusLabel = GetNode<Label>("%BackendStatus");
 		_steamStatusLabel = GetNode<Label>("%SteamStatus");
 		_connectionSummary = GetNode<Label>("%ConnectionSummary");
@@ -121,6 +120,8 @@ public partial class StatusWindow : Window
 		_accessoryEditor = GetNode<AccessoryEditor>("%AccessoryEditor");
 		_alwaysOnTopCheck = GetNode<CheckBox>("%AlwaysOnTop");
 		_dogClickThroughCheck = GetNode<CheckBox>("%DogClickThrough");
+		_stationaryCheck = GetNode<CheckBox>("%Stationary");
+		_bounceEnabledCheck = GetNode<CheckBox>("%BounceEnabled");
 		_dogTransparencySlider = GetNode<HSlider>("%DogTransparency");
 		_dogScaleSlider = GetNode<HSlider>("%DogScale");
 		_uiScaleSlider = GetNode<HSlider>("%UiScale");
@@ -130,6 +131,7 @@ public partial class StatusWindow : Window
 		_editPatrolButton = GetNode<Button>("%EditPatrolRoute");
 		_clearPatrolButton = GetNode<Button>("%ClearPatrolRoute");
 		_usePatrolCheck = GetNode<CheckBox>("%UsePatrolRoute");
+		_patrolTraversalMode = GetNode<OptionButton>("%PatrolTraversalMode");
 		_patrolSummary = GetNode<Label>("%PatrolRouteSummary");
 		_patrolSaveStatus = GetNode<Label>("%PatrolRouteSaveStatus");
 	}
@@ -152,12 +154,18 @@ public partial class StatusWindow : Window
 		detailsToggle.Text = detailsToggle.ButtonPressed ? HideDetailsText : ShowDetailsText;
 		_alwaysOnTopCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetAlwaysOnTop(value); };
 		_dogClickThroughCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetDogClickThrough(value); };
+		_stationaryCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetStationary(value); };
+		_bounceEnabledCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetBounceEnabled(value); };
 		_dogTransparencySlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetDogTransparency((float)value); };
 		_dogScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetDogScale((float)value); };
 		_uiScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetUiScale((float)value); };
 		_editPatrolButton!.Pressed += BeginPatrolEdit;
 		_clearPatrolButton!.Pressed += () => _patrolRoute?.ClearRoute();
 		_usePatrolCheck!.Toggled += enabled => { if (!_syncingPatrol) _patrolRoute?.SetEnabled(enabled); };
+		_patrolTraversalMode!.ItemSelected += index =>
+		{
+			if (!_syncingPatrol) _patrolRoute?.SetTraversalMode((PatrolTraversalMode)_patrolTraversalMode.GetItemId((int)index));
+		};
 	}
 	private void SyncEditingState() => _editingSession?.SetActive(Visible && Mode != ModeEnum.Minimized
 		&& _activeTab == StatusTab.Items && _patrolRoute?.IsEditing != true);
@@ -192,7 +200,7 @@ public partial class StatusWindow : Window
 		KeepWindowReachable(); Show(); GrabFocus();
 		SyncEditingState();
 	}
-	public void UpdateStatus(long? confirmedPets, int pendingGrantCount, string backendStatus, string steamStatus,
+	public void UpdateStatus(long? confirmedPets, string backendStatus, string steamStatus,
 		bool steamReady = false, bool backendReady = false)
 	{
 		if (Engine.IsEditorHint() || _petsValueLabel == null) return;
@@ -201,8 +209,6 @@ public partial class StatusWindow : Window
 		_petsValueLabel!.Text = confirmedPets.HasValue
 			? PetsTotalFormat.Replace("{count}", confirmedPets.Value.ToString("N0", CultureInfo.InvariantCulture))
 			: steamReady ? PetsAwaitingText : PetsUnavailableText;
-		_pendingLabel!.Visible = pendingGrantCount > 0;
-		_pendingLabel.Text = (pendingGrantCount == 1 ? PendingClickFormat : PendingClicksFormat).Replace("{count}", pendingGrantCount.ToString(CultureInfo.InvariantCulture));
 		_backendStatusLabel!.Text = ServiceStatusFormat.Replace("{status}", NormalizeStatus(backendStatus));
 		_steamStatusLabel!.Text = SteamStatusFormat.Replace("{status}", NormalizeStatus(steamStatus));
 		_connectionSummary!.Text = !steamReady ? steamStatus.StartsWith("Steam is disabled", StringComparison.OrdinalIgnoreCase)
@@ -240,13 +246,17 @@ public partial class StatusWindow : Window
 		_editPatrolButton.Disabled = _patrolRoute == null || editing;
 		_clearPatrolButton!.Disabled = _patrolRoute == null || count == 0 || editing;
 		_usePatrolCheck!.Disabled = _patrolRoute == null || count < 2 || editing;
+		_patrolTraversalMode!.Disabled = _patrolRoute == null || editing;
 		_syncingPatrol = true;
 		_usePatrolCheck.SetPressedNoSignal(_patrolRoute?.Enabled == true);
+		_patrolTraversalMode.Select(_patrolTraversalMode.GetItemIndex((int)(_patrolRoute?.TraversalMode ?? PatrolTraversalMode.Loop)));
 		_syncingPatrol = false;
-		var stops = count <= 10 ? string.Join(" → ", Enumerable.Range(1, count)) : $"1 → 2 → 3 → … → {count}";
-		var routeDescription = PatrolRouteFormat.Replace("{count}", count.ToString(CultureInfo.InvariantCulture)).Replace("{loop}", stops + " → 1");
-		_patrolSummary!.Text = count == 0 ? NoPatrolRouteText : PatrolSummaryFormat.Replace("{route}", routeDescription)
-			.Replace("{state}", _patrolRoute?.Enabled == true ? PatrolEnabledText : PatrolDisabledText);
+		var stops = PatrolRouteToolbar.DescribeStops(count, _patrolRoute?.TraversalMode ?? PatrolTraversalMode.Loop);
+		var routeDescription = PatrolRouteFormat.Replace("{count}", count.ToString(CultureInfo.InvariantCulture)).Replace("{loop}", stops);
+		var stationary = _settings?.Stationary == true;
+		_patrolSummary!.Text = count == 0 ? stationary ? StationaryPatrolText : NoPatrolRouteText
+			: PatrolSummaryFormat.Replace("{route}", routeDescription)
+				.Replace("{state}", stationary ? StationaryPatrolText : _patrolRoute?.Enabled == true ? PatrolEnabledText : PatrolDisabledText);
 		_patrolSaveStatus!.Visible = _patrolRoute?.LastSaveSucceeded == false;
 	}
 	private void SetActiveTab(StatusTab tab)
@@ -265,6 +275,7 @@ public partial class StatusWindow : Window
 		RefreshPatrolControls();
 		if (_settings == null) return; _refreshingControls = true;
 		_alwaysOnTopCheck!.SetPressedNoSignal(_settings.AlwaysOnTop); _dogClickThroughCheck!.SetPressedNoSignal(_settings.DogClickThrough);
+		_stationaryCheck!.SetPressedNoSignal(_settings.Stationary); _bounceEnabledCheck!.SetPressedNoSignal(_settings.BounceEnabled);
 		SetValue(_dogTransparencySlider, _dogTransparencyValueLabel, _settings.DogTransparency);
 		SetValue(_dogScaleSlider, _dogScaleValueLabel, _settings.DogScale); SetValue(_uiScaleSlider, _uiScaleValueLabel, _settings.UiScale);
 		_welcomePanel!.Visible = !_settings.HasSeenWelcome; _refreshingControls = false;

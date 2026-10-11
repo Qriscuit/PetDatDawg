@@ -501,11 +501,13 @@ public partial class AccessorySmokeTest : Node
 		var solid = FindOpaquePixel(image);
 		var solidGlobal = dog.ToGlobal(solid + new Vector2(0.5f, 0.5f) - dog.Texture.GetSize() * 0.5f);
 		_pet!._Input(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = solidGlobal });
-		Require(backend.PendingGrantCount == before + 1, "One visible dog click enqueues exactly one grant.");
+		Require(backend.PendingGrantCount == before, "Dog feedback never duplicates the globally observed click.");
+		_pet.RecordInputActivity(1);
+		Require(backend.PendingGrantCount == before + 1, "One globally observed click enqueues exactly one grant.");
 		_pet._Input(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = solidGlobal });
 		Require(backend.PendingGrantCount == before + 1, "Mouse release does not add another grant.");
 		_pet._Input(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = dog.ToGlobal(-dog.Texture.GetSize() * 0.5f) });
-		Require(backend.PendingGrantCount == before + 1, "Transparent dog pixels never enqueue grants.");
+		Require(backend.PendingGrantCount == before + 1, "Local transparent-pixel delivery never duplicates background grants.");
 
 		var foundAccessoryOnlyPixel = false;
 		foreach (var sprite in dog.GetChildren().OfType<Sprite2D>())
@@ -525,7 +527,7 @@ public partial class AccessorySmokeTest : Node
 			}
 		}
 		Require(foundAccessoryOnlyPixel, "Edge fixture contains a visible accessory pixel outside the dog.");
-		Require(backend.PendingGrantCount == before + 1, "Accessory-only pixels never enqueue pet grants.");
+		Require(backend.PendingGrantCount == before + 1, "Local accessory-only delivery never duplicates background grants.");
 	}
 
 	private AccessoryEditingSession Session => GetNode<AccessoryEditingSession>("/root/AccessoryEditingSession");
@@ -1089,6 +1091,11 @@ public partial class AccessorySmokeTest : Node
 				$"{category} contains the expected starter and Steam catalog definitions.");
 			Require(rowCards.Length == expectedCounts[category] && rowCards.All(displayedCards.Add),
 				$"{category} has the correct accessory count without duplicated cards.");
+			var availableCount = _wardrobe.Catalog.Count(item => AccessoryCategories.For(item) == category && _wardrobe.CanEquip(item.Id));
+			Require(row.Visible == (availableCount > 0) && row.HeaderButton.Text.EndsWith($"· {availableCount}", StringComparison.Ordinal),
+				$"{category} is shown and counted only when it has available accessories.");
+			Require(rowCards.Count(card => card.Visible) == availableCount,
+				$"{category} hides unowned cards instead of displaying locked placeholders.");
 			Require(row.Scroll.HorizontalScrollMode == ScrollContainer.ScrollMode.Auto && row.Scroll.VerticalScrollMode == ScrollContainer.ScrollMode.Disabled,
 				$"{category} uses a single horizontal shelf instead of a vertical grid.");
 			var expanded = row.Expanded;
@@ -1100,13 +1107,7 @@ public partial class AccessorySmokeTest : Node
 			await SettleFrames();
 		}
 		Require(displayedCards.SetEquals(cards.Values), "Every catalog card appears in exactly one category shelf.");
-		rows["Collars"].HeaderButton.ButtonPressed = true;
-		await SettleFrames();
-		Require(rows["Collars"].Cards.GetChildren().OfType<AccessoryCard>().All(card => card.Disabled && card.Status.Text == card.LockedStatusText),
-			"The populated Collars shelf shows its unowned Steam accessories as locked.");
-		Require(!rows["Collars"].Cards.GetChildren().OfType<Label>().Any(label => label.Visible && label.Text.Contains("No accessories", StringComparison.OrdinalIgnoreCase)),
-			"A populated shelf hides its empty-category message.");
-		rows["Collars"].HeaderButton.ButtonPressed = false;
+		await VerifyOwnedAccessoryCatalog(window);
 		var emptyRow = ResourceLoader.Load<PackedScene>("res://UI/AccessoryCategoryRow.tscn").Instantiate<AccessoryCategoryRow>();
 		emptyRow.Visible = false;
 		AddChild(emptyRow);
@@ -1124,20 +1125,86 @@ public partial class AccessorySmokeTest : Node
 		finally { emptyRow.Free(); }
 
 		var originalSize = window.Size;
-		window.Size = window.MinSize;
-		await SettleFrames();
-		var decorations = rows["Decorations"];
-		Require(decorations.Scroll.GetHScrollBar().MaxValue > decorations.Scroll.GetHScrollBar().Page,
-			"The narrow browser exposes horizontal scrolling for overflowing accessory cards.");
-		decorations.Scroll.ScrollHorizontal = 80;
-		await SettleFrames();
-		Require(decorations.Scroll.ScrollHorizontal > 0 && decorations.Cards.GetGlobalRect().Position.X < decorations.Scroll.GetGlobalRect().Position.X,
-			"Scrolling the shelf reveals later cards without wrapping them into another row.");
-		decorations.Scroll.ScrollHorizontal = 0;
-		window.Size = originalSize;
-		await SettleFrames();
+		var originalOwnership = SteamCosmeticCatalog.All.Where(item => _wardrobe.OwnsSteamItem(item.ItemDefId)).Select(item => item.ItemDefId).ToArray();
+		var scrollItems = _wardrobe.Catalog.Where(item => item.SteamItemDefId > 0 && AccessoryCategories.For(item) == "Decorations")
+			.Take(8).Select(item => item.SteamItemDefId);
+		try
+		{
+			// Fake confirmed ownership provides enough visible cards to overflow the shelf.
+			_wardrobe.SetSteamOwnership(originalOwnership.Concat(scrollItems));
+			window.Size = window.MinSize;
+			await SettleFrames();
+			var decorations = rows["Decorations"];
+			Require(decorations.Scroll.GetHScrollBar().MaxValue > decorations.Scroll.GetHScrollBar().Page,
+				"The narrow browser exposes horizontal scrolling for overflowing owned accessory cards.");
+			decorations.Scroll.ScrollHorizontal = 80;
+			await SettleFrames();
+			Require(decorations.Scroll.ScrollHorizontal > 0 && decorations.Cards.GetGlobalRect().Position.X < decorations.Scroll.GetGlobalRect().Position.X,
+				"Scrolling the shelf reveals later owned cards without wrapping them into another row.");
+			decorations.Scroll.ScrollHorizontal = 0;
+		}
+		finally
+		{
+			_wardrobe.SetSteamOwnership(originalOwnership);
+			window.Size = originalSize;
+			await SettleFrames();
+		}
 		Require(Session.Active && _wardrobe.Equipped.SequenceEqual(outfit) && _wardrobe.CanUndo == canUndo && backend.PendingGrantCount == grants,
 			"Category toggles, browser resizing and shelf scrolling keep direct editing, cosmetics, undo history and pet grants unchanged.");
+	}
+
+	private async Task VerifyOwnedAccessoryCatalog(StatusWindow window)
+	{
+		var wardrobe = _wardrobe!;
+		var editor = FindDescendant<AccessoryEditor>(window)!;
+		var rows = GetField<Dictionary<string, AccessoryCategoryRow>>(editor, "_categoryRows");
+		var cards = GetField<Dictionary<string, Button>>(editor, "_cards");
+		var heading = editor.GetNode<Label>("%AccessoryCatalogHeading");
+		var originalOwnership = SteamCosmeticCatalog.All.Where(item => wardrobe.OwnsSteamItem(item.ItemDefId)).Select(item => item.ItemDefId).ToArray();
+		var originalSelection = Session.SelectedId;
+		var collar = wardrobe.Catalog.First(item => item.SteamItemDefId > 0 && AccessoryCategories.For(item) == "Collars");
+		var collarCard = cards[collar.Id];
+		var collapsed = rows["Collars"].Expanded;
+		try
+		{
+			wardrobe.SetSteamOwnership(Array.Empty<int>());
+			await SettleFrames();
+			Require(cards.Count(pair => pair.Value.Visible) == 7 && heading.Text == "Accessories · 7",
+				"The offline accessory browser counts six starter items and Text Box.");
+			Require(wardrobe.Catalog.Where(item => item.SteamItemDefId == 0).All(item => cards[item.Id].Visible && !cards[item.Id].Disabled),
+				"Every starter/local accessory and Text Box remains available without Steam ownership.");
+			Require(wardrobe.Catalog.Where(item => item.SteamItemDefId > 0).All(item => !cards[item.Id].Visible && !cards[item.Id].IsVisibleInTree()),
+				"Unowned Steam accessory cards are fully hidden from the runtime browser.");
+			Require(!rows["Collars"].Visible && rows["Collars"].HeaderButton.Text.EndsWith("· 0", StringComparison.Ordinal),
+				"An empty owned Collars category disappears and reports zero available items.");
+			wardrobe.SetSteamOwnership(new[] { collar.SteamItemDefId });
+			await SettleFrames();
+			Require(collarCard.Visible && !collarCard.Disabled && rows["Collars"].Visible && rows["Collars"].Expanded == collapsed,
+				"Acquiring a Steam accessory reveals its existing card and category without changing collapse state.");
+			Require(heading.Text == "Accessories · 8" && rows["Collars"].HeaderButton.Text.EndsWith("· 1", StringComparison.Ordinal),
+				"Acquired ownership updates catalog and category counts immediately.");
+			Require(rows["Collars"].Cards.GetChildren().OfType<Button>().Count(card => card.Visible) == 1 && ReferenceEquals(cards[collar.Id], collarCard),
+				"Ownership refresh reveals exactly the acquired card without recreating the catalog.");
+			collarCard.EmitSignal(BaseButton.SignalName.Pressed);
+			Require(Session.SelectedId == collar.Id && Session.IsPlacing,
+				"A newly owned visible accessory can be selected for placement.");
+			wardrobe.SetSteamOwnership(Array.Empty<int>());
+			await SettleFrames();
+			Require(!collarCard.Visible && !rows["Collars"].Visible && heading.Text == "Accessories · 7",
+				"Losing ownership immediately hides the card and empty category and restores available counts.");
+			Require(Session.SelectedId == null && !Session.IsPlacing,
+				"Ownership loss clears selection and cancels placement of the hidden item.");
+			collarCard.EmitSignal(BaseButton.SignalName.Pressed);
+			Require(Session.SelectedId == null && !Session.IsPlacing,
+				"A stale hidden-card callback cannot select an unowned Steam accessory.");
+		}
+		finally
+		{
+			wardrobe.SetSteamOwnership(originalOwnership);
+			if (originalSelection != null && wardrobe.CanEquip(originalSelection)) Session.ChooseAccessory(originalSelection);
+			else Session.ClearSelection();
+			await SettleFrames();
+		}
 	}
 
 	private async Task VerifyWoodlandPresentation(StatusWindow window)
@@ -1198,13 +1265,15 @@ public partial class AccessorySmokeTest : Node
 			await Settle();
 			var dogsPage = GetField<Control>(window, "_dogsPage");
 			Require(dogsPage.IsVisibleInTree(), "The Dogs tab shows the current dog.");
-			Require(Descendants(dogsPage).OfType<TextureRect>().Count(item => item.Texture != null) == 1,
-				"Dogs displays one portrait for the current selected dog.");
-			var dogChoices = window.GetNode<OptionButton>("%DogChoices");
-			Require(dogChoices.ItemCount == 1 && dogChoices.GetItemId(0) == 0 && !dogChoices.IsItemDisabled(0),
-				"The offline dog selector shows the always-available Starter dog.");
-			Require(dogChoices.Selected == 0,
-				"The Starter dog remains selected with no owned Steam dogs.");
+			var dogGrid = window.GetNode<GridContainer>("%DogGrid");
+			var dogCards = GetField<Dictionary<int, Button>>(window, "_dogCards");
+			Require(dogCards.Count == 1 && dogCards.ContainsKey(0) && dogGrid.GetChildren().OfType<Button>().Count() == 1,
+				"The offline Dogs grid shows only the always-available Starter dog card.");
+			var starterCard = dogCards[0];
+			Require(starterCard.GetNode<TextureRect>("%DogChoicePreview").Texture is AtlasTexture && !starterCard.Disabled,
+				"The Starter card displays a cropped dog preview and remains selectable offline.");
+			Require(starterCard.ButtonPressed && starterCard.GetNode<Label>("%DogChoiceStatus").Text == "Selected",
+				"The Starter dog card visibly remains selected with no owned Steam dogs.");
 			await Capture(window, "woodland-dogs");
 			tabs[2].EmitSignal(BaseButton.SignalName.Pressed);
 			await Settle();
@@ -1244,13 +1313,13 @@ public partial class AccessorySmokeTest : Node
 			Require(!details.Visible, "Technical connection details begin collapsed.");
 			detailsButton.ButtonPressed = true; Require(details.Visible, "Connection details can be expanded when needed.");
 			detailsButton.ButtonPressed = false;
-			window.UpdateStatus(1234, 2, "Pet grant pending retry", "Steam initialized", true, true);
-			Require(GetField<Label>(window, "_petsValueLabel").Text == "Pets: 1,234" && GetField<Label>(window, "_pendingLabel").Text == "2 clicks waiting to sync",
-				"Confirmed pets and waiting clicks remain separate and use clear labels.");
+			window.UpdateStatus(1234, "Pet grant pending retry", "Steam initialized", true, true);
+			Require(GetField<Label>(window, "_petsValueLabel").Text == "Pets: 1,234" && window.GetNodeOrNull<Label>("%PendingPets") == null,
+				"The header displays only confirmed Pets and has no waiting-input counter.");
 			Require(GetField<Label>(window, "_connectionSummary").Text.Contains("interrupted"), "Interrupted syncing is distinguished from an active connection.");
-			window.UpdateStatus(null, 0, "not authenticated", "Steam not initialized", false, false);
-			Require(GetField<Label>(window, "_petsValueLabel").Text == "Pets: Steam unavailable" && !GetField<Label>(window, "_pendingLabel").Visible,
-				"An unknown balance is never displayed as zero and empty waiting status is hidden.");
+			window.UpdateStatus(null, "not authenticated", "Steam not initialized", false, false);
+			Require(GetField<Label>(window, "_petsValueLabel").Text == "Pets: Steam unavailable",
+				"An unknown balance is never displayed as zero.");
 			CallPrivate(_pet!, "UpdateStatusWindow");
 			window.Size = new Vector2I(640, 780);
 			await Settle();
@@ -1540,6 +1609,7 @@ public partial class AccessorySmokeTest : Node
 		using var dogImage = dog.Texture.GetImage();
 		var pixel = dog.ToGlobal(FindOpaquePixel(dogImage) + Vector2.One * 0.5f - dog.Texture.GetSize() * 0.5f);
 		_pet!._Input(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = pixel });
+		_pet.RecordInputActivity(1);
 		var hearts = GetField<System.Collections.IList>(_pet, "_floatingHearts");
 		Require(hearts.Count == 1 && backend.PendingGrantCount == grants + 1, "One valid dog click produces one heart and exactly one pending grant.");
 		var sprite = (Sprite2D)hearts[0]!.GetType().GetProperty("Sprite")!.GetValue(hearts[0])!;

@@ -67,7 +67,7 @@ public partial class LiveSteamSmokeTest : Node
 				retryExpectedPets = expected;
 			}
 			else Require(string.IsNullOrWhiteSpace(retryExpectedText), "RetryExpectedPets requires an existing RetryEventId.");
-			var inputMode = retryEventId.HasValue ? "retry-existing" : System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_DOG_INPUT") == "1" ? "dog-alpha" : "queue";
+			var inputMode = retryEventId.HasValue ? "retry-existing" : System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_DOG_INPUT") == "1" ? "background-with-dog-feedback" : "queue";
 			var timeoutSeconds = ReadNumber("PDD_LIVE_SMOKE_TIMEOUT_SECONDS", 150, 30, 600);
 			var endpoint = System.Environment.GetEnvironmentVariable("PDD_BACKEND_URL");
 			if (string.IsNullOrWhiteSpace(endpoint)) endpoint = ProjectSettings.GetSetting("pdd/backend_url").AsString();
@@ -148,6 +148,7 @@ public partial class LiveSteamSmokeTest : Node
 				{
 					using var click = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = FindVisibleDogPoint() };
 					_pet._Input(click);
+					_pet.RecordInputActivity(1);
 				}
 				Require(_backend.ConfirmedPets == before && _backend.PendingGrantCount == 1, "A queued click must not alter Steam's confirmed total.");
 				var pendingIds = typeof(BackendPetClient).GetField("_pendingGrantIds", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(_backend) as Queue<Guid>;
@@ -303,8 +304,8 @@ public partial class LiveSteamSmokeTest : Node
 		_pet!._Input(transparentClick);
 		using var releasedClick = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = FindVisibleDogPoint() };
 		_pet._Input(releasedClick);
-		Require(_backend.PendingGrantCount == 0 && _backend.ConfirmedPets == before, "Transparent space and mouse release must not enqueue a grant.");
-		GD.Print("LIVE_DOG_INPUT_FILTER_PASS: transparentSpace=ignored releasedClick=ignored");
+		Require(_backend.PendingGrantCount == 0 && _backend.ConfirmedPets == before, "Local mouse delivery cannot duplicate globally observed grants.");
+		GD.Print("LIVE_DOG_INPUT_FILTER_PASS: localDelivery=feedbackOnly");
 	}
 
 	private void DestroyInventoryResult()

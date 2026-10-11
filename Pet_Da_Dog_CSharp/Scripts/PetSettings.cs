@@ -9,6 +9,8 @@ public partial class PetSettings : Node
 
     public const bool DefaultAlwaysOnTop = true;
     public const bool DefaultDogClickThrough = false;
+    public const bool DefaultStationary = false;
+    public const bool DefaultBounceEnabled = true;
     public const float DefaultDogTransparency = 1.0f;
     public const float DefaultDogScale = 1.0f;
     public const float DefaultUiScale = 1.0f;
@@ -25,6 +27,8 @@ public partial class PetSettings : Node
 
     private bool _alwaysOnTop = DefaultAlwaysOnTop;
     private bool _dogClickThrough = DefaultDogClickThrough;
+    private bool _stationary = DefaultStationary;
+    private bool _bounceEnabled = DefaultBounceEnabled;
     private float _dogTransparency = DefaultDogTransparency;
     private float _dogScale = DefaultDogScale;
     private float _uiScale = DefaultUiScale;
@@ -32,6 +36,8 @@ public partial class PetSettings : Node
 
     public bool AlwaysOnTop => _alwaysOnTop;
     public bool DogClickThrough => _dogClickThrough;
+    public bool Stationary => _stationary;
+    public bool BounceEnabled => _bounceEnabled;
     public float DogTransparency => _dogTransparency;
     public float DogScale => _dogScale;
     public float UiScale => _uiScale;
@@ -56,6 +62,16 @@ public partial class PetSettings : Node
     public void ToggleDogClickThrough()
     {
         SetDogClickThrough(!DogClickThrough);
+    }
+
+    public void SetStationary(bool value)
+    {
+        SetBool(ref _stationary, value);
+    }
+
+    public void SetBounceEnabled(bool value)
+    {
+        SetBool(ref _bounceEnabled, value);
     }
 
     public void SetDogTransparency(float value)
@@ -85,6 +101,8 @@ public partial class PetSettings : Node
 
         _alwaysOnTop = ReadBool(config, "always_on_top", DefaultAlwaysOnTop);
         _dogClickThrough = ReadBool(config, "dog_click_through", DefaultDogClickThrough);
+        _stationary = ReadBool(config, "stationary", DefaultStationary);
+        _bounceEnabled = ReadBool(config, "bounce_enabled", DefaultBounceEnabled);
         _dogTransparency = Mathf.Clamp(ReadFloat(config, "dog_transparency", DefaultDogTransparency), MinDogTransparency, MaxDogTransparency);
         _dogScale = Mathf.Clamp(ReadFloat(config, "dog_scale", DefaultDogScale), MinDogScale, MaxDogScale);
         _uiScale = Mathf.Clamp(ReadFloat(config, "ui_scale", DefaultUiScale), MinUiScale, MaxUiScale);
@@ -96,6 +114,8 @@ public partial class PetSettings : Node
         var config = new ConfigFile();
         config.SetValue(Section, "always_on_top", AlwaysOnTop);
         config.SetValue(Section, "dog_click_through", DogClickThrough);
+        config.SetValue(Section, "stationary", Stationary);
+        config.SetValue(Section, "bounce_enabled", BounceEnabled);
         config.SetValue(Section, "dog_transparency", DogTransparency);
         config.SetValue(Section, "dog_scale", DogScale);
         config.SetValue(Section, "ui_scale", UiScale);

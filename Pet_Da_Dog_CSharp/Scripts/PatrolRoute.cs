@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-// Screen-relative walking preferences only; route editing never grants pets.
+public enum PatrolTraversalMode { Loop, BackAndForth }
+
+// Screen-relative walking preferences, separate from background input earning.
 public partial class PatrolRoute : Node
 {
 	public const int MaxPoints = 16;
@@ -15,6 +17,7 @@ public partial class PatrolRoute : Node
 	public IReadOnlyList<Vector2> Points => _pointsView ??= _points.AsReadOnly();
 	public IReadOnlyList<Vector2> DraftPoints => _draftPointsView ??= _draftPoints.AsReadOnly();
 	public bool Enabled { get; private set; }
+	public PatrolTraversalMode TraversalMode { get; private set; } = PatrolTraversalMode.Loop;
 	public bool IsEditing { get; private set; }
 	public bool CanFinish => IsEditing && HasDistinctStops(_draftPoints);
 	public bool LastSaveSucceeded { get; private set; } = true;
@@ -110,6 +113,14 @@ public partial class PatrolRoute : Node
 		Changed?.Invoke();
 	}
 
+	public void SetTraversalMode(PatrolTraversalMode mode)
+	{
+		if (mode is not PatrolTraversalMode.Loop and not PatrolTraversalMode.BackAndForth || TraversalMode == mode) return;
+		TraversalMode = mode;
+		Save();
+		Changed?.Invoke();
+	}
+
 	public void ClearRoute()
 	{
 		var wasEditing = IsEditing;
@@ -137,6 +148,7 @@ public partial class PatrolRoute : Node
 		var config = new ConfigFile();
 		config.SetValue(Section, "points", _points.ToArray());
 		config.SetValue(Section, "enabled", Enabled);
+		config.SetValue(Section, "traversal_mode", (int)TraversalMode);
 		var error = config.Save(StoragePath);
 		LastSaveSucceeded = error == Error.Ok;
 		if (!LastSaveSucceeded) GD.PushWarning($"Could not save patrol route to {StoragePath}: {error}");
@@ -165,6 +177,9 @@ public partial class PatrolRoute : Node
 		}
 		var enabled = config.GetValue(Section, "enabled", false);
 		Enabled = enabled.VariantType == Variant.Type.Bool && enabled.AsBool() && HasDistinctStops(_points);
+		var mode = config.GetValue(Section, "traversal_mode", (int)PatrolTraversalMode.Loop);
+		TraversalMode = mode.VariantType == Variant.Type.Int && mode.AsInt64() == (int)PatrolTraversalMode.BackAndForth
+			? PatrolTraversalMode.BackAndForth : PatrolTraversalMode.Loop;
 		if (_points.Count > 0) Changed?.Invoke();
 	}
 

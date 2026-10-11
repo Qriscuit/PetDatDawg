@@ -8,11 +8,12 @@ $ErrorActionPreference = 'Stop'
 $presetProjectPath = Split-Path -Parent $PSScriptRoot
 $presetSmokeHome = Join-Path $presetProjectPath ('.godot\dog-preset-smoke-home-' + [Guid]::NewGuid().ToString('N'))
 $presetOldEnvironment = @{}
-foreach ($presetVariable in 'PDD_DISABLE_STEAM', 'PDD_DISABLE_TRAY', 'APPDATA', 'LOCALAPPDATA', 'TEMP', 'TMP') {
+foreach ($presetVariable in 'PDD_DISABLE_STEAM', 'PDD_DISABLE_GLOBAL_INPUT', 'PDD_DISABLE_TRAY', 'APPDATA', 'LOCALAPPDATA', 'TEMP', 'TMP') {
     $presetOldEnvironment[$presetVariable] = [Environment]::GetEnvironmentVariable($presetVariable, 'Process')
 }
 try {
     $env:PDD_DISABLE_STEAM = '1'
+    $env:PDD_DISABLE_GLOBAL_INPUT = '1'
     $env:PDD_DISABLE_TRAY = '1'
     $env:APPDATA = Join-Path $presetSmokeHome 'Roaming'
     $env:LOCALAPPDATA = Join-Path $presetSmokeHome 'Local'

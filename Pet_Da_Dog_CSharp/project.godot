@@ -22,6 +22,7 @@ AccessoryWardrobe="*res://Scripts/AccessoryWardrobe.cs"
 AccessoryEditingSession="*res://Scripts/AccessoryEditingSession.cs"
 PatrolRoute="*res://Scripts/PatrolRoute.cs"
 NativeWindowBridge="*res://Scripts/NativeWindowBridge.cs"
+GlobalInputMonitor="*res://Scripts/GlobalInputMonitor.cs"
 
 [display]
 

@@ -25,12 +25,14 @@ public partial class PatrolSmokeTest : Node
 		try
 		{
 			Require(System.Environment.GetEnvironmentVariable("PDD_DISABLE_STEAM") == "1", "Patrol smoke requires disabled Steam.");
+			Require(System.Environment.GetEnvironmentVariable("PDD_DISABLE_GLOBAL_INPUT") == "1", "Patrol smoke disables physical activity capture so its input assertions stay deterministic.");
 			Require(Engine.GetVersionInfo()["string"].AsString().StartsWith("4.6.3", StringComparison.Ordinal), "Patrol smoke uses Godot 4.6.3.");
 			Require(DisplayServer.GetName() != "headless", "Patrol smoke requires the real native desktop window.");
 			DirAccess.MakeDirRecursiveAbsolute(ProjectSettings.GlobalizePath(OutputDirectory));
 			_route = GetNode<PatrolRoute>("/root/PatrolRoute");
 			_route.StoragePath = _storagePath;
 			_route.ClearRoute();
+			_route.SetTraversalMode(PatrolTraversalMode.Loop);
 			VerifyModel();
 			VerifyPersistence();
 			await VerifyDesktop();
@@ -61,7 +63,7 @@ public partial class PatrolSmokeTest : Node
 		route.Changed += Changed; route.EditingChanged += EditingChanged;
 		try
 		{
-			Require(route.Points.Count == 0 && !route.Enabled && !route.IsEditing && !route.CanFinish, "An empty route is disabled and cannot finish.");
+			Require(route.Points.Count == 0 && !route.Enabled && !route.IsEditing && !route.CanFinish && route.TraversalMode == PatrolTraversalMode.Loop, "An empty route is disabled and defaults to loop traversal.");
 			route.SetEnabled(true);
 			Require(!route.Enabled && changes == 0, "An empty route cannot be enabled.");
 			Require(!route.AddPoint(Vector2.Zero) && !route.MovePoint(0, Vector2.One) && !route.RemovePoint(0) && !route.UndoLastPoint() && !route.ClearDraft(), "Draft mutation requires an editing session.");
@@ -96,6 +98,12 @@ public partial class PatrolSmokeTest : Node
 			Require(route.RemovePoint(1) && route.DraftPoints.Count == 1 && !route.CanFinish, "Removing a middle stop normalizes newly adjacent equal stops.");
 			route.ClearRoute();
 			Require(!route.IsEditing && !route.Enabled && route.Points.Count == 0 && route.DraftPoints.Count == 0 && editEvents[^1] == false, "Clear route also exits mapping and removes its draft.");
+			var beforeMode = changes;
+			route.SetTraversalMode(PatrolTraversalMode.BackAndForth);
+			Require(route.TraversalMode == PatrolTraversalMode.BackAndForth && changes == beforeMode + 1, "Changing traversal mode updates and notifies the route even before stops are mapped.");
+			route.SetTraversalMode(PatrolTraversalMode.BackAndForth);
+			Require(changes == beforeMode + 1, "Selecting the existing traversal mode emits no change.");
+			route.SetTraversalMode(PatrolTraversalMode.Loop);
 		}
 		finally { route.Changed -= Changed; route.EditingChanged -= EditingChanged; }
 	}
@@ -103,6 +111,7 @@ public partial class PatrolSmokeTest : Node
 	private void VerifyPersistence()
 	{
 		var route = _route;
+		route.SetTraversalMode(PatrolTraversalMode.BackAndForth);
 		CommitRoute(new Vector2(0.2f, 0.4f), new Vector2(0.8f, 0.6f));
 		var saved = route.Points.ToArray();
 		using (var config = new ConfigFile())
@@ -110,11 +119,11 @@ public partial class PatrolSmokeTest : Node
 			Require(config.Load(_storagePath) == Error.Ok && config.GetValue("route", "points").VariantType == Variant.Type.PackedVector2Array, "Route persistence stores normalized points as a packed vector array.");
 		}
 		var loaded = LoadRoute();
-		Require(loaded.Enabled && loaded.Points.SequenceEqual(saved) && !loaded.IsEditing && loaded.LastSaveSucceeded, "Saved stops and enabled state reload without restoring an unfinished editor."); loaded.Free();
+		Require(loaded.Enabled && loaded.Points.SequenceEqual(saved) && !loaded.IsEditing && loaded.LastSaveSucceeded && loaded.TraversalMode == PatrolTraversalMode.BackAndForth, "Saved stops, enabled state and traversal mode reload without restoring an unfinished editor."); loaded.Free();
 		route.BeginEdit(); route.MovePoint(0, Vector2.One);
 		loaded = LoadRoute(); Require(loaded.Points.SequenceEqual(saved), "A draft is never written over the saved route before Finish."); loaded.Free(); route.CancelEdit();
 		route.SetEnabled(false); loaded = LoadRoute();
-		Require(!loaded.Enabled && loaded.Points.SequenceEqual(saved), "Disabled routes retain their points across restarts."); loaded.Free();
+		Require(!loaded.Enabled && loaded.Points.SequenceEqual(saved) && loaded.TraversalMode == PatrolTraversalMode.BackAndForth, "Disabled routes retain their points and traversal preference across restarts."); loaded.Free();
 		using (var config = new ConfigFile())
 		{
 			var points = new Godot.Collections.Array { "invalid", new Vector2(float.NaN, 0), new Vector2(-4, 3), new Vector2(0, 1), new Vector2(0.5f, 0.5f), new Vector2(float.PositiveInfinity, 0) };
@@ -134,10 +143,16 @@ public partial class PatrolSmokeTest : Node
 		{
 			config.SetValue("route", "points", saved); config.SetValue("route", "enabled", "true"); config.Save(_storagePath);
 		}
-		loaded = LoadRoute(); Require(!loaded.Enabled && loaded.Points.SequenceEqual(saved), "Malformed enabled flags preserve stops but do not silently enable movement."); loaded.Free();
+		loaded = LoadRoute(); Require(!loaded.Enabled && loaded.Points.SequenceEqual(saved) && loaded.TraversalMode == PatrolTraversalMode.Loop, "Malformed enabled flags preserve stops, and legacy saves default to loop traversal."); loaded.Free();
+		foreach (var invalidMode in new Variant[] { "BackAndForth", 99, -1, true })
+		{
+			using var config = new ConfigFile(); config.SetValue("route", "points", saved); config.SetValue("route", "enabled", true); config.SetValue("route", "traversal_mode", invalidMode);
+			Require(config.Save(_storagePath) == Error.Ok, "A malformed traversal fixture saves.");
+			loaded = LoadRoute(); Require(loaded.Enabled && loaded.Points.SequenceEqual(saved) && loaded.TraversalMode == PatrolTraversalMode.Loop, "Invalid stored traversal preferences keep the valid route and default to looping."); loaded.Free();
+		}
 		var missingPath = _storagePath + ".missing";
 		loaded = new PatrolRoute { StoragePath = missingPath }; AddChild(loaded);
-		Require(!loaded.Enabled && loaded.Points.Count == 0, "Missing preferences keep the original walking behavior."); loaded.Free();
+		Require(!loaded.Enabled && loaded.Points.Count == 0 && loaded.TraversalMode == PatrolTraversalMode.Loop, "Missing preferences keep the original walking and loop traversal behavior."); loaded.Free();
 		var validPath = route.StoragePath;
 		try
 		{
@@ -145,7 +160,7 @@ public partial class PatrolSmokeTest : Node
 			route.BeginEdit(); route.ClearDraft(); route.AddPoint(Vector2.Zero); route.AddPoint(Vector2.One);
 			Require(route.FinishEdit() && route.Enabled && !route.LastSaveSucceeded, "A failed local save reports its failure while keeping the valid route usable for the current run.");
 		}
-		finally { route.StoragePath = validPath; route.ClearRoute(); }
+		finally { route.StoragePath = validPath; route.ClearRoute(); route.SetTraversalMode(PatrolTraversalMode.Loop); }
 	}
 
 	private PatrolRoute LoadRoute()
@@ -163,7 +178,7 @@ public partial class PatrolSmokeTest : Node
 	private async Task VerifyDesktop()
 	{
 		var settings = GetNode<PetSettings>("/root/PetSettings");
-		settings.DismissWelcome(); settings.SetDogScale(1); settings.SetDogTransparency(1); settings.SetDogClickThrough(false);
+		settings.DismissWelcome(); settings.SetDogScale(1); settings.SetDogTransparency(1); settings.SetDogClickThrough(false); settings.SetStationary(false); settings.SetBounceEnabled(true);
 		var wardrobe = GetNode<AccessoryWardrobe>("/root/AccessoryWardrobe");
 		wardrobe.StoragePath = _wardrobePath; wardrobe.Clear();
 		_pet = ResourceLoader.Load<PackedScene>("res://Main.tscn").Instantiate<DesktopPet>(); AddChild(_pet); _pet.SetProcess(false);
@@ -243,6 +258,7 @@ public partial class PatrolSmokeTest : Node
 		CallPrivate(_pet, "UpdateDogMouseRegion");
 		Require(!IsWindowOrChild(WindowFromPoint(ScreenPoint(blank)), mainHandle), "After Done, empty desktop space passes through the route overlay again.");
 		await VerifyMotion(usable);
+		VerifyTraversalPreferences(status, settings);
 		VerifyResolutionAndEdges(wardrobe);
 		await VerifySuspensionAndExit(status, toolbar, backend, initialGrants, usable);
 	}
@@ -296,6 +312,87 @@ public partial class PatrolSmokeTest : Node
 		Require(pet.PatrolPosition == position && pet.PatrolTargetIndex == targetIndex, "Nonfinite and nonpositive movement deltas leave patrol state intact.");
 	}
 
+	private void VerifyTraversalPreferences(StatusWindow status, PetSettings settings)
+	{
+		var pet = _pet!; var savedStops = _route.Points.ToArray();
+		var mode = status.GetNode<OptionButton>("%PatrolTraversalMode");
+		var position = pet.PatrolPosition; var target = pet.PatrolTargetIndex;
+		var reverseIndex = mode.GetItemIndex((int)PatrolTraversalMode.BackAndForth);
+		Require(reverseIndex >= 0, "Settings offers back-and-forth traversal by its saved mode ID.");
+		mode.Select(reverseIndex); mode.EmitSignal(OptionButton.SignalName.ItemSelected, (long)reverseIndex);
+		Require(_route.TraversalMode == PatrolTraversalMode.BackAndForth && pet.PatrolPosition == position && pet.PatrolTargetIndex == target && _route.Points.SequenceEqual(savedStops), "Changing traversal through Settings preserves the dog's position, target and saved stops.");
+		Require(GetField<Label>(status, "_patrolSummary").Text.Contains("1 → 2 → 3 → 4 → 3 → 2 → 1"), "Settings explains the return through intermediate stops instead of the closing diagonal.");
+		VerifyTraversalSequence(savedStops, new[] { 1, 2, 3, 2, 1, 0, 1 });
+		VerifyTraversalSequence(new[] { new Vector2(0.4f, 0.5f), new Vector2(0.45f, 0.55f) }, new[] { 1, 0, 1, 0, 1 });
+		VerifyTraversalSequence(new[] { new Vector2(0.4f, 0.5f), new Vector2(0.45f, 0.55f), new Vector2(0.4f, 0.5f) }, new[] { 1, 2, 1, 0, 1 });
+		CommitRoute(savedStops);
+		var size = GetField<Vector2I>(pet, "_windowSize");
+		try
+		{
+			SetField(pet, "_windowSize", Vector2I.One); SetField(pet, "_patrolPosition", pet.PatrolPointToViewport(savedStops[0])); SetField(pet, "_patrolTargetIndex", 0);
+			foreach (var traversal in new[] { PatrolTraversalMode.Loop, PatrolTraversalMode.BackAndForth })
+			{
+				_route.SetTraversalMode(traversal); CallPrivate(pet, "StepPatrol", 1f);
+				Require(pet.PatrolPosition.IsFinite() && pet.PatrolTargetIndex >= 0 && pet.PatrolTargetIndex < savedStops.Length, "Fully collapsed screen-space stops stay finite and keep a valid target in either traversal mode.");
+			}
+		}
+		finally { SetField(pet, "_windowSize", size); }
+		_route.SetTraversalMode(PatrolTraversalMode.BackAndForth);
+		SetField(pet, "_patrolPosition", pet.PatrolPointToViewport(savedStops[^1])); SetField(pet, "_patrolTargetIndex", savedStops.Length - 1); SetField(pet, "_patrolStepDirection", 1);
+		CallPrivate(pet, "StepPatrol", 0.05f); CallPrivate(pet, "AnimateDog");
+		Require(pet.PatrolTargetIndex == savedStops.Length - 2 && GetField<int>(pet, "_patrolStepDirection") == -1, "Reaching the final stop starts the return toward its adjacent stop.");
+		var bounce = status.GetNode<CheckBox>("%BounceEnabled"); var stationary = status.GetNode<CheckBox>("%Stationary");
+		bounce.ButtonPressed = false;
+		Require(!settings.BounceEnabled && _route.Enabled, "The bounce toggle does not disable the route.");
+		position = pet.PatrolPosition; pet._Process(0.1);
+		Require(pet.PatrolPosition.DistanceTo(position) > 1 && pet.PatrolPosition.DistanceTo(position) <= 12.05f, "With bounce off, patrol still advances at walking speed.");
+		VerifyUprightDog(patrol: true);
+		stationary.ButtonPressed = true;
+		position = pet.PatrolPosition; target = pet.PatrolTargetIndex;
+		var stepDirection = GetField<int>(pet, "_patrolStepDirection"); var phase = GetField<float>(pet, "_stepPhase");
+		for (var frame = 0; frame < 12; frame++) pet._Process(1.0 / 60);
+		Require(settings.Stationary && _route.Enabled && pet.PatrolPosition == position && pet.PatrolTargetIndex == target && GetField<int>(pet, "_patrolStepDirection") == stepDirection && GetField<float>(pet, "_stepPhase") == phase, "Stationary pauses patrol without losing its return direction, target or animation phase.");
+		VerifyUprightDog(patrol: true);
+		var reloadedSettings = new PetSettings(); AddChild(reloadedSettings);
+		Require(reloadedSettings.Stationary && !reloadedSettings.BounceEnabled, "Stationary and bounce preferences persist across a fresh settings load."); reloadedSettings.Free();
+		stationary.ButtonPressed = false; bounce.ButtonPressed = true;
+		pet._Process(0.05);
+		Require(!settings.Stationary && settings.BounceEnabled && pet.PatrolPosition.DistanceTo(position) > 1 && pet.PatrolTargetIndex == target && GetField<int>(pet, "_patrolStepDirection") == stepDirection, "Resuming movement continues the existing return segment rather than restarting the route.");
+	}
+
+	private void VerifyTraversalSequence(Vector2[] stops, int[] expectedTargets)
+	{
+		var pet = _pet!; CommitRoute(stops);
+		SetField(pet, "_patrolPosition", pet.PatrolPointToViewport(stops[0])); SetField(pet, "_patrolTargetIndex", 0); SetField(pet, "_patrolStepDirection", 1);
+		var transitions = new List<int>();
+		const float delta = 1f / 60;
+		for (var frame = 0; frame < 1200 && transitions.Count < expectedTargets.Length; frame++)
+		{
+			var previous = pet.PatrolPosition; var previousTarget = pet.PatrolTargetIndex;
+			CallPrivate(pet, "StepPatrol", delta); CallPrivate(pet, "AnimateDog");
+			var current = pet.PatrolPosition; var target = pet.PatrolTargetIndex;
+			Require(current.IsFinite() && current.DistanceTo(previous) <= 120 * delta + 0.05f, "A return-route frame stays within the walking travel budget.");
+			if (target != previousTarget)
+			{
+				Require(Math.Abs(target - previousTarget) == 1, "Back-and-forth traversal always advances to an adjacent numbered stop.");
+				var stop = pet.PatrolPointToViewport(stops[previousTarget]);
+				Require(Mathf.Abs(previous.DistanceTo(stop) + stop.DistanceTo(current) - 120 * delta) <= 0.1f, "Endpoint reversals spend the remaining frame budget on the adjacent return segment.");
+				transitions.Add(target);
+			}
+			else Require(current.DistanceTo(pet.PatrolPointToViewport(stops[target])) <= previous.DistanceTo(pet.PatrolPointToViewport(stops[target])) + 0.05f, "A return-route frame makes progress toward its current stop.");
+			VerifyArtworkInsideViewport();
+		}
+		Require(transitions.SequenceEqual(expectedTargets), "Back-and-forth visits every forward and return stop, including two-stop and repeated-position routes.");
+	}
+
+	private void VerifyUprightDog(bool patrol)
+	{
+		var pet = _pet!; var visual = GetField<Node2D>(pet, "_visualRoot"); var foot = GetField<Node2D>(pet, "_footAnchor");
+		var scale = GetField<float>(pet, "_dogScale"); var direction = GetField<float>(pet, "_direction");
+		Require(visual.Scale.IsEqualApprox(new Vector2(direction * scale, scale)) && Mathf.IsZeroApprox(visual.Rotation), "Disabled bounce leaves the dog upright with no squash, stretch or rocking.");
+		if (patrol) Require(foot.Position.IsEqualApprox(pet.PatrolPosition), "Disabled bounce places the foot exactly on the patrol path.");
+	}
+
 	private void VerifyResolutionAndEdges(AccessoryWardrobe wardrobe)
 	{
 		var pet = _pet!; var originalSize = GetField<Vector2I>(pet, "_windowSize"); var originalPosition = pet.PatrolPosition;
@@ -326,11 +423,12 @@ public partial class PatrolSmokeTest : Node
 		var pet = _pet!;
 		GetField<Button>(status, "_itemsTabButton").EmitSignal(BaseButton.SignalName.Pressed);
 		var paused = pet.PatrolPosition; var target = pet.PatrolTargetIndex; var phase = GetField<float>(pet, "_stepPhase");
+		var stepDirection = GetField<int>(pet, "_patrolStepDirection");
 		for (var i = 0; i < 12; i++) pet._Process(1.0 / 60);
-		Require(pet.IsAccessoryEditing && !pet.IsPatrolling && pet.PatrolPosition == paused && pet.PatrolTargetIndex == target && GetField<float>(pet, "_stepPhase") == phase, "Items suspends patrol position, target and walk phase while keeping the route enabled.");
+		Require(pet.IsAccessoryEditing && !pet.IsPatrolling && pet.PatrolPosition == paused && pet.PatrolTargetIndex == target && GetField<int>(pet, "_patrolStepDirection") == stepDirection && GetField<float>(pet, "_stepPhase") == phase, "Items suspends patrol position, target, return direction and walk phase while keeping the route enabled.");
 		pet.MoveEditingDog(paused + new Vector2(35, -20)); var edited = pet.EditingPosition;
 		GetField<Button>(status, "_dogsTabButton").EmitSignal(BaseButton.SignalName.Pressed);
-		Require(pet.IsPatrolling && !GetField<bool>(pet, "_fallingToGround") && pet.PatrolTargetIndex == target && pet.PatrolPosition.IsEqualApprox(edited), "Leaving Items resumes its existing target from the dog's edited desktop position.");
+		Require(pet.IsPatrolling && !GetField<bool>(pet, "_fallingToGround") && pet.PatrolTargetIndex == target && GetField<int>(pet, "_patrolStepDirection") == stepDirection && pet.PatrolPosition.IsEqualApprox(edited), "Leaving Items resumes its existing target and return direction from the dog's edited desktop position.");
 		pet._Process(0.1);
 		Require(pet.PatrolPosition.DistanceTo(edited) > 1 && pet.PatrolPosition.DistanceTo(edited) <= 12.05f, "Resumed patrol moves smoothly back toward the route.");
 		status.Hide(); _route.BeginEdit(); await SettleFrames();
@@ -344,11 +442,16 @@ public partial class PatrolSmokeTest : Node
 		CallPrivate(pet, "OpenStatusWindow"); GetField<Button>(status, "_settingsTabButton").EmitSignal(BaseButton.SignalName.Pressed);
 		GetField<CheckBox>(status, "_usePatrolCheck").ButtonPressed = false;
 		Require(!_route.Enabled && !pet.IsPatrolling && GetField<bool>(pet, "_fallingToGround"), "Turning off patrol starts a ground fall while retaining the route.");
+		status.GetNode<CheckBox>("%Stationary").ButtonPressed = true;
 		var oldFps = Engine.MaxFps; Engine.MaxFps = 60; pet.SetProcess(true);
 		try
 		{
 			for (var frame = 0; frame < 180 && GetField<bool>(pet, "_fallingToGround"); frame++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			Require(!GetField<bool>(pet, "_fallingToGround"), "Disabling patrol lands through actual native frames.");
+			Require(!GetField<bool>(pet, "_fallingToGround"), "Disabling patrol still lands through actual native frames with stationary enabled.");
+			var stationaryWalk = GetField<float>(pet, "_walkX");
+			for (var frame = 0; frame < 12; frame++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			Require(GetField<float>(pet, "_walkX") == stationaryWalk, "After landing, stationary keeps the dog at its settled ground position.");
+			status.GetNode<CheckBox>("%Stationary").ButtonPressed = false;
 			var walk = GetField<float>(pet, "_walkX"); var foot = GetField<Node2D>(pet, "_footAnchor");
 			for (var frame = 0; frame < 24; frame++)
 			{
@@ -360,14 +463,39 @@ public partial class PatrolSmokeTest : Node
 			Require(GetField<float>(pet, "_walkX") != walk && _route.Points.SequenceEqual(saved), "The original ground walk resumes while the saved route remains available.");
 		}
 		finally { pet.SetProcess(false); Engine.MaxFps = oldFps; }
+		VerifyGroundMotionPreferences(status);
 		Require(backend.PendingGrantCount == grants && backend.ConfirmedPets == null, "Route controls, mapping, movement and mode transitions never grant or fake pets.");
 		status.Hide(); var opaque = OpaqueDogPoint(); Mouse(opaque, MouseButton.Left, true); Mouse(opaque, MouseButton.Left, false);
-		Require(backend.PendingGrantCount == grants + 1, "Outside editing, one visible dog click still enqueues exactly one pending pet grant.");
+		Require(backend.PendingGrantCount == grants, "A local visible dog click provides feedback without duplicating a global activity grant.");
 		Mouse(Vector2.Zero, MouseButton.Left, true);
-		Require(backend.PendingGrantCount == grants + 1, "Empty overlay space outside editing cannot grant a pet.");
+		Require(backend.PendingGrantCount == grants, "Local overlay input never bypasses the single global activity earning path.");
+		pet.RecordInputActivity(3);
+		Require(backend.PendingGrantCount == grants + 3 && backend.ConfirmedPets == null, "Three observed global input activities enqueue three independent grants without inventing a confirmed total.");
+		pet.RecordInputActivity(0); pet.RecordInputActivity(-1);
+		Require(backend.PendingGrantCount == grants + 3, "Empty and invalid global activity batches add no grants.");
 		CallPrivate(pet, "OpenStatusWindow"); GetField<Button>(status, "_settingsTabButton").EmitSignal(BaseButton.SignalName.Pressed);
 		GetField<Button>(status, "_clearPatrolButton").EmitSignal(BaseButton.SignalName.Pressed);
 		Require(_route.Points.Count == 0 && !pet.IsPatrolling && GetField<CheckBox>(status, "_usePatrolCheck").Disabled, "Clear route restores the empty Settings state and original walk.");
+	}
+
+	private void VerifyGroundMotionPreferences(StatusWindow status)
+	{
+		var pet = _pet!; var stationary = status.GetNode<CheckBox>("%Stationary"); var bounce = status.GetNode<CheckBox>("%BounceEnabled");
+		SetField(pet, "_walkX", GetField<Vector2I>(pet, "_windowSize").X * 0.5f);
+		bounce.ButtonPressed = false;
+		var walk = GetField<float>(pet, "_walkX"); pet._Process(0.1);
+		Require(Mathf.Abs(GetField<float>(pet, "_walkX") - walk) > 1 && Mathf.Abs(GetField<float>(pet, "_walkX") - walk) <= 12.05f, "Ground walking continues at its existing speed with bounce disabled.");
+		VerifyUprightDog(patrol: false);
+		var foot = GetField<Node2D>(pet, "_footAnchor");
+		var extents = ((float, float, float))CallPrivate(pet, "GetAppearanceExtents")!;
+		Require(Mathf.IsEqualApprox(foot.Position.Y, GetField<Vector2I>(pet, "_windowSize").Y - 2 - extents.Item2), "Bounce off keeps the foot exactly on the ground.");
+		bounce.ButtonPressed = true; stationary.ButtonPressed = true;
+		walk = GetField<float>(pet, "_walkX"); var phase = GetField<float>(pet, "_stepPhase"); var position = foot.Position;
+		for (var frame = 0; frame < 12; frame++) pet._Process(1.0 / 60);
+		Require(GetField<float>(pet, "_walkX") == walk && GetField<float>(pet, "_stepPhase") == phase && foot.Position == position, "Stationary pauses ground walking and animation even when bounce remains enabled.");
+		VerifyUprightDog(patrol: false);
+		stationary.ButtonPressed = false; pet._Process(0.05);
+		Require(GetField<float>(pet, "_walkX") != walk, "Turning off stationary resumes ground walking from its paused position.");
 	}
 
 	private void VerifyArtworkInsideViewport()

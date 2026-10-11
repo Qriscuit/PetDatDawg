@@ -53,6 +53,7 @@ public partial class DesktopPet : Node2D
 	private readonly Dictionary<string, PetTextAccessory> _textAccessories = new();
 	private Rect2 _appearanceLocalRect;
 	private NativeWindowBridge? _nativeWindowBridge;
+	private GlobalInputMonitor? _globalInputMonitor;
 	private StatusWindow? _statusWindow;
 	private AccessoryEditingSession? _editingSession;
 	private DesktopAccessoryControls? _accessoryControls;
@@ -61,6 +62,8 @@ public partial class DesktopPet : Node2D
 	private bool _patrolRunning, _patrolEditing;
 	private Vector2 _patrolPosition;
 	private int _patrolTargetIndex;
+	private int _patrolStepDirection = 1;
+	private PatrolTraversalMode _patrolTraversalMode = PatrolTraversalMode.Loop;
 	private Vector2[] _patrolSnapshot = Array.Empty<Vector2>();
 	private bool _accessoryEditing, _fallingToGround;
 	private Vector2 _editPosition;
@@ -106,6 +109,8 @@ public partial class DesktopPet : Node2D
 		_settings = GetNodeOrNull<PetSettings>("/root/PetSettings");
 		_wardrobe = GetNodeOrNull<AccessoryWardrobe>("/root/AccessoryWardrobe");
 		_nativeWindowBridge = GetNodeOrNull<NativeWindowBridge>("/root/NativeWindowBridge");
+		_globalInputMonitor = GetNodeOrNull<GlobalInputMonitor>("/root/GlobalInputMonitor");
+		if (_globalInputMonitor != null) _globalInputMonitor.ActivityObserved += RecordInputActivity;
 		_editingSession = GetNodeOrNull<AccessoryEditingSession>("/root/AccessoryEditingSession");
 		_patrolRoute = GetNodeOrNull<PatrolRoute>("/root/PatrolRoute");
 		_lastAlwaysOnTop = _settings?.AlwaysOnTop ?? PetSettings.DefaultAlwaysOnTop;
@@ -179,7 +184,7 @@ public partial class DesktopPet : Node2D
 		_accessoryControls?.PollPointer();
 		_patrolEditor?.PollPointer();
 		if (_fallingToGround) UpdateDogFall(deltaF);
-		else if (!_accessoryEditing && !_patrolEditing)
+		else if (!_accessoryEditing && !_patrolEditing && !IsStationary)
 		{
 			if (_patrolRunning) StepPatrol(deltaF);
 			else StepDog(deltaF);
@@ -204,7 +209,7 @@ public partial class DesktopPet : Node2D
 		{
 			_patrolEditor?.HandleInput(inputEvent);
 			GetViewport().SetInputAsHandled();
-			return; // Mapping route stops never grants pets or opens the dog menu.
+			return; // Route gestures stay separate from dog feedback and menus.
 		}
 		if (_accessoryEditing)
 		{
@@ -219,7 +224,7 @@ public partial class DesktopPet : Node2D
 					GetViewport().SetInputAsHandled();
 				}
 			}
-			return; // Editing gestures never pet the dog or enqueue currency grants.
+			return; // Editing gestures stay separate from dog feedback and menus.
 		}
 		if (ShouldDogPassThrough())
 		{
@@ -243,8 +248,7 @@ public partial class DesktopPet : Node2D
 
 		if (mouseButton.ButtonIndex == MouseButton.Left)
 		{
-			_backend.EnqueuePetGrant(Guid.NewGuid());
-			if (_validatePets) GD.Print($"PET_VALIDATION: visible dog click queued; pending={_backend.PendingGrantCount}");
+			// Global input counts this same physical click. Local dog input only adds feedback.
 			SpawnFloatingHeart();
 		}
 		else
@@ -255,6 +259,12 @@ public partial class DesktopPet : Node2D
 		GetViewport().SetInputAsHandled();
 	}
 
+	internal void RecordInputActivity(int count)
+	{
+		for (var index = 0; index < count; index++) _backend.EnqueuePetGrant(Guid.NewGuid());
+		if (_validatePets && count > 0) GD.Print($"PET_VALIDATION: background inputs queued; count={count}; pending={_backend.PendingGrantCount}");
+	}
+
 	public override void _UnhandledKeyInput(InputEvent inputEvent)
 	{
 		if (inputEvent is InputEventKey key && _accessoryControls?.HandleKey(key) == true)
@@ -263,6 +273,7 @@ public partial class DesktopPet : Node2D
 
 	public override void _ExitTree()
 	{
+		if (_globalInputMonitor != null) _globalInputMonitor.ActivityObserved -= RecordInputActivity;
 		if (_patrolRoute != null)
 		{
 			_patrolRoute.Changed -= OnPatrolRouteChanged;
@@ -577,6 +588,11 @@ public partial class DesktopPet : Node2D
 	private void OnPatrolRouteChanged()
 	{
 		if (_patrolRoute == null) return;
+		if (_patrolTraversalMode != _patrolRoute.TraversalMode)
+		{
+			_patrolTraversalMode = _patrolRoute.TraversalMode;
+			_patrolStepDirection = 1;
+		}
 		var points = _patrolRoute.Points;
 		var routeChanged = points.Count != _patrolSnapshot.Length;
 		for (var i = 0; !routeChanged && i < points.Count; i++) routeChanged = points[i] != _patrolSnapshot[i];
@@ -585,6 +601,7 @@ public partial class DesktopPet : Node2D
 			_patrolSnapshot = new Vector2[points.Count];
 			for (var i = 0; i < points.Count; i++) _patrolSnapshot[i] = points[i];
 			_patrolTargetIndex = 0;
+			_patrolStepDirection = 1;
 		}
 		var enabled = _patrolRoute.Enabled && points.Count >= 2;
 		if (enabled == _patrolRunning) return;
@@ -594,6 +611,7 @@ public partial class DesktopPet : Node2D
 		{
 			_fallingToGround = false;
 			_patrolTargetIndex = 0;
+			_patrolStepDirection = 1;
 			EnsurePatrolOverlay(force: true);
 			_patrolPosition = ClampPatrolPoint(screenFoot - (Vector2)DisplayServer.WindowGetPosition(MainWindowId));
 		}
@@ -642,7 +660,8 @@ public partial class DesktopPet : Node2D
 	}
 
 	internal bool IsPatrolEditing => _patrolEditing;
-	internal bool IsPatrolling => _patrolRunning && !_patrolEditing && !_accessoryEditing && !_fallingToGround;
+	private bool IsStationary => _settings?.Stationary ?? PetSettings.DefaultStationary;
+	internal bool IsPatrolling => _patrolRunning && !IsStationary && !_patrolEditing && !_accessoryEditing && !_fallingToGround;
 	internal Vector2 PatrolPosition => _patrolPosition;
 	internal int PatrolTargetIndex => _patrolTargetIndex;
 	internal Vector2 PatrolPointToViewport(Vector2 normalized) => ClampPatrolPoint(normalized * (Vector2)_windowSize);
@@ -658,6 +677,7 @@ public partial class DesktopPet : Node2D
 
 	private void StepDog(float delta)
 	{
+		if (IsStationary) return;
 		_stepPhase += delta * StepFrequency;
 		_walkX += _direction * WalkSpeed * delta;
 
@@ -677,14 +697,14 @@ public partial class DesktopPet : Node2D
 
 	private void StepPatrol(float delta)
 	{
-		if (_patrolRoute == null || _patrolRoute.Points.Count < 2 || !float.IsFinite(delta) || delta <= 0) return;
+		if (IsStationary || _patrolRoute == null || _patrolRoute.Points.Count < 2 || !float.IsFinite(delta) || delta <= 0) return;
 		_stepPhase += delta * StepFrequency;
 		var remaining = WalkSpeed * delta;
 		// Multiple points can be crossed in one frame. Bound the work even if a
 		// resolution change clamps several stops onto the same screen position.
 		for (var visits = 0; remaining > 0 && visits < 64; visits++)
 		{
-			_patrolTargetIndex %= _patrolRoute.Points.Count;
+			_patrolTargetIndex = Math.Clamp(_patrolTargetIndex, 0, _patrolRoute.Points.Count - 1);
 			var target = PatrolPointToViewport(_patrolRoute.Points[_patrolTargetIndex]);
 			var difference = target - _patrolPosition;
 			var distance = difference.Length();
@@ -696,7 +716,13 @@ public partial class DesktopPet : Node2D
 			}
 			_patrolPosition = target;
 			remaining -= distance;
-			_patrolTargetIndex = (_patrolTargetIndex + 1) % _patrolRoute.Points.Count;
+			if (_patrolTraversalMode == PatrolTraversalMode.BackAndForth)
+			{
+				if (_patrolTargetIndex == _patrolRoute.Points.Count - 1) _patrolStepDirection = -1;
+				else if (_patrolTargetIndex == 0) _patrolStepDirection = 1;
+				_patrolTargetIndex += _patrolStepDirection;
+			}
+			else _patrolTargetIndex = (_patrolTargetIndex + 1) % _patrolRoute.Points.Count;
 		}
 		_walkX = _patrolPosition.X;
 	}
@@ -705,9 +731,10 @@ public partial class DesktopPet : Node2D
 	{
 		// Rest while customizing, including redraws caused by live accessory/settings edits.
 		var resting = _accessoryEditing || _patrolEditing || _fallingToGround;
-		var hop = resting ? 0.0f : Mathf.Abs(Mathf.Sin(_stepPhase));
-		var squash = resting ? 1.0f : 1.0f + (1.0f - hop) * 0.07f;
-		var stretch = resting ? 1.0f : 1.0f + hop * 0.05f;
+		var bouncing = !resting && !IsStationary && (_settings?.BounceEnabled ?? PetSettings.DefaultBounceEnabled);
+		var hop = bouncing ? Mathf.Abs(Mathf.Sin(_stepPhase)) : 0.0f;
+		var squash = bouncing ? 1.0f + (1.0f - hop) * 0.07f : 1.0f;
+		var stretch = bouncing ? 1.0f + hop * 0.05f : 1.0f;
 
 		_footAnchor.Position = resting ? _editPosition : _patrolRunning
 			? _patrolPosition - new Vector2(0, hop * HopHeight) : new Vector2(
@@ -715,7 +742,7 @@ public partial class DesktopPet : Node2D
 			_windowSize.Y - GroundMargin - GetAppearanceExtents().Bottom - hop * HopHeight
 		);
 		_visualRoot.Scale = new Vector2(_direction * _dogScale * squash, _dogScale * stretch);
-		_visualRoot.Rotation = resting ? 0.0f : Mathf.Sin(_stepPhase * 0.5f) * 0.035f * _direction;
+		_visualRoot.Rotation = bouncing ? Mathf.Sin(_stepPhase * 0.5f) * 0.035f * _direction : 0.0f;
 		foreach (var textBox in _textAccessories.Values)
 			textBox.Scale = new Vector2(Mathf.Abs(textBox.Scale.X) * _direction, textBox.Scale.Y);
 	}
@@ -825,7 +852,7 @@ public partial class DesktopPet : Node2D
 		}
 
 		// Windows also clips rendering to this region, so include accessory overhang.
-		// _Input still checks only the original dog texture alpha before granting a pet.
+		// Local dog feedback/menu hits still check the original texture alpha.
 		var rect = _appearanceLocalRect;
 		var globalBounds = AccessoryGeometry.BoundsFromCorners(_dogSprite, rect);
 		foreach (var heart in _floatingHearts)
@@ -1070,7 +1097,7 @@ public partial class DesktopPet : Node2D
 
 	private void UpdateStatusWindow()
 	{
-		_statusWindow?.UpdateStatus(_backend.ConfirmedPets, _backend.PendingGrantCount, _backend.Status, _steam.Status, _steam.IsInitialized, _backend.IsAuthenticated);
+		_statusWindow?.UpdateStatus(_backend.ConfirmedPets, _backend.Status, _steam.Status, _steam.IsInitialized, _backend.IsAuthenticated);
 	}
 
 	private bool IsVisibleDogPixel(Vector2 viewportPosition)

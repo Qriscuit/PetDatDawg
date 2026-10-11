@@ -28,12 +28,13 @@ To explicitly test three real Pet grants:
 one GUID through the production in-memory queue, waits for confirmation, verifies
 an increase of exactly one, and verifies that a fresh Worker inventory read
 retains it. Final native Steam inventory must match the Worker total. With
-`-UseDogInput`, each grant calls the real `DesktopPet._Input` with a pressed
-left-click positioned over an opaque texture pixel; the test also verifies that
-positions outside the sprite and mouse release cannot grant Pets. The separate
-offline inventory smoke checks an actual alpha-zero pixel in the dog texture.
-Actual Windows pointer delivery and click passthrough still require a separate
-desktop interaction check.
+`-UseDogInput`, each grant calls the real `DesktopPet._Input` for visible-dog
+feedback and then supplies one observed activity through `RecordInputActivity`.
+Local mouse delivery is checked to ensure it cannot duplicate a background
+grant. Every runner disables the native global listener using
+`PDD_DISABLE_GLOBAL_INPUT=1`, so desktop activity cannot contaminate a zero-grant
+check or exceed the explicitly requested count. Physical background keyboard
+and mouse delivery and click passthrough require a separate desktop check.
 
 If native Steam inventory access is unavailable, an explicit Worker-only run can
 validate the production click → Worker → Steam path independently of that SDK

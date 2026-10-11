@@ -6,6 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $accessoryProjectPath = Split-Path -Parent $PSScriptRoot
 $accessoryOldSteam = $env:PDD_DISABLE_STEAM
+$accessoryOldGlobalInput = $env:PDD_DISABLE_GLOBAL_INPUT
 $accessoryOldTray = $env:PDD_DISABLE_TRAY
 $accessoryOldAppData = $env:APPDATA
 $accessoryOldLocalAppData = $env:LOCALAPPDATA
@@ -13,6 +14,7 @@ $accessoryOldTemp = $env:TEMP
 $accessoryOldTmp = $env:TMP
 try {
     $env:PDD_DISABLE_STEAM = '1'
+    $env:PDD_DISABLE_GLOBAL_INPUT = '1'
     $env:PDD_DISABLE_TRAY = '1'
     $env:APPDATA = Join-Path $accessoryProjectPath '.godot\accessory-smoke-home\Roaming'
     $env:LOCALAPPDATA = Join-Path $accessoryProjectPath '.godot\accessory-smoke-home\Local'
@@ -41,6 +43,7 @@ try {
 }
 finally {
     $env:PDD_DISABLE_STEAM = $accessoryOldSteam
+    $env:PDD_DISABLE_GLOBAL_INPUT = $accessoryOldGlobalInput
     $env:PDD_DISABLE_TRAY = $accessoryOldTray
     $env:APPDATA = $accessoryOldAppData
     $env:LOCALAPPDATA = $accessoryOldLocalAppData

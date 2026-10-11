@@ -64,6 +64,7 @@ public partial class AccessoryEditor : VBoxContainer
 	private bool _syncingTransform, _transformDragging;
 	private Button? _advancedColorButton;
 	private ScrollContainer? _catalogScroll;
+	private Label? _catalogHeading;
 	private VBoxContainer? _inspector;
 	private HBoxContainer? _colorControls;
 	private ColorPickerButton? _colorPicker;
@@ -126,6 +127,7 @@ public partial class AccessoryEditor : VBoxContainer
 		_resetColorButton = GetNode<Button>("%ResetAccessoryColor");
 		_colorLabel = GetNode<Label>("%AccessoryColorLabel");
 		_catalogScroll = GetNode<ScrollContainer>("%AccessoryCatalogScroll");
+		_catalogHeading = GetNode<Label>("%AccessoryCatalogHeading");
 		_inspector = GetNode<VBoxContainer>("%AccessoryInspector");
 	}
 
@@ -210,7 +212,6 @@ public partial class AccessoryEditor : VBoxContainer
 			row.Configure(category, items.Length);
 			foreach (var item in items) row.AddCard(CreateCard(item));
 		}
-		GetNode<Label>("%AccessoryCatalogHeading").Text = FormatCopy(CatalogHeadingFormat, "count", _wardrobe.Catalog.Count.ToString(System.Globalization.CultureInfo.InvariantCulture));
 	}
 
 	public override void _ExitTree()
@@ -423,17 +424,35 @@ public partial class AccessoryEditor : VBoxContainer
 			equippedIds.Add(placement.Id);
 		}
 		string? selectedName = null;
+		var availableCounts = _categoryRows.Keys.ToDictionary(category => category, _ => 0);
+		var availableCount = 0;
 		foreach (var accessory in _wardrobe.Catalog)
 		{
+			var available = _wardrobe.CanEquip(accessory.Id);
+			var card = _cards[accessory.Id];
+			if (!available && card.HasFocus()) card.ReleaseFocus();
+			card.Visible = available;
+			if (available)
+			{
+				availableCount++;
+				availableCounts[AccessoryCategories.For(accessory)]++;
+			}
 			var selected = accessory.Id == _session.SelectedId;
 			if (selected)
 			{
 				selectedName = accessory.Name;
 			}
-			_cards[accessory.Id].SetPressedNoSignal(selected);
+			card.SetPressedNoSignal(selected);
 			_cardTextures[accessory.Id].Modulate = _wardrobe.GetTint(accessory.Id);
-			((AccessoryCard)_cards[accessory.Id]).RefreshStatus(selected && _session.IsPlacing, equippedIds.Contains(accessory.Id), accessory.IsText, _wardrobe.CanEquip(accessory.Id));
+			((AccessoryCard)card).RefreshStatus(selected && _session.IsPlacing, equippedIds.Contains(accessory.Id), accessory.IsText, available);
 		}
+		foreach (var (category, row) in _categoryRows)
+		{
+			var count = availableCounts[category];
+			row.SetAvailableCount(count);
+			row.Visible = count > 0;
+		}
+		_catalogHeading!.Text = FormatCopy(CatalogHeadingFormat, "count", availableCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
 		_selectionLabel!.Text = selectedName ?? NoSelectionText;
 		_selectionLabel.TooltipText = FormatCopy(SelectionTooltipFormat, "name", _selectionLabel.Text);
 		_removeButton!.Disabled = _session.SelectedId == null || !equippedIds.Contains(_session.SelectedId);

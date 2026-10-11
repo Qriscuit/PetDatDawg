@@ -48,6 +48,7 @@ public partial class UiAuthoringSmokeTest : Node
 			status.InitialTab = 0;
 			Require(status.GetNode<Control>("%DogsPage").Visible && !status.GetNode<Control>("%SettingsPage").Visible,
 				"Changing InitialTab updates the editor preview without gameplay.");
+			VerifyDogCollectionStructure(status);
 			var editor = status.GetNode<AccessoryEditor>("%AccessoryEditor");
 			Require(GetField<object?>(editor, "_wardrobe") == null && GetField<object?>(editor, "_session") == null,
 				"Accessory inspector's editor preview does not subscribe to gameplay.");
@@ -82,7 +83,9 @@ public partial class UiAuthoringSmokeTest : Node
 			wardrobe.StoragePath = $"{OutputDirectory}/outfit.cfg";
 			var route = GetNode<PatrolRoute>("/root/PatrolRoute"); route.StoragePath = $"{OutputDirectory}/route.cfg";
 			var settings = GetNode<PetSettings>("/root/PetSettings"); settings.SetUiScale(1);
+			settings.SetStationary(false); settings.SetBounceEnabled(true);
 			await VerifySavedSceneOverrides(settings);
+			await VerifyMovementSettings(settings, route);
 			await VerifyAccessoryTemplateOverrides(wardrobe);
 			VerifyDesktopAppearanceOverrides();
 			await VerifyFloatingTemplates(wardrobe, route);
@@ -137,11 +140,20 @@ public partial class UiAuthoringSmokeTest : Node
 		authored.Visible = false; authored.InitialTab = 3;
 		authored.ShowDetailsText = "Connection details"; authored.HideDetailsText = "Close details";
 		authored.SetRouteText = "Draw my route"; authored.EditRouteText = "Change my route";
-		authored.PetsTotalFormat = "Confirmed: {count}"; authored.PendingClickFormat = "Pending one: {count}";
-		authored.PendingClicksFormat = "Pending several: {count}"; authored.ServiceStatusFormat = "My service: {status}";
+		authored.PetsTotalFormat = "Confirmed: {count}"; authored.ServiceStatusFormat = "My service: {status}";
 		authored.ConnectedText = "Everything connected"; authored.NoPatrolRouteText = "Ready to draw a route";
-		authored.GetNode<Label>("%PendingPets").TooltipText = "My pending-click explanation";
+		authored.StationaryPatrolText = "My dog is resting";
+		authored.GetNode<CheckBox>("%Stationary").Text = "My resting preference";
+		authored.GetNode<CheckBox>("%BounceEnabled").Text = "My bounce preference";
+		var authoredTraversal = authored.GetNode<OptionButton>("%PatrolTraversalMode");
+		authoredTraversal.SetItemText(authoredTraversal.GetItemIndex((int)PatrolTraversalMode.Loop), "My loop");
+		authoredTraversal.SetItemText(authoredTraversal.GetItemIndex((int)PatrolTraversalMode.BackAndForth), "My return walk");
 		authored.GetNode<Label>("%PatrolRouteSaveStatus").Text = "My save-failure explanation";
+		authored.GetNode<Label>("%EmptyDogPresets").Text = "My saved companions will appear here";
+		authored.GetNode<Button>("%OpenDogPresets").TooltipText = "My preset-management explanation";
+		authored.GetNode<GridContainer>("%DogPresetGrid").AddThemeConstantOverride("h_separation", 19);
+		authored.GetNode<GridContainer>("%DogPresetGrid").AddThemeConstantOverride("v_separation", 21);
+		authored.GetNode<GridContainer>("%DogGrid").AddThemeConstantOverride("h_separation", 23);
 		authored.Size = new Vector2I(688, 730); authored.MinSize = new Vector2I(400, 500);
 		authored.ContentScaleFactor = 1.1f;
 		var theme = (Theme)authored.Theme.Duplicate(true);
@@ -172,14 +184,13 @@ public partial class UiAuthoringSmokeTest : Node
 			"Runtime startup keeps the authored menu dimensions and content factor.");
 		Require(reloaded.GetNode<Control>("%SettingsPage").IsVisibleInTree(), "Authored InitialTab controls runtime startup.");
 		Require(GetField<AccessoryEditor>(reloaded, "_accessoryEditor").GetChildCount() > 0, "The authored accessory inspector binds its live controls.");
-		reloaded.UpdateStatus(null, 1, "Connecting", "Offline");
-		Require(reloaded.GetNode<Label>("%PendingPets").TooltipText == "My pending-click explanation"
-			&& reloaded.GetNode<Label>("%PatrolRouteSaveStatus").Text == "My save-failure explanation",
-			"Live status refresh preserves authored static tooltips and save explanations.");
+		reloaded.UpdateStatus(null, "Connecting", "Offline");
+		Require(reloaded.GetNode<Label>("%PatrolRouteSaveStatus").Text == "My save-failure explanation",
+			"Live status refresh preserves authored save explanations.");
 		Require(reloaded.GetNode<Button>("%EditPatrolRoute").Text == "Draw my route", "Route captions use their Inspector-exported text.");
-		reloaded.UpdateStatus(1234, 2, "Ready", "Ready", true, true);
+		reloaded.UpdateStatus(1234, "Ready", "Ready", true, true);
 		Require(reloaded.GetNode<Label>("%PetsValue").Text == "Confirmed: 1,234"
-			&& reloaded.GetNode<Label>("%PendingPets").Text == "Pending several: 2"
+			&& reloaded.GetNodeOrNull<Label>("%PendingPets") == null
 			&& reloaded.GetNode<Label>("%BackendStatus").Text == "My service: Ready"
 			&& reloaded.GetNode<Label>("%ConnectionSummary").Text == "Everything connected"
 			&& reloaded.GetNode<Label>("%PatrolRouteSummary").Text == "Ready to draw a route",
@@ -203,6 +214,8 @@ public partial class UiAuthoringSmokeTest : Node
 			"Returning menu scale to 100% restores the authored base size and content factor.");
 		reloaded.GetNode<Button>("%DogsTab").EmitSignal(BaseButton.SignalName.Pressed);
 		Require(reloaded.GetNode<Control>("%DogsPage").Visible, "The reparented unique-name tab still runs its bound action.");
+		VerifyDogCollectionStructure(reloaded);
+		await Capture(reloaded, "authored-dogs");
 		reloaded.GetNode<Button>("%SettingsTab").EmitSignal(BaseButton.SignalName.Pressed);
 		await Capture(reloaded, "authored-settings");
 		reloaded.GetNode<Button>("%ItemsTab").EmitSignal(BaseButton.SignalName.Pressed);
@@ -222,6 +235,86 @@ public partial class UiAuthoringSmokeTest : Node
 		Require(button.GetThemeStylebox("normal") is StyleBoxFlat style && style.BgColor == Colors.MediumPurple,
 			$"Authored StyleBox override survives {stage}.");
 		Require(button.GetParent().Name == "BrandRow", $"Authored hierarchy changes survive {stage}.");
+		Require(window.GetNode<CheckBox>("%Stationary").Text == "My resting preference"
+			&& window.GetNode<CheckBox>("%BounceEnabled").Text == "My bounce preference"
+			&& window.StationaryPatrolText == "My dog is resting", $"Authored movement captions survive {stage}.");
+		var traversal = window.GetNode<OptionButton>("%PatrolTraversalMode");
+		Require(traversal.GetItemText(traversal.GetItemIndex((int)PatrolTraversalMode.Loop)) == "My loop"
+			&& traversal.GetItemText(traversal.GetItemIndex((int)PatrolTraversalMode.BackAndForth)) == "My return walk",
+			$"Authored traversal choices retain their captions and stable IDs {stage}.");
+		Require(window.GetNode<Label>("%EmptyDogPresets").Text == "My saved companions will appear here"
+			&& window.GetNode<Button>("%OpenDogPresets").TooltipText == "My preset-management explanation",
+			$"Authored saved-dog guidance and management tooltip survive {stage}.");
+		Require(window.GetNode<GridContainer>("%DogPresetGrid").GetThemeConstant("h_separation") == 19
+			&& window.GetNode<GridContainer>("%DogPresetGrid").GetThemeConstant("v_separation") == 21
+			&& window.GetNode<GridContainer>("%DogGrid").GetThemeConstant("h_separation") == 23,
+			$"Authored saved-outfit and owned-dog grid spacing survives {stage}.");
+	}
+
+	private void VerifyDogCollectionStructure(StatusWindow window)
+	{
+		var presets = window.GetNode<GridContainer>("%DogPresetGrid"); var dogs = window.GetNode<GridContainer>("%DogGrid");
+		var scroll = Ancestor<ScrollContainer>(presets);
+		Require(scroll != null && Ancestor<ScrollContainer>(dogs) == scroll && scroll.HorizontalScrollMode == ScrollContainer.ScrollMode.ShowNever,
+			"The authored Dogs page places saved outfits and owned dogs in one vertical scroll container.");
+		Require(window.GetNodeOrNull<OptionButton>("%DogChoices") == null && window.GetNodeOrNull<TextureRect>("%DogPortrait") == null,
+			"Dogs selection is authored as preview-card collections rather than the previous portrait and dropdown.");
+		Require(window.GetNode<Label>("%EmptyDogPresets") != null && window.GetNode<Label>("%DogPresetStatus") != null,
+			"The embedded saved-outfit collection exposes authored empty guidance and result text.");
+	}
+	private static T? Ancestor<T>(Node node) where T : Node
+	{
+		for (var parent = node.GetParent(); parent != null; parent = parent.GetParent()) if (parent is T result) return result;
+		return null;
+	}
+
+	private async Task VerifyMovementSettings(PetSettings settings, PatrolRoute route)
+	{
+		var originalStationary = settings.Stationary;
+		var originalBounce = settings.BounceEnabled;
+		try
+		{
+			settings.SetStationary(false); settings.SetBounceEnabled(true);
+			route.ClearRoute(); route.SetTraversalMode(PatrolTraversalMode.Loop);
+			var status = LoadScene<StatusWindow>("res://StatusWindow.tscn");
+			status.Visible = false; status.InitialTab = 3;
+			AddFixture(status); status.Configure(settings);
+			var stationary = status.GetNode<CheckBox>("%Stationary");
+			var bounce = status.GetNode<CheckBox>("%BounceEnabled");
+			var traversal = status.GetNode<OptionButton>("%PatrolTraversalMode");
+			Require(!stationary.ButtonPressed && bounce.ButtonPressed, "Movement controls reflect the existing walk and bounce defaults.");
+			stationary.ButtonPressed = true; bounce.ButtonPressed = false;
+			Require(settings.Stationary && !settings.BounceEnabled, "Movement controls update independent saved preferences.");
+			Require(status.GetNode<Label>("%PatrolRouteSummary").Text == status.StationaryPatrolText,
+				"Without a route the status explains that automatic walking is paused.");
+			var reloadedSettings = new PetSettings(); AddFixture(reloadedSettings);
+			Require(reloadedSettings.Stationary && !reloadedSettings.BounceEnabled, "Stationary and bounce preferences survive a settings reload.");
+			Require(route.BeginEdit(), "The movement smoke can start an isolated route edit.");
+			route.AddPoint(new Vector2(0.2f, 0.4f)); route.AddPoint(new Vector2(0.5f, 0.6f)); route.AddPoint(new Vector2(0.8f, 0.4f));
+			Require(route.FinishEdit(), "The movement smoke creates three distinct stops.");
+			var backAndForthIndex = traversal.GetItemIndex((int)PatrolTraversalMode.BackAndForth);
+			traversal.Select(backAndForthIndex); traversal.EmitSignal(OptionButton.SignalName.ItemSelected, backAndForthIndex);
+			Require(route.TraversalMode == PatrolTraversalMode.BackAndForth
+				&& status.GetNode<Label>("%PatrolRouteSummary").Text.Contains("1 → 2 → 3 → 2 → 1", StringComparison.Ordinal),
+				"Back and forth saves the selected mode and shows the actual reverse visit order.");
+			var reloadedRoute = new PatrolRoute { StoragePath = route.StoragePath }; AddFixture(reloadedRoute);
+			Require(reloadedRoute.TraversalMode == PatrolTraversalMode.BackAndForth && reloadedRoute.Points.Count == 3,
+				"The movement mode and route reload together.");
+			stationary.ButtonPressed = false;
+			Require(route.Enabled && route.Points.Count == 3 && status.GetNode<Label>("%PatrolRouteSummary").Text.Contains(status.PatrolEnabledText, StringComparison.Ordinal),
+				"Resuming walking keeps the saved patrol enabled and restores its active summary.");
+			route.SetTraversalMode(PatrolTraversalMode.Loop);
+			Require(traversal.GetSelectedId() == (int)PatrolTraversalMode.Loop
+				&& status.GetNode<Label>("%PatrolRouteSummary").Text.Contains("1 → 2 → 3 → 1", StringComparison.Ordinal),
+				"A model change refreshes the dropdown and loop summary without replaying a UI action.");
+			await Settle(); status.Hide(); status.SetProcess(false);
+		}
+		finally
+		{
+			if (route.IsEditing) route.CancelEdit();
+			route.ClearRoute(); route.SetTraversalMode(PatrolTraversalMode.Loop);
+			settings.SetStationary(originalStationary); settings.SetBounceEnabled(originalBounce);
+		}
 	}
 
 	private async Task VerifyAccessoryTemplateOverrides(AccessoryWardrobe wardrobe)

@@ -11,11 +11,13 @@ public partial class StatusWindow
 	private AccessoryWardrobe? _inventoryWardrobe;
 	private CancellationToken _inventoryCancellation;
 	private Button? _buyDogBox, _buyAccessoryBox, _openBox, _refreshInventory;
-	private OptionButton? _boxChoices, _dogChoices;
-	private Label? _boxSummary, _shopStatus;
-	private TextureRect? _dogPortrait;
+	private OptionButton? _boxChoices;
+	private Label? _boxSummary, _shopStatus, _dogSelectionStatus;
+	private GridContainer? _dogGrid;
+	private ScrollContainer? _dogChoiceScroll;
+	private PackedScene? _dogChoiceCardScene;
+	private readonly Dictionary<int, Button> _dogCards = new();
 	private IReadOnlyList<SteamInventoryItem>? _displayedInventory;
-	private string _displayedDogPath = string.Empty;
 	private IReadOnlyList<SteamInventoryItem> _displayedBoxes = Array.Empty<SteamInventoryItem>();
 
 	private void BindInventoryControls()
@@ -25,24 +27,18 @@ public partial class StatusWindow
 		_openBox = GetNodeOrNull<Button>("%OpenBox");
 		_refreshInventory = GetNodeOrNull<Button>("%RefreshInventory");
 		_boxChoices = GetNodeOrNull<OptionButton>("%BoxChoices");
-		_dogChoices = GetNodeOrNull<OptionButton>("%DogChoices");
+		_dogGrid = GetNodeOrNull<GridContainer>("%DogGrid");
+		_dogChoiceScroll = GetNodeOrNull<ScrollContainer>("%DogsScroll");
+		_dogSelectionStatus = GetNodeOrNull<Label>("%DogSelectionStatus");
+		if (_dogGrid != null)
+			foreach (var preview in _dogGrid.GetChildren()) { _dogGrid.RemoveChild(preview); preview.QueueFree(); }
 		_boxSummary = GetNodeOrNull<Label>("%BoxSummary");
 		_shopStatus = GetNodeOrNull<Label>("%ShopStatus");
-		_dogPortrait = GetNodeOrNull<TextureRect>("%DogPortrait");
 		if (_buyDogBox != null) _buyDogBox.Pressed += () => _ = RunInventoryAction("dog");
 		if (_buyAccessoryBox != null) _buyAccessoryBox.Pressed += () => _ = RunInventoryAction("accessory");
 		if (_openBox != null) _openBox.Pressed += () => _ = RunInventoryAction("open");
 		if (_refreshInventory != null) _refreshInventory.Pressed += () => _ = RunInventoryAction("refresh");
 		if (_boxChoices != null) _boxChoices.ItemSelected += _ => UpdateInventoryControls();
-		if (_dogChoices != null)
-		{
-			_dogChoices.AddItem("Starter dog", 0);
-			_dogChoices.ItemSelected += index =>
-			{
-				_inventoryWardrobe?.SelectDog(_dogChoices.GetItemId((int)index));
-				UpdateInventoryControls();
-			};
-		}
 		UpdateInventoryControls();
 	}
 
@@ -104,33 +100,73 @@ public partial class StatusWindow
 					SteamCosmeticCatalog.Find(item.ItemDefId)?.Name ?? (item.ItemDefId == 1001 ? "Dog Box" : item.ItemDefId == 1000 ? "Accessories Box" : "Pets")))
 				: backend.Status;
 		}
-		if (_dogChoices != null)
+		RefreshDogGrid();
+	}
+
+	private void RefreshDogGrid()
+	{
+		if (_dogGrid == null) return;
+		var ownedDogs = SteamCosmeticCatalog.All.Where(dog => dog.Kind == "dog" && _inventoryWardrobe?.OwnsSteamItem(dog.ItemDefId) == true).ToArray();
+		var visibleIds = new HashSet<int>(ownedDogs.Select(dog => dog.ItemDefId)) { 0 };
+		foreach (var itemDefId in _dogCards.Keys.Where(id => !visibleIds.Contains(id)).ToArray())
 		{
-			// Keep the open menu stable between inventory updates, and compare by Steam definition ID.
-			var ownedDogCount = 0;
-			var dogsChanged = false;
-			foreach (var dog in SteamCosmeticCatalog.All)
-			{
-				if (dog.Kind != "dog" || _inventoryWardrobe?.OwnsSteamItem(dog.ItemDefId) != true) continue;
-				ownedDogCount++;
-				if (ownedDogCount >= _dogChoices.ItemCount || _dogChoices.GetItemId(ownedDogCount) != dog.ItemDefId)
-					dogsChanged = true;
-			}
-			if (dogsChanged || _dogChoices.ItemCount != ownedDogCount + 1)
-			{
-				_dogChoices.Clear();
-				_dogChoices.AddItem("Starter dog", 0);
-				foreach (var dog in SteamCosmeticCatalog.All)
-					if (dog.Kind == "dog" && _inventoryWardrobe?.OwnsSteamItem(dog.ItemDefId) == true)
-						_dogChoices.AddItem(dog.Name, dog.ItemDefId);
-			}
-			_dogChoices.Select(Math.Max(0, _dogChoices.GetItemIndex(_inventoryWardrobe?.SelectedDogItemDefId ?? 0)));
-			var path = _inventoryWardrobe?.CurrentDogTexturePath ?? "res://Sprites/Doggo.png";
-			if (_dogPortrait != null && _displayedDogPath != path)
-			{
-				_displayedDogPath = path;
-				_dogPortrait.Texture = SteamCosmeticCatalog.CroppedTexture(path);
-			}
+			var removed = _dogCards[itemDefId];
+			_dogCards.Remove(itemDefId);
+			_dogGrid.RemoveChild(removed);
+			removed.QueueFree();
 		}
+		EnsureDogCard(0, "Starter dog", "res://Sprites/Doggo.png", 0);
+		for (var index = 0; index < ownedDogs.Length; index++)
+		{
+			var dog = ownedDogs[index];
+			EnsureDogCard(dog.ItemDefId, dog.Name, dog.UiAssetPath, index + 1);
+		}
+		var selectedId = _inventoryWardrobe?.SelectedDogItemDefId ?? 0;
+		foreach (var (itemDefId, card) in _dogCards)
+		{
+			var selected = itemDefId == selectedId;
+			card.SetPressedNoSignal(selected);
+			card.GetNode<Label>("%DogChoiceStatus").Text = selected ? "Selected" : "Choose dog";
+		}
+		if (_dogSelectionStatus != null)
+			_dogSelectionStatus.Text = "Selected: " + (SteamCosmeticCatalog.Find(selectedId)?.Name ?? "Starter dog");
+		UpdateDogGridColumns();
+	}
+
+	private void EnsureDogCard(int itemDefId, string dogName, string previewPath, int index)
+	{
+		if (_dogGrid == null) return;
+		if (!_dogCards.TryGetValue(itemDefId, out var card))
+		{
+			_dogChoiceCardScene ??= ResourceLoader.Load<PackedScene>("res://UI/DogChoiceCard.tscn");
+			card = _dogChoiceCardScene.Instantiate<Button>();
+			card.Name = $"Dog_{itemDefId}";
+			card.SetMeta("dog_itemdef_id", itemDefId);
+			card.TooltipText = dogName;
+			card.GetNode<TextureRect>("%DogChoicePreview").Texture = SteamCosmeticCatalog.CroppedTexture(previewPath);
+			card.GetNode<Label>("%DogChoiceName").Text = dogName;
+			card.Pressed += () =>
+			{
+				// Recheck confirmed ownership even if an old card callback was queued.
+				_inventoryWardrobe?.SelectDog(itemDefId);
+				RefreshDogGrid();
+			};
+			_dogCards.Add(itemDefId, card);
+			_dogGrid.AddChild(card);
+		}
+		if (card.GetIndex() != index) _dogGrid.MoveChild(card, index);
+	}
+
+	private void UpdateDogGridColumns()
+	{
+		if (_dogGrid == null || _dogCards.Count == 0) return;
+		var scroll = _dogChoiceScroll;
+		var scrollbarWidth = scroll?.GetVScrollBar().Visible == true ? scroll.GetVScrollBar().GetCombinedMinimumSize().X : 0;
+		// Use the containing viewport so a previous multi-column minimum can shrink.
+		var availableWidth = Math.Max(0, (scroll?.Size.X ?? _dogGrid.Size.X) - scrollbarWidth);
+		var cardWidth = _dogCards.Values.Max(card => card.GetCombinedMinimumSize().X);
+		var separation = _dogGrid.GetThemeConstant("h_separation");
+		var columns = Math.Clamp((int)Math.Floor((availableWidth + separation) / Math.Max(1, cardWidth + separation)), 1, _dogCards.Count);
+		if (_dogGrid.Columns != columns) _dogGrid.Columns = columns;
 	}
 }

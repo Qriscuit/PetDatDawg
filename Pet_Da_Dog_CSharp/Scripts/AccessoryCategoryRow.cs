@@ -101,6 +101,16 @@ public partial class AccessoryCategoryRow : VBoxContainer
 		RefreshHeader();
 	}
 
+	/// <summary>Refreshes the available-item count without recreating catalog cards.</summary>
+	public void SetAvailableCount(int count)
+	{
+		count = Math.Max(0, count);
+		if (_count == count) return;
+		_count = count;
+		_emptyLabel!.Visible = _count == 0;
+		RefreshHeader();
+	}
+
 	private void RefreshHeader()
 	{
 		if (HeaderButton == null) return;

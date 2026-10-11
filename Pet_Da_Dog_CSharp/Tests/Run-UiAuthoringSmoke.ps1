@@ -7,6 +7,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $uiProjectPath = Split-Path -Parent $PSScriptRoot
 $uiOldSteam = $env:PDD_DISABLE_STEAM
+$uiOldGlobalInput = $env:PDD_DISABLE_GLOBAL_INPUT
 $uiOldTray = $env:PDD_DISABLE_TRAY
 $uiOldAppData = $env:APPDATA
 $uiOldLocalAppData = $env:LOCALAPPDATA
@@ -36,6 +37,7 @@ function Get-UiPreferenceSnapshot {
 
 try {
     $env:PDD_DISABLE_STEAM = '1'
+    $env:PDD_DISABLE_GLOBAL_INPUT = '1'
     $env:PDD_DISABLE_TRAY = '1'
     $env:APPDATA = Join-Path $uiProjectPath '.godot\ui-authoring-smoke-home\Roaming'
     $env:LOCALAPPDATA = Join-Path $uiProjectPath '.godot\ui-authoring-smoke-home\Local'
@@ -62,6 +64,7 @@ try {
 }
 finally {
     $env:PDD_DISABLE_STEAM = $uiOldSteam
+    $env:PDD_DISABLE_GLOBAL_INPUT = $uiOldGlobalInput
     $env:PDD_DISABLE_TRAY = $uiOldTray
     $env:APPDATA = $uiOldAppData
     $env:LOCALAPPDATA = $uiOldLocalAppData

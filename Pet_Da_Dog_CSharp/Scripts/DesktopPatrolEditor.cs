@@ -106,9 +106,10 @@ public partial class DesktopPatrolEditor : Node2D
 	{
 		if (Engine.IsEditorHint() ? !ShowEditorPreview : !Active || _route == null) return;
 		var count = Engine.IsEditorHint() ? EditorPreviewPoints.Count : _route!.DraftPoints.Count;
+		var backAndForth = !Engine.IsEditorHint() && _route?.TraversalMode == PatrolTraversalMode.BackAndForth;
 		for (var i = 0; i < count; i++)
 		{
-			if (i + 1 >= count && count < 2) continue;
+			if (i + 1 >= count && (count < 2 || backAndForth)) continue;
 			var start = GetMarkerPosition(i);
 			var end = GetMarkerPosition((i + 1) % count);
 			var offset = end - start;
@@ -118,9 +119,15 @@ public partial class DesktopPatrolEditor : Node2D
 			end -= direction * (MarkerRadius + 3);
 			DrawLine(start, end, Look.RouteShadowColor, Look.RouteShadowWidth, true);
 			DrawLine(start, end, Look.RouteLineColor, Look.RouteLineWidth, true);
-			var middle = start.Lerp(end, Look.ArrowPosition);
+			var middle = start.Lerp(end, backAndForth ? Mathf.Clamp(Look.ArrowPosition + 0.15f, 0.1f, 0.9f) : Look.ArrowPosition);
 			DrawPolyline(new[] { middle - direction.Rotated(-Look.ArrowAngle) * Look.ArrowSize, middle,
 				middle - direction.Rotated(Look.ArrowAngle) * Look.ArrowSize }, Look.ArrowColor, Look.ArrowWidth, true);
+			if (backAndForth)
+			{
+				middle = start.Lerp(end, Mathf.Clamp(Look.ArrowPosition - 0.15f, 0.1f, 0.9f));
+				DrawPolyline(new[] { middle + direction.Rotated(-Look.ArrowAngle) * Look.ArrowSize, middle,
+					middle + direction.Rotated(Look.ArrowAngle) * Look.ArrowSize }, Look.ArrowColor, Look.ArrowWidth, true);
+			}
 		}
 		var font = Look.MarkerFont ?? ThemeDB.FallbackFont;
 		for (var i = 0; i < count; i++)

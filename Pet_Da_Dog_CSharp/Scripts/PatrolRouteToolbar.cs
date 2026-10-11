@@ -85,9 +85,8 @@ public partial class PatrolRouteToolbar : Window
 	{
 		if (Engine.IsEditorHint() || _routeSummary == null) return;
 		var count = _route?.DraftPoints.Count ?? 0;
-		var stops = count <= 10 ? string.Join(" → ", Enumerable.Range(1, count)) : $"1 → 2 → 3 → … → {count}";
 		_routeSummary.Text = count == 0 ? EmptyDraftText : count == 1 ? OneStopDraftText
-			: LoopDraftFormat.Replace("{count}", count.ToString()).Replace("{loop}", stops + " → 1");
+			: LoopDraftFormat.Replace("{count}", count.ToString()).Replace("{loop}", DescribeStops(count, _route?.TraversalMode ?? PatrolTraversalMode.Loop));
 		if (count >= 2 && _route?.CanFinish != true) _routeSummary.Text += InvalidRouteHint;
 		_undoButton!.Disabled = count == 0;
 		_clearButton!.Disabled = count == 0;
@@ -132,10 +131,18 @@ public partial class PatrolRouteToolbar : Window
 		_route.Changed -= Refresh;
 		_route.EditingChanged -= OnEditingChanged;
 	}
-	internal static string DescribeRoute(int count)
+	internal static string DescribeStops(int count, PatrolTraversalMode mode)
+	{
+		if (count < 2) return count == 1 ? "1" : "";
+		if (count > 10) return mode == PatrolTraversalMode.BackAndForth
+			? $"1 → 2 → 3 → … → {count} → … → 3 → 2 → 1" : $"1 → 2 → 3 → … → {count} → 1";
+		var forward = Enumerable.Range(1, count);
+		return string.Join(" → ", mode == PatrolTraversalMode.BackAndForth
+			? forward.Concat(Enumerable.Range(1, count - 1).Reverse()) : forward.Concat(new[] { 1 }));
+	}
+	internal static string DescribeRoute(int count, PatrolTraversalMode mode = PatrolTraversalMode.Loop)
 	{
 		if (count < 2) return count == 1 ? "1 stop · Add another stop to make a route." : "No stops yet.";
-		var stops = count <= 10 ? string.Join(" → ", Enumerable.Range(1, count)) : $"1 → 2 → 3 → … → {count}";
-		return $"{count} stops · {stops} → 1";
+		return $"{count} stops · {DescribeStops(count, mode)}";
 	}
 }

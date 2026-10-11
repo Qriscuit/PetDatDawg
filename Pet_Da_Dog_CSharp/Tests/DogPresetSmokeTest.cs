@@ -43,7 +43,7 @@ public partial class DogPresetSmokeTest : Node
 			VerifyAtomicOwnershipRejection(_wardrobe, preset, dog, accessory);
 			VerifyHiddenCosmeticCapture(_wardrobe, preset, dog, accessory);
 			await VerifyMenu(_wardrobe, preset, dog, accessory);
-			VerifyDeletion(_wardrobe, preset);
+			await VerifyDeletion(_wardrobe, preset);
 			Require(_backend?.ConfirmedPets == null && _backend?.PendingGrantCount == 0,
 				"Saving, applying, previewing and deleting presets never creates a Pets total or queues a grant.");
 			GD.Print($"DOG_PRESET_SMOKE_PASS: {_assertions} assertions");
@@ -265,6 +265,25 @@ public partial class DogPresetSmokeTest : Node
 		wardrobe.ClearHistory();
 		browser.Hide();
 		_menu.GetNode<Button>("%DogsTab").EmitSignal(BaseButton.SignalName.Pressed);
+		await Settle();
+		var embeddedGrid = _menu.GetNode<GridContainer>("%DogPresetGrid");
+		Require(!browser.Visible && embeddedGrid.IsVisibleInTree() && embeddedGrid.GetChildCount() == wardrobe.Presets.Count
+			&& !_menu.GetNode<Label>("%EmptyDogPresets").Visible, "The Dogs page displays saved outfit cards directly before opening preset management.");
+		var embeddedCard = FindCard(embeddedGrid, preset);
+		var embeddedPreview = FindControl<DogPresetPreview>(embeddedCard, "PresetPreview");
+		Require(embeddedPreview.DrawLayerIds.SequenceEqual(preset.LayerOrder) && embeddedPreview.ContentBounds == originalPreview.ContentBounds
+			&& embeddedPreview.FittedContentBounds.Position.X >= 0 && embeddedPreview.FittedContentBounds.Position.Y >= 0
+			&& embeddedPreview.FittedContentBounds.End.X <= embeddedPreview.Size.X && embeddedPreview.FittedContentBounds.End.Y <= embeddedPreview.Size.Y,
+			"The embedded card previews the same complete saved snapshot as preset management, including accessory overhang.");
+		FindControl<Button>(embeddedCard, "ApplyPreset").EmitSignal(BaseButton.SignalName.Pressed);
+		await Settle();
+		Require(wardrobe.SelectedDogItemDefId == dog.ItemDefId && wardrobe.Equipped.SequenceEqual(preset.Accessories)
+			&& wardrobe.LayerOrder.SequenceEqual(preset.LayerOrder) && _menu.GetNode<Label>("%DogPresetStatus").Text.Length > 0,
+			"Clicking an embedded preview applies the complete owned outfit and reports its result in the Dogs page.");
+		Require(wardrobe.Undo(), "Applying an embedded card creates a reversible outfit change.");
+		RequireMatches(wardrobe, localOutfit, "Undo of an embedded card restores the prior complete local outfit.");
+		wardrobe.ClearHistory();
+		await VerifyEmbeddedLayout(wardrobe, embeddedGrid);
 		_menu.GetNode<Button>("%OpenDogPresets").EmitSignal(BaseButton.SignalName.Pressed);
 		await Settle();
 		Require(browser.Visible, "The Dogs page opens the same saved outfit browser.");
@@ -278,26 +297,45 @@ public partial class DogPresetSmokeTest : Node
 			"Starter presets using local accessories remain selectable when Steam ownership changes.");
 		Require(FindControl<DogPresetPreview>(originalCard, "PresetPreview").DrawLayerIds.SequenceEqual(preset.LayerOrder),
 			"An unowned preset remains fully previewable without equipping or hiding its stored accessories.");
+		embeddedCard = FindCard(embeddedGrid, preset);
+		Require(FindControl<Button>(embeddedCard, "ApplyPreset").Disabled
+			&& FindControl<Label>(embeddedCard, "PresetAvailability").Text.Length > 0
+			&& FindControl<DogPresetPreview>(embeddedCard, "PresetPreview").DrawLayerIds.SequenceEqual(preset.LayerOrder)
+			&& !FindControl<Button>(FindCard(embeddedGrid, localPreset), "ApplyPreset").Disabled,
+			"Confirmed ownership loss updates embedded availability while keeping the saved snapshot and Starter outfits previewable.");
 		await CaptureWindow(browser, "res://.godot/dog-presets-unowned-smoke.png");
 		var beforeRejectedCard = Capture(wardrobe);
 		FindControl<Button>(originalCard, "ApplyPreset").EmitSignal(BaseButton.SignalName.Pressed);
 		await Settle();
 		RequireMatches(wardrobe, beforeRejectedCard, "A synthetic disabled-card activation still cannot partially apply an unowned outfit.", includeHistory: true);
+		FindControl<Button>(embeddedCard, "ApplyPreset").EmitSignal(BaseButton.SignalName.Pressed);
+		await Settle();
+		RequireMatches(wardrobe, beforeRejectedCard, "A synthetic disabled embedded-card activation also rejects the entire unowned outfit.", includeHistory: true);
 		wardrobe.SetSteamOwnership(new[] { dog.ItemDefId, accessory.ItemDefId });
 		await Settle();
 		Require(!FindControl<Button>(FindCard(grid, preset), "ApplyPreset").Disabled,
 			"Fresh ownership re-enables the retained saved preset without saving it again.");
+		Require(!FindControl<Button>(FindCard(embeddedGrid, preset), "ApplyPreset").Disabled, "Fresh ownership also re-enables the existing embedded outfit card.");
+		Require(wardrobe.SavePreset("Embedded deletion fixture"), "A deletion fixture saves through the existing preset model.");
+		await Settle();
+		var embeddedDeletion = wardrobe.Presets[^1]; var beforeEmbeddedDelete = Capture(wardrobe);
+		FindControl<Button>(FindCard(embeddedGrid, embeddedDeletion), "DeletePreset").EmitSignal(BaseButton.SignalName.Pressed);
+		await Settle();
+		Require(wardrobe.Presets.All(item => item.Id != embeddedDeletion.Id) && embeddedGrid.GetChildCount() == wardrobe.Presets.Count
+			&& grid.GetChildCount() == wardrobe.Presets.Count, "Deleting an embedded card refreshes both saved-outfit grids through the shared model.");
+		RequireMatches(wardrobe, beforeEmbeddedDelete, "Deleting an embedded preset leaves current cosmetics and history unchanged.", includeHistory: true);
 		var localCard = FindCard(grid, localPreset);
 		var beforeDelete = Capture(wardrobe);
 		FindControl<Button>(localCard, "DeletePreset").EmitSignal(BaseButton.SignalName.Pressed);
 		await Settle();
-		Require(wardrobe.Presets.All(item => item.Id != localPreset.Id) && grid.GetChildCount() == wardrobe.Presets.Count,
-			"A card's Delete button removes that saved outfit and refreshes the browser.");
+		Require(wardrobe.Presets.All(item => item.Id != localPreset.Id) && grid.GetChildCount() == wardrobe.Presets.Count
+			&& embeddedGrid.GetChildCount() == wardrobe.Presets.Count,
+			"A management card's Delete button removes that saved outfit and refreshes both views.");
 		RequireMatches(wardrobe, beforeDelete, "Deleting through the browser leaves current cosmetics and history unchanged.", includeHistory: true);
 		browser.Hide(); _menu.Hide();
 	}
 
-	private void VerifyDeletion(AccessoryWardrobe wardrobe, DogPreset preset)
+	private async Task VerifyDeletion(AccessoryWardrobe wardrobe, DogPreset preset)
 	{
 		var before = Capture(wardrobe);
 		Require(!wardrobe.ApplyPreset("missing") && !wardrobe.DeletePreset("missing"), "Unknown preset IDs do not apply or delete another outfit.");
@@ -305,6 +343,68 @@ public partial class DogPresetSmokeTest : Node
 		Require(wardrobe.DeletePreset(preset.Id) && wardrobe.Presets.All(item => item.Id != preset.Id), "Deleting removes only the selected preset.");
 		RequireMatches(wardrobe, before, "Deleting a saved preset does not alter the currently displayed outfit.", includeHistory: true);
 		Require(LoadFixture().Presets.All(item => item.Id != preset.Id), "Deleted presets remain absent after restart.");
+		await Settle();
+		Require(_menu!.GetNode<GridContainer>("%DogPresetGrid").GetChildCount() == 0 && _menu.GetNode<Label>("%EmptyDogPresets").Visible,
+			"Removing the final saved outfit clears the embedded grid and restores its empty-state guidance.");
+	}
+
+	private async Task VerifyEmbeddedLayout(AccessoryWardrobe wardrobe, GridContainer presets)
+	{
+		var menu = _menu!; var dogs = menu.GetNode<GridContainer>("%DogGrid");
+		var scroll = Ancestor<ScrollContainer>(presets);
+		Require(scroll != null && Ancestor<ScrollContainer>(dogs) == scroll && scroll.HorizontalScrollMode == ScrollContainer.ScrollMode.ShowNever,
+			"Saved outfits and owned dogs share one vertical Dogs-page scroll without horizontal scrolling.");
+		var settings = GetNode<PetSettings>("/root/PetSettings"); var scale = settings.UiScale;
+		var size = menu.Size; var minimum = menu.MinSize; var outfit = Capture(wardrobe); var temporary = new List<string>();
+		try
+		{
+			for (var index = 0; index < 6; index++)
+			{
+				Require(wardrobe.SavePreset($"Scroll outfit {index + 1}"), "A temporary outfit extends the embedded collection for scroll verification.");
+				temporary.Add(wardrobe.Presets[^1].Id);
+			}
+			menu.Size = new Vector2I(900, 660); await Settle(); scroll!.ScrollVertical = 0;
+			Require(presets.Columns == 2 && presets.GetGlobalRect().End.Y <= dogs.GetGlobalRect().Position.Y + 0.1f,
+				"The wide Dogs page puts saved outfits in two columns above the owned dog collection.");
+			Require(scroll.GetVScrollBar().MaxValue > scroll.GetVScrollBar().Page, "A long saved-outfit collection scrolls vertically instead of stretching the menu.");
+			VerifyCardsFit(presets);
+			await CaptureWindow(menu, "res://.godot/dogs-embedded-presets-smoke.png");
+			scroll.ScrollVertical = (int)(scroll.GetVScrollBar().MaxValue - scroll.GetVScrollBar().Page); await Settle();
+			Require(dogs.GetGlobalRect().Intersects(scroll.GetGlobalRect()), "The shared scroll reaches the owned dog cards below every saved outfit.");
+			await CaptureWindow(menu, "res://.godot/dogs-embedded-collection-smoke.png");
+			scroll.ScrollVertical = 0;
+			menu.MinSize = new Vector2I(400, 500); menu.Size = new Vector2I(430, 660); await Settle();
+			Require(presets.Columns == 1, "An authored narrow Dogs-page width changes the saved-outfit grid to one column.");
+			VerifyCardsFit(presets);
+			await CaptureWindow(menu, "res://.godot/dogs-embedded-presets-narrow-smoke.png");
+			settings.SetUiScale(1.25f); await Settle();
+			Require(Mathf.IsEqualApprox(menu.ContentScaleFactor, 1.25f) && presets.GetChildCount() == wardrobe.Presets.Count,
+				"Menu scaling keeps every embedded saved outfit populated.");
+			VerifyCardsFit(presets);
+			RequireMatches(wardrobe, outfit, "Grid resize, scrolling and UI scale change no cosmetic preferences or history.", includeHistory: true);
+		}
+		finally
+		{
+			settings.SetUiScale(scale); menu.MinSize = minimum; menu.Size = size;
+			foreach (var id in temporary) wardrobe.DeletePreset(id);
+			await Settle();
+		}
+	}
+
+	private void VerifyCardsFit(GridContainer grid)
+	{
+		var scroll = Ancestor<ScrollContainer>(grid);
+		Require(scroll != null && grid.Size.X <= scroll.Size.X + 0.1f, "The embedded grid fits its scroll viewport instead of clipping a forced second column.");
+		Require(scroll!.GetHScrollBar().MaxValue <= scroll.GetHScrollBar().Page + 1,
+			"Responsive Dogs collections require no hidden horizontal scrolling after layout settles.");
+		foreach (var card in grid.GetChildren().OfType<Control>())
+			Require(card.Position.X >= -0.1f && card.Position.X + card.Size.X <= grid.Size.X + 0.1f,
+				"Every embedded preset card fits the available grid width after resizing or scaling.");
+	}
+	private static T? Ancestor<T>(Node node) where T : Node
+	{
+		for (var parent = node.GetParent(); parent != null; parent = parent.GetParent()) if (parent is T result) return result;
+		return null;
 	}
 
 	private void ConfigureFullOutfit(AccessoryWardrobe wardrobe, SteamCosmeticDefinition dog, SteamCosmeticDefinition accessory)

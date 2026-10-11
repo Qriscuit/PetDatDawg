@@ -30,15 +30,16 @@ Godot node categories matter:
 
 ## 2. Project UI Map
 
-`project.godot` is the Godot project config. It sets the main scene to `Main.tscn`, enables transparent window settings, and autoloads five global scripts:
+`project.godot` is the Godot project config. It sets the main scene to `Main.tscn`, enables transparent window settings, and autoloads six global scripts:
 
 | Autoload | Path | Purpose |
 | --- | --- | --- |
 | `PetSettings` | `/root/PetSettings` | Loads and saves local dog/UI settings. |
 | `AccessoryWardrobe` | `/root/AccessoryWardrobe` | Discovers accessory textures and saves local cosmetic placements. |
 | `AccessoryEditingSession` | `/root/AccessoryEditingSession` | Shares Items selection, editing mode, and gesture transactions between the browser and desktop dog. |
-| `PatrolRoute` | `/root/PatrolRoute` | Saves normalized screen stops, route enablement, and a separate route-editing draft. |
+| `PatrolRoute` | `/root/PatrolRoute` | Saves normalized screen stops, route enablement, traversal mode, and a separate route-editing draft. |
 | `NativeWindowBridge` | `/root/NativeWindowBridge` | Applies Windows overlay styles, tray menu, and hotkeys. |
+| `GlobalInputMonitor` | `/root/GlobalInputMonitor` | Counts physical mouse-button and keyboard presses across the desktop for pending pet grants. |
 
 `Main.tscn` keeps the dog hierarchy and two reusable desktop UI instances:
 
@@ -68,7 +69,7 @@ StatusWindow: portrait browser
   +-- PanelContainer background
         +-- MarginContainer padding
               +-- VBoxContainer root
-                    +-- header: tab buttons + confirmed pets + waiting clicks
+                    +-- header: tab buttons + confirmed pets
                     +-- dismissible first-use hint
                     +-- Pages: DogsPage, ItemsPage, ShopPage, SettingsPage
                           +-- ItemsPage instances UI/AccessoryEditor.tscn
@@ -80,22 +81,22 @@ Main transparent overlay during Items editing
 
 The authored browser starts at 640 × 780 pixels, with a 560 × 600 minimum at the default menu scale. Its root Size, Min Size, theme, and content scaling are editable in the Inspector and supply the runtime defaults; saved browser layout and the player's Menu size preference still apply. It is a normal resizable window. The desktop dog itself is the editing surface, so it can be moved around the usable desktop while choosing its outfit. The root's Initial Tab property previews Dogs, Items, Shop, or Settings directly in the editor without activating desktop editing or writing settings.
 
-The header keeps navigation, the game name, confirmed pets, and waiting clicks visible. Quit Pet Da Dog belongs to Settings and the tray menu; closing the browser keeps the desktop dog running. First-time launches open it with a hint explaining right-click and tray access; Got it remembers its dismissal.
+The header keeps navigation, the game name, and confirmed pets visible. Quit Pet Da Dog belongs to Settings and the tray menu; closing the browser keeps the desktop dog running. First-time launches open it with a hint explaining desktop input earning, right-click and tray access; Got it remembers its dismissal.
 
-Accessory editing is active only while Items is visible in an open, nonminimized browser. The desktop dog rests upright without walking, hopping, squash/stretch, or tilt while being edited. Switching tabs, hiding/closing the browser, or minimizing it cancels any active accessory gesture and restores normal interaction preferences. An enabled saved patrol resumes; otherwise the dog falls under gravity to its usual walking area before resuming movement. Dogs, Shop, and Settings allow walking while the browser remains open, except while drawing a patrol route. Existing hearts, Steam callbacks, pet syncing, and cursor hit testing continue throughout. Editing gestures do not grant pets.
+Accessory editing is active only while Items is visible in an open, nonminimized browser. The desktop dog rests upright without walking, hopping, squash/stretch, or tilt while being edited. Switching tabs, hiding/closing the browser, or minimizing it cancels any active accessory gesture and restores normal interaction preferences. An enabled saved patrol resumes when Keep dog stationary is off; otherwise the dog falls under gravity to its usual walking area and follows its movement settings. Dogs, Shop, and Settings allow walking while the browser remains open when Keep dog stationary is off, except while drawing a patrol route. Existing hearts, Steam callbacks, pet syncing, and cursor hit testing continue throughout. Physical mouse-button and key presses still earn during editing; editor actions themselves add no duplicate grants.
 
 The four pages are:
 
 | Page | Current contents |
 | --- | --- |
-| `Dogs` | The current original dog; no additional dog options are presented as available. |
-| `Items` | The default page: compact side inspector and categorized shelves for direct editing of the desktop dog. |
-| `Shop` | An honest coming-soon message; purchasing is not implemented. |
+| `Dogs` | Saved outfit previews at the top, then a picture grid of the starter and currently owned Steam dogs. Click a card to apply a look or choose a dog. |
+| `Items` | The default page: compact side inspector and categorized shelves showing available starter and Steam-owned accessories for direct editing. |
+| `Shop` | Buy Dog or Accessories Boxes with confirmed Pets, then open owned boxes through Steam Inventory. |
 | `Settings` | Plain-language preferences and patrol route controls first, connection summary with expandable technical details, and Quit. |
 
 The tab buttons call `SetActiveTab(...)`. That method marks the selected button as pressed and toggles the matching page's `Visible` property. Only one browser page is visible at a time. Items activates `AccessoryEditingSession`; leaving Items or hiding/minimizing the browser deactivates it and cancels pending placement or manipulation.
 
-The pet count is updated through `UpdateStatus(...)`, which is called from `DesktopPet._Process()` while the status window exists. The client shows the backend-confirmed pets total and, only when needed, the number of pending in-memory grants.
+The pet count is updated through `UpdateStatus(...)`, which is called from `DesktopPet._Process()` while the status window exists. The client displays only the backend-confirmed pets total. The in-memory grant queue and automatic retries continue internally, without showing pending counts or waiting-input messages. Each physical press of a keyboard key or any mouse button queues one grant across the desktop while the app is running. Keyboard auto-repeat, injected input, cursor movement and mouse-wheel scrolling do not count. The client observes activity counts without recording typed text or the focused app; Steam/backend responses remain the authority for the balance.
 
 ### Using The Items Page
 
@@ -107,7 +108,7 @@ The browser's side inspector also shows Size and Rotation as vertical sliders, w
 
 While Items is active, right-click visible accessory artwork or the dog to open its layer menu. Move up one layer brings it forward; Move down one layer sends it backward. The dog and every equipped item share the same stack, so moving an accessory below the dog lets the dog cover it. The inspector's Up and Down buttons work for the selected equipped accessory; choose its catalog card to adjust it even when it is completely covered. The inspector also shows whether it is behind or in front of the dog. Actions at the top or bottom of the stack are disabled. Newly equipped or removed-and-re-equipped items start at the top; moving an existing item keeps its layer.
 
-The catalog is a vertical stack of Wings, Collars, Glasses, Decorations, and Text shelves. Each clickable heading expands or collapses its category. An expanded shelf contains one horizontally scrolling row of fixed-size cards, with a native scrollbar when its content overflows. The stack itself scrolls vertically. Empty Collars starts collapsed and has an empty-state message when expanded. `AccessoryCategoryRow.cs` owns these shelves; `AccessoryCategories.For(...)` classifies built-in text first, then wing, collar, and glasses/goggle names, with other artwork in Decorations.
+The catalog is a vertical stack of Wings, Collars, Glasses, Decorations, and Text shelves. Each clickable heading expands or collapses its category. An expanded shelf contains one horizontally scrolling row of fixed-size cards, with a native scrollbar when its content overflows. The stack itself scrolls vertically. Unowned Steam accessory cards and categories with no available accessories are hidden. Counts reflect usable cards, and ownership changes preserve category expansion preferences. Starter accessories and Text Box remain available. `AccessoryCategoryRow.cs` owns these shelves; `AccessoryCategories.For(...)` classifies built-in text first, then wing, collar, and glasses/goggle names, with other artwork in Decorations.
 
 Text Box is a built-in accessory drawn by `PetTextAccessory.cs`, so it requires no image. Choose its card in the Text shelf, type a message of up to 64 grapheme clusters in the side inspector, and place it near the actual desktop dog. The placement area extends above and beside the dog. Text color uses the same color wheel; size and rotation work as for other accessories. Show textbox background toggles the rounded box and border while preserving the text's color and alpha. This preference saves even when the item is unequipped, participates in Undo, and defaults to visible for older outfits. The message wraps and adjusts its font size to fit. The text follows walking and bouncing after editing and stays readable when the dog turns. Text-only pixels pass desktop clicks through during normal play.
 
@@ -119,17 +120,17 @@ Dragon Wing, Fairy Wing, and Safety Glasses also support recoloring. Click Color
 
 The three neutral JPG assets are explicitly listed in `AccessoryWardrobe.RecolorableIds`. Their black backgrounds become transparent at runtime, while the gray and white shading is preserved for tinting. Add future neutral artwork to that list to offer the color picker; existing colored artwork keeps its original colors.
 
-Image placements use normalized coordinates within the dog's visible texture bounds; Text Box anchors allow a bounded area around them. `AccessoryWardrobe` saves positions, colors, sizes, rotations, text, textbox background visibility, and the shared layer order in `user://accessories.cfg`. Its `[layers]` section stores `order` from bottom to top, with `@dog` marking the dog's place among equipped IDs. Older position-only or position/color outfits load at 100% size, zero rotation, a visible text background, and all accessories above the dog in their saved equip order. These are local cosmetic preferences, independent of Steam pets. All direct editing and inspector actions bypass pet grants.
+Image placements use normalized coordinates within the dog's visible texture bounds; Text Box anchors allow a bounded area around them. `AccessoryWardrobe` saves positions, colors, sizes, rotations, text, textbox background visibility, and the shared layer order in `user://accessories.cfg`. Its `[layers]` section stores `order` from bottom to top, with `@dog` marking the dog's place among equipped IDs. Older position-only or position/color outfits load at 100% size, zero rotation, a visible text background, and all accessories above the dog in their saved equip order. These are local cosmetic preferences, independent of Steam pets. Physical presses used for editing enter the same background earning path; direct method calls and synthetic Godot events do not enqueue grants.
 
-Settings display Dog visibility, Dog size, and Menu size as percentages with one value per slider. Click-through explains that petting and right-click are disabled, with Alt + backtick and tray recovery. Items temporarily makes the dog fully visible, interactive for editing, and always on top so saved visibility, click-through, or stacking preferences cannot prevent customization. Those preferences are restored when editing ends; the override does not overwrite them. `user://menu_layout.cfg` remembers the browser's position and dimensions; unrelated settings and reopening do not reset them. Menu size deliberately changes the browser dimensions.
+Settings display Dog visibility, Dog size, and Menu size as percentages with one value per slider. Click-through disables dog interaction and right-click, with Alt + backtick and tray recovery; physical mouse and keyboard presses still earn Pets in the background. Items temporarily makes the dog fully visible, interactive for editing, and always on top so saved visibility, click-through, or stacking preferences cannot prevent customization. Those preferences are restored when editing ends; the override does not overwrite them. `user://menu_layout.cfg` remembers the browser's position and dimensions; unrelated settings and reopening do not reset them. Menu size deliberately changes the browser dimensions.
 
 ### Drawing A Patrol Route
 
-In Settings, the Patrol route card offers Set patrol route when no stops exist and Edit route otherwise. It hides the browser while you draw on the desktop and reopens Settings after Done or Cancel. Click locations in the order you want the dog to visit them. Stops are numbered, and their connecting path shows the loop: 1 → 2 → 3 → 1. Two different stops are enough; a route can contain up to 16. Drag an existing stop to move it or right-click a stop to remove it. The floating toolbar provides Undo last, Clear, Cancel, and Done; Backspace undoes the last stop, Escape cancels, and Enter finishes a valid route.
+In Settings, the Patrol route card offers Set patrol route when no stops exist and Edit route otherwise. It hides the browser while you draw on the desktop and reopens Settings after Done or Cancel. Click locations in the order you want the dog to visit them. Stops are numbered. Loop returns from the last stop to the first: 1 → 2 → 3 → 1. Back and forth follows the same stops in reverse: 1 → 2 → 3 → 2 → 1. Two different stops are enough; a route can contain up to 16. Drag an existing stop to move it or right-click a stop to remove it. The floating toolbar provides Undo last, Clear, Cancel, and Done; Backspace undoes the last stop, Escape cancels, and Enter finishes a valid route.
 
-Done commits a valid draft, enables the patrol, and starts following its loop. Cancel discards the draft and keeps the saved route and its previous enablement. Editing an existing route begins with its saved stops. Route-editing gestures do not pet the dog or grant currency. Turn off Use patrol route to return to ordinary walking without losing its stops; turn it on again to resume patrolling. Clear route removes the saved stops and resets the dog to ordinary walking. The toolbar's Clear affects only the draft until Done.
+Done commits a valid draft and enables the patrol in its selected traversal mode; walking starts when Keep dog stationary is off. Cancel discards the draft and keeps the saved route and its previous enablement. Editing an existing route begins with its saved stops. Route-editing gestures do not show dog petting feedback; their physical mouse-button and key presses still queue background grants once. Turn off Use patrol route to return to ordinary walking without losing its stops; turn it on again to resume patrolling. Keep dog stationary pauses either type of walking while preserving the route. Clear route removes the saved stops and returns to the usual movement settings. The toolbar's Clear affects only the draft until Done.
 
-`PatrolRoute.cs` stores screen-relative coordinates from 0–1 in `user://patrol_route.cfg`, so the stops adapt to the primary usable screen size instead of saving absolute pixels. Stops represent the dog's feet and are clamped to allow room for its outfit. The saved enablement also survives restarts. Invalid coordinates and consecutive duplicate stops are rejected or normalized on load, and a route with fewer than two distinct stops cannot be enabled. If saving fails, the route remains usable for the current run and the UI reports that it was not saved.
+`PatrolRoute.cs` stores screen-relative coordinates from 0–1 in `user://patrol_route.cfg`, so the stops adapt to the primary usable screen size instead of saving absolute pixels. Stops represent the dog's feet and are clamped to allow room for its outfit. The saved enablement and traversal mode also survive restarts. Invalid coordinates and consecutive duplicate stops are rejected or normalized on load, and a route with fewer than two distinct stops cannot be enabled. If saving fails, the route remains usable for the current run and the UI reports that it was not saved.
 
 `DesktopPatrolEditor.cs` draws the numbered stops and handles route gestures; `UI/PatrolRouteToolbar.tscn` authors the separate native control window, while `PatrolRouteToolbar.cs` binds its controls. The toolbar's scene Size supplies its runtime baseline; its dynamic summaries and screen placement have exported Inspector properties. `UI/AccessoryLayerMenu.tscn` similarly authors the layer popup's items and styling; its caption changes for the clicked dog/accessory, while action labels stay as authored. While drawing, the usable desktop captures route gestures and the dog is held still, fully visible, and on top. Done or Cancel restores saved interaction preferences. During ordinary patrol playback, transparent space passes through and original dog pixels still accept normal pet clicks.
 
@@ -177,20 +178,22 @@ The desktop pet is a transparent, borderless, always-on-top overlay window. The 
 
 `DesktopPet.UpdateDogMouseRegion()` recomputes drawing bounds every frame, including equipped accessories and active floating hearts. Editing also includes selection outlines, resize/rotation handles, the Move dog pill, and the placement ghost. On Windows the mouse polygon also clips rendering, so these bounds are padded and rounded outward to integer pixels. The native region is updated only when those integer bounds change. Global cursor polling continues even when the region is unchanged. During editing, dog/image-accessory alpha hit tests, textbox bounds, and visible editing controls determine which gestures are captured; an armed placement accepts its bounded dog or near-dog area. Other desktop space passes clicks through. Outside editing, only original visible dog pixels accept pet clicks.
 
-Editing hit tests walk the shared stack from top to bottom. Opaque artwork in front wins the hit; a visible dog pixel blocks an accessory below it, while transparent pixels let lower layers be reached. This same ordering chooses the target for dragging and the right-click menu. Normal petting continues to sample the original dog texture alpha and queue one grant per valid dog click, regardless of cosmetic layers.
+Editing hit tests walk the shared stack from top to bottom. Opaque artwork in front wins the hit; a visible dog pixel blocks an accessory below it, while transparent pixels let lower layers be reached. This same ordering chooses the target for dragging and the right-click menu. Normal dog feedback samples the original dog texture alpha. Earning is independent: `GlobalInputMonitor` observes physical keyboard and mouse-button press edges anywhere on the desktop, then `RecordInputActivity` queues one grant per observed input. Local Godot events never duplicate those grants.
 
 `NativeWindowBridge` periodically reads the actual extended window styles and topmost state so it can restore required overlay behavior. An unchanged routine refresh skips native frame-change and z-order writes. This avoids repeatedly disturbing a stable transparent window while retaining repairs when its native state changes.
 
 `DesktopPet._Input()` applies the second layer of click safety:
 
-1. While editing, route gestures to `DesktopAccessoryControls` and return without granting pets.
+1. While editing, route gestures to the active editor and return without adding dog feedback or duplicate grants.
 2. During normal play, ignore input if click-through is enabled or the dog is invisible.
 3. Accept only left and right mouse button presses.
 4. Reject pet clicks outside visible dog pixels by sampling the original dog texture alpha.
-5. Left-click queues one pet grant and spawns one heart.
+5. Left-click spawns one heart; the global observer separately counts the physical press once.
 6. Right-click opens or focuses the browser.
 
-The pixel-alpha check matters because the dog image is a square texture with transparent pixels around the actual dog. Without this check, clicking invisible pixels inside the texture rectangle would count as petting.
+The pixel-alpha check keeps invisible pixels from intercepting desktop interaction or showing dog feedback. Background earning remains active with click-through, invisibility and editing enabled. The observer forwards all input, ignores auto-repeat/injected input, and never records typed text. Test runners disable it with `PDD_DISABLE_GLOBAL_INPUT=1`.
+
+Settings includes **Keep dog stationary** and **Bounce while moving**. Stationary pauses walking, patrol and movement animation while keeping the route target/direction ready to resume. Disabling bounce removes hopping, squash/stretch and sway without stopping walking. Patrol traversal chooses **Loop** or **Back and forth**; back-and-forth follows the saved stops in reverse at the endpoints and draws an open path with arrows in both directions.
 
 ## 6. Heart Feedback
 
@@ -209,7 +212,7 @@ The source heart's transparent padding is cropped at runtime. Each heart starts 
 
 To extend dog or accessory content:
 
-1. Keep confirmed pets and pending grants visible in the persistent header.
+1. Keep only the backend-confirmed pets total visible in the persistent header; grant queues and retries stay internal.
 2. Add accessory artwork under `Sprites/Accessories/`; use `AccessoryWardrobe` for outfit changes and `AccessoryEditingSession` for shared selection and gesture state.
 3. Edit reusable card/category/color scenes rather than constructing new controls in runtime scripts. Keep category shelves horizontal and the category stack vertically scrollable so the browser does not grow with content.
 4. Use backend-confirmed data for anything authoritative.
@@ -244,11 +247,11 @@ Run the accessory checks from the same directory:
 .\Tests\Run-AccessorySmoke.ps1
 ```
 
-The runner imports resources and builds the client, disables Steam and tray integration, and isolates user settings and temporary files under `.godot/accessory-smoke-home`. Use `-SkipBuild` after a current import/build. It checks catalog discovery, JPG transparency and shading, placement/color/text/transform validation, save/reload, Undo, overlay bounds, direct desktop editing, and native color-picker interactions. Editing checks cover dog movement and resizing, accessory handles, gesture cancellation, preference overrides/restoration, and rejection of grants during customization. Text checks cover editable persistence, background visibility, nonmirrored letters, bounce, and screen-edge placement; heart checks cover size, lifetime, drift, shrinking, fading, clipping, and the node cap. Success prints `ACCESSORY_SMOKE_PASS:`. Current captures are saved under `.godot/` for review; older floating-preview screenshots may remain as historical UI references.
+The runner imports resources and builds the client, disables Steam, tray integration and global input monitoring, and isolates user settings and temporary files under `.godot/accessory-smoke-home`. Use `-SkipBuild` after a current import/build. It checks catalog discovery, JPG transparency and shading, placement/color/text/transform validation, save/reload, Undo, overlay bounds, direct desktop editing, and native color-picker interactions. Editing checks cover dog movement and resizing, accessory handles, gesture cancellation, preference overrides/restoration, and absence of grants from synthetic Godot input during customization. Text checks cover editable persistence, background visibility, nonmirrored letters, bounce, and screen-edge placement; heart checks cover size, lifetime, drift, shrinking, fading, clipping, and the node cap. Success prints `ACCESSORY_SMOKE_PASS:`. Current captures are saved under `.godot/` for review; older floating-preview screenshots may remain as historical UI references.
 
-Woodland and UX checks cover Dogs / Items / Shop / Settings switching, category collapse and horizontal scrolling, percentage preference sliders, theme retention during menu-size changes, native basic/advanced color controls, equipped-card selection, undo gestures and keys, first-use dismissal, connection detail disclosure, confirmed/waiting status separation, and persisted browser geometry. Reviewed capture copies live under `docs/previews/`.
+Woodland and UX checks cover Dogs / Items / Shop / Settings switching, category collapse and horizontal scrolling, percentage preference sliders, theme retention during menu-size changes, native basic/advanced color controls, equipped-card selection, undo gestures and keys, first-use dismissal, connection detail disclosure, display of backend-confirmed pets without pending counters, and persisted browser geometry. Reviewed capture copies live under `docs/previews/`.
 
-For a manual check, open `StatusWindow.tscn` in Godot and preview each Initial Tab. Inspect reusable item scenes, the layer popup, patrol toolbar, theme, and DesktopAppearance resource. Then run the main project, choose Items, move the actual dog by its body and Move dog pill, and resize it with its corner handle. Place an accessory, then drag, resize, and rotate it with the desktop handles and inspector. Test colors, text, and Show textbox background, then removal, clearing, and Undo. Check category collapse and horizontal scrolling. Leave Items, hide/close the browser, and minimize it during a gesture: the gesture should cancel, saved preferences should return, and an enabled patrol should resume or the dog should fall back to ordinary walking. Restart to check the outfit, route, dog size, and browser layout. Check desktop click-through around transparent pixels and editing controls, and confirm editing never changes waiting pet clicks. During normal play, pet the visible dog to check hearts and syncing.
+For a manual check, open `StatusWindow.tscn` in Godot and preview each Initial Tab. Inspect reusable item scenes, the layer popup, patrol toolbar, theme, and DesktopAppearance resource. Then run the main project, choose Items, move the actual dog by its body and Move dog pill, and resize it with its corner handle. Place an accessory, then drag, resize, and rotate it with the desktop handles and inspector. Test colors, text, and Show textbox background, then removal, clearing, and Undo. Check category collapse and horizontal scrolling. Leave Items, hide/close the browser, and minimize it during a gesture: the gesture should cancel and saved movement preferences should return. Test Keep dog stationary, Bounce while moving and both patrol modes. Restart to check the outfit, route, movement settings, dog size, and browser layout. Check desktop click-through around transparent pixels and editing controls. Confirm physical presses earn while editing, while click-through is enabled and while another app has focus; held-key repeats and synthetic input should add no grants. During normal play, pet the visible dog to check heart feedback while the same physical press earns once.
 
 Smoke test the main scene with Steam and tray disabled:
 

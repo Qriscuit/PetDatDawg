@@ -6,6 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $steamInventoryProjectPath = Split-Path -Parent $PSScriptRoot
 $steamInventoryOldSteam = $env:PDD_DISABLE_STEAM
+$steamInventoryOldGlobalInput = $env:PDD_DISABLE_GLOBAL_INPUT
 $steamInventoryOldTray = $env:PDD_DISABLE_TRAY
 $steamInventoryOldAppData = $env:APPDATA
 $steamInventoryOldLocalAppData = $env:LOCALAPPDATA
@@ -13,6 +14,7 @@ $steamInventoryOldTemp = $env:TEMP
 $steamInventoryOldTmp = $env:TMP
 try {
     $env:PDD_DISABLE_STEAM = '1'
+    $env:PDD_DISABLE_GLOBAL_INPUT = '1'
     $env:PDD_DISABLE_TRAY = '1'
     $env:APPDATA = Join-Path $steamInventoryProjectPath '.godot\steamInventory-smoke-home\Roaming'
     $env:LOCALAPPDATA = Join-Path $steamInventoryProjectPath '.godot\steamInventory-smoke-home\Local'
@@ -41,6 +43,7 @@ try {
 }
 finally {
     $env:PDD_DISABLE_STEAM = $steamInventoryOldSteam
+    $env:PDD_DISABLE_GLOBAL_INPUT = $steamInventoryOldGlobalInput
     $env:PDD_DISABLE_TRAY = $steamInventoryOldTray
     $env:APPDATA = $steamInventoryOldAppData
     $env:LOCALAPPDATA = $steamInventoryOldLocalAppData

@@ -66,10 +66,11 @@ public partial class SteamInventorySmokeTest : Node
 			await Settle();
 			Require(menu.GetNode<Button>("%BuyDogBox").Disabled && menu.GetNode<Button>("%BuyAccessoryBox").Disabled
 				&& menu.GetNode<Button>("%OpenBox").Disabled, "Offline shop disables currency operations.");
-			var dogs = menu.GetNode<OptionButton>("%DogChoices");
+			var dogs = menu.GetNode<GridContainer>("%DogGrid");
 			RequireDogChoices(dogs, new[] { 0 }, "Empty Steam ownership shows only Starter dog.");
-			Require(dogs.Selected == 0 && dogs.GetItemId(dogs.Selected) == 0, "Starter dog is selected with empty ownership.");
+			Require(SelectedDogId(dogs) == 0, "Starter dog is selected with empty ownership.");
 			await VerifyOwnedDogSelector(wardrobe, dogs, pet, accessory, dog);
+			await VerifyDogGridLayout(menu, wardrobe, dogs);
 			if (DisplayServer.GetName() != "headless")
 			{
 				menu.GetNode<Button>("%ShopTab").EmitSignal(BaseButton.SignalName.Pressed);
@@ -91,10 +92,11 @@ public partial class SteamInventorySmokeTest : Node
 		}
 	}
 	private async Task Settle() { for (var i = 0; i < 3; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); }
-	private async Task VerifyOwnedDogSelector(AccessoryWardrobe wardrobe, OptionButton dogs, DesktopPet pet,
+	private async Task VerifyOwnedDogSelector(AccessoryWardrobe wardrobe, GridContainer dogs, DesktopPet pet,
 		SteamCosmeticDefinition accessory, SteamCosmeticDefinition firstDog)
 	{
 		var otherDog = SteamCosmeticCatalog.All.Last(item => item.Kind == "dog");
+		var starterCard = DogCard(dogs, 0);
 		wardrobe.SetSteamOwnership(new[] { accessory.ItemDefId });
 		await Settle();
 		RequireDogChoices(dogs, new[] { 0 }, "Owned accessories do not appear in the dog selector.");
@@ -102,23 +104,34 @@ public partial class SteamInventorySmokeTest : Node
 		wardrobe.SetSteamOwnership(new[] { accessory.ItemDefId, otherDog.ItemDefId });
 		await Settle();
 		RequireDogChoices(dogs, new[] { 0, otherDog.ItemDefId }, "Gaining one dog adds only that owned dog beside Starter.");
+		var otherCard = DogCard(dogs, otherDog.ItemDefId);
 		SelectDogByItemId(dogs, otherDog.ItemDefId);
 		await Settle();
 		Require(wardrobe.SelectedDogItemDefId == otherDog.ItemDefId && SelectedDogId(dogs) == otherDog.ItemDefId,
-			"Selecting a nonconsecutive dropdown item ID selects the correct owned Steam dog.");
-		Require(pet.EditableDog.Texture.ResourcePath == otherDog.AssetPath, "Dropdown selection updates the desktop to the matching owned dog.");
+			"Choosing a picture card selects the correct owned Steam dog by its stable item ID.");
+		Require(pet.EditableDog.Texture.ResourcePath == otherDog.AssetPath, "Picture card selection updates the desktop to the matching owned dog.");
+		await Settle();
+		Require(DogCard(dogs, 0) == starterCard && DogCard(dogs, otherDog.ItemDefId) == otherCard,
+			"Ordinary refreshes preserve card instances, pictures and focus targets.");
 
 		wardrobe.SetSteamOwnership(new[] { accessory.ItemDefId, firstDog.ItemDefId, otherDog.ItemDefId, otherDog.ItemDefId, 100 });
 		await Settle();
 		RequireDogChoices(dogs, new[] { 0, firstDog.ItemDefId, otherDog.ItemDefId }, "Gained dog ownership refreshes the list without duplicates, accessories or currency.");
 		Require(wardrobe.SelectedDogItemDefId == otherDog.ItemDefId && SelectedDogId(dogs) == otherDog.ItemDefId,
-			"Adding a dog retains the selected owned dog when its dropdown index changes.");
+			"Adding a dog retains the selected owned dog when its grid position changes.");
+		Require(DogCard(dogs, 0) == starterCard && DogCard(dogs, otherDog.ItemDefId) == otherCard,
+			"Adding ownership inserts a card without replacing the existing cards.");
+		var firstCard = DogCard(dogs, firstDog.ItemDefId);
 
 		wardrobe.SetSteamOwnership(new[] { accessory.ItemDefId, otherDog.ItemDefId });
+		firstCard.EmitSignal(BaseButton.SignalName.Pressed);
+		Require(wardrobe.SelectedDogItemDefId == otherDog.ItemDefId, "A stale picture card cannot select a dog after ownership is removed.");
 		await Settle();
 		RequireDogChoices(dogs, new[] { 0, otherDog.ItemDefId }, "Losing an unselected dog removes it from the menu immediately.");
 		Require(wardrobe.SelectedDogItemDefId == otherDog.ItemDefId && SelectedDogId(dogs) == otherDog.ItemDefId,
 			"Removing another dog preserves the selected dog while it is still owned.");
+		Require(DogCard(dogs, 0) == starterCard && DogCard(dogs, otherDog.ItemDefId) == otherCard,
+			"Removing another dog keeps all remaining cards stable.");
 
 		wardrobe.SetSteamOwnership(new[] { accessory.ItemDefId, firstDog.ItemDefId });
 		await Settle();
@@ -138,20 +151,63 @@ public partial class SteamInventorySmokeTest : Node
 		RequireDogChoices(dogs, new[] { 0 }, "Removing all ownership returns the menu to Starter only.");
 		Require(SelectedDogId(dogs) == 0, "The empty refreshed list keeps Starter selected.");
 	}
-	private void RequireDogChoices(OptionButton dogs, int[] expectedIds, string message)
+	private async Task VerifyDogGridLayout(StatusWindow menu, AccessoryWardrobe wardrobe, GridContainer dogs)
 	{
-		var actualIds = Enumerable.Range(0, dogs.ItemCount).Select(dogs.GetItemId).ToArray();
-		Require(actualIds.Order().SequenceEqual(expectedIds.Order()) && actualIds.Distinct().Count() == actualIds.Length
-			&& Enumerable.Range(0, dogs.ItemCount).All(index => !dogs.IsItemDisabled(index)), message);
+		var originalSize = menu.Size;
+		try
+		{
+			wardrobe.SetSteamOwnership(SteamCosmeticCatalog.All.Where(item => item.Kind == "dog").Select(item => item.ItemDefId));
+			menu.GetNode<Button>("%DogsTab").EmitSignal(BaseButton.SignalName.Pressed);
+			menu.ShowStatusWindow();
+			menu.Size = new Vector2I(1040, originalSize.Y);
+			await Settle();
+			var wideColumns = dogs.Columns;
+			var firstCard = DogCard(dogs, 0);
+			menu.Size = new Vector2I(menu.MinSize.X, originalSize.Y);
+			await Settle();
+			Require(dogs.Columns >= 1 && dogs.Columns < wideColumns,
+				"The picture grid reduces columns when the actual browser viewport narrows.");
+			var scroll = menu.GetNode<ScrollContainer>("%DogsScroll");
+			var usableWidth = scroll.Size.X - (scroll.GetVScrollBar().Visible ? scroll.GetVScrollBar().GetCombinedMinimumSize().X : 0);
+			var rowWidth = DogCards(dogs).Take(dogs.Columns).Sum(card => card.GetCombinedMinimumSize().X)
+				+ Math.Max(0, dogs.Columns - 1) * dogs.GetThemeConstant("h_separation");
+			Require(rowWidth <= usableWidth + 1 && DogCard(dogs, 0) == firstCard,
+				"Visible card rows fit the available scroll viewport while retaining card identity.");
+			Require(scroll.GetHScrollBar().MaxValue <= scroll.GetHScrollBar().Page + 1,
+				"The adaptive dog collection requires no hidden horizontal scrolling.");
+			RequireDogChoices(dogs, new[] { 0 }.Concat(SteamCosmeticCatalog.All.Where(item => item.Kind == "dog").Select(item => item.ItemDefId)).ToArray(),
+				"All owned dog pictures appear once in the vertically scrolling collection.");
+			Require(menu.GetNode<Label>("%DogSelectionStatus").Text.Contains("Starter dog", StringComparison.Ordinal),
+				"The collection names the current selected dog separately from its cards.");
+			if (DisplayServer.GetName() != "headless")
+			{
+				await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+				using var image = menu.GetTexture().GetImage();
+				Require(image.SavePng("res://.godot/steam-dogs-smoke.png") == Error.Ok, "Owned dog picture cards capture for visual review.");
+			}
+		}
+		finally { wardrobe.SetSteamOwnership(Array.Empty<int>()); menu.Size = originalSize; menu.Hide(); }
 	}
-	private void SelectDogByItemId(OptionButton dogs, int itemDefId)
+	private void RequireDogChoices(GridContainer dogs, int[] expectedIds, string message)
 	{
-		var index = dogs.GetItemIndex(itemDefId);
-		Require(index >= 0, "The requested owned dog must have an entry with its Steam item ID.");
-		dogs.Select(index);
-		dogs.EmitSignal(OptionButton.SignalName.ItemSelected, (long)index);
+		var cards = DogCards(dogs);
+		var actualIds = cards.Select(card => card.GetMeta("dog_itemdef_id").AsInt32()).ToArray();
+		Require(actualIds.SequenceEqual(expectedIds) && actualIds.Distinct().Count() == actualIds.Length && cards.All(card => !card.Disabled), message);
+		Require(cards.All(card => card.GetNode<TextureRect>("%DogChoicePreview").Texture != null
+			&& card.GetNode<Label>("%DogChoiceName").Text == (SteamCosmeticCatalog.Find(card.GetMeta("dog_itemdef_id").AsInt32())?.Name ?? "Starter dog")),
+			"Each owned dog card shows its picture and matching name.");
+		Require(cards.Count(card => card.ButtonPressed) == 1 && cards.All(card =>
+			card.GetNode<Label>("%DogChoiceStatus").Text == (card.ButtonPressed ? "Selected" : "Choose dog")),
+			"Exactly one dog has the selected visual state and caption.");
 	}
-	private static int SelectedDogId(OptionButton dogs) => dogs.Selected >= 0 ? dogs.GetItemId(dogs.Selected) : -1;
+	private void SelectDogByItemId(GridContainer dogs, int itemDefId)
+	{
+		var card = DogCard(dogs, itemDefId);
+		card.EmitSignal(BaseButton.SignalName.Pressed);
+	}
+	private static Button[] DogCards(GridContainer dogs) => dogs.GetChildren().OfType<Button>().ToArray();
+	private static Button DogCard(GridContainer dogs, int itemDefId) => DogCards(dogs).Single(card => card.GetMeta("dog_itemdef_id").AsInt32() == itemDefId);
+	private static int SelectedDogId(GridContainer dogs) => DogCards(dogs).Single(card => card.ButtonPressed).GetMeta("dog_itemdef_id").AsInt32();
 	private void VerifyDogClickQueue(DesktopPet pet)
 	{
 		var settings = GetNode<PetSettings>("/root/PetSettings");
@@ -173,19 +229,27 @@ public partial class SteamInventorySmokeTest : Node
 		using var clearClick = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = transparent!.Value };
 		using var release = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = opaque!.Value };
 		pet._Input(clearClick); pet._Input(release);
-		Require(backend.PendingGrantCount == 0 && backend.ConfirmedPets == null, "Transparent texture pixels and button release do not grant Pets.");
+		Require(backend.PendingGrantCount == 0 && backend.ConfirmedPets == null, "Local texture hits and releases do not duplicate background grants.");
 		using var click = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = opaque.Value };
 		pet._Input(click);
-		Require(backend.PendingGrantCount == 1 && backend.ConfirmedPets == null, "One visible dog click queues exactly one grant without inventing a total.");
+		Require(backend.PendingGrantCount == 0, "Local dog feedback never queues a duplicate input grant.");
+		pet.RecordInputActivity(1);
+		Require(backend.PendingGrantCount == 1 && backend.ConfirmedPets == null, "One observed input queues exactly one grant without inventing a total.");
 		pet._Input(click);
-		Require(backend.PendingGrantCount == 2 && backend.ConfirmedPets == null, "A second visible click queues one additional grant while Steam is offline.");
+		pet.RecordInputActivity(1);
+		Require(backend.PendingGrantCount == 2 && backend.ConfirmedPets == null, "A second input queues one additional grant while Steam is offline.");
 		settings.SetDogClickThrough(true);
 		pet._Input(click);
-		Require(backend.PendingGrantCount == 2, "Dog click-through mode does not enqueue grants.");
+		pet.RecordInputActivity(1);
+		Require(backend.PendingGrantCount == 3, "Background earning continues with dog click-through enabled.");
 		settings.SetDogClickThrough(false);
 		settings.SetDogTransparency(0);
 		pet._Input(click);
-		Require(backend.PendingGrantCount == 2, "An invisible dog does not enqueue grants.");
+		pet.RecordInputActivity(2);
+		Require(backend.PendingGrantCount == 5, "Background earning continues with an invisible dog and counts every input in a batch.");
+		pet.RecordInputActivity(0);
+		pet.RecordInputActivity(-1);
+		Require(backend.PendingGrantCount == 5 && backend.ConfirmedPets == null, "Empty activity never creates grants or a local Pets total.");
 		settings.SetDogTransparency(1);
 	}
 	private void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); _assertions++; }
