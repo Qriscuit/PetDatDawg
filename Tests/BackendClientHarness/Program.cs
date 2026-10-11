@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 
+await Run("backend URL defaults to the shared Worker and preserves explicit overrides", VerifyBackendUrlConfigurationAsync);
 await Run("401 renews authentication and preserves the click GUID", VerifyExpiredSessionAsync);
 await Run("uncertain purchases reuse the original GUID and block new exchanges", VerifyUncertainPurchaseAsync);
 await Run("202 responses do not apply an optimistic balance or rewards", VerifyPendingExchangeAsync);
@@ -14,12 +15,61 @@ await Run("uncertain and rate-limited grants retry one GUID without inventing pe
 await Run("every inventory refresh replaces the total only with a valid Steam snapshot", VerifyAuthoritativeRefreshAsync);
 await Run("changing Steam accounts discards the previous account's queued clicks", VerifyAccountChangeAsync);
 await Run("Steam error diagnostics show only allowlisted endpoints, categories and bounded numeric results", VerifySafeSteamDiagnosticsAsync);
-Console.WriteLine("BACKEND_CLIENT_HARNESS_PASS: 12 scenarios");
+Console.WriteLine("BACKEND_CLIENT_HARNESS_PASS: 13 scenarios");
 
 static async Task Run(string name, Func<Task> scenario)
 {
 	await scenario();
 	Console.WriteLine($"PASS: {name}");
+}
+
+static async Task VerifyBackendUrlConfigurationAsync()
+{
+	var originalEnvironment = Environment.GetEnvironmentVariable("PDD_BACKEND_URL");
+	var originalSettings = Godot.ProjectSettings.Settings.ToArray();
+	try
+	{
+		foreach (var (environmentUrl, projectUrl, expectedBaseUrl) in new (string?, string?, string)[]
+		{
+			(null, null, "https://petdadawg.americlasagna.workers.dev/"),
+			(null, "   ", "https://petdadawg.americlasagna.workers.dev/"),
+			(null, " https://configured.test/backend ", "https://configured.test/backend/"),
+			("   ", "https://configured.test/", "https://configured.test/"),
+			(" http://127.0.0.1:5155 ", "https://configured.test/", "http://127.0.0.1:5155/"),
+			("https://override.test/backend/", null, "https://override.test/backend/"),
+		})
+		{
+			Environment.SetEnvironmentVariable("PDD_BACKEND_URL", environmentUrl);
+			Godot.ProjectSettings.Settings.Clear();
+			if (projectUrl != null) Godot.ProjectSettings.Settings["pdd/backend_url"] = projectUrl;
+			var requests = new List<Uri>();
+			var httpClient = new HttpClient(new FixtureHandler(request =>
+			{
+				requests.Add(request.RequestUri!);
+				return Task.FromResult(Json(HttpStatusCode.OK, request.RequestUri!.AbsolutePath.EndsWith("/v1/auth/steam", StringComparison.Ordinal)
+					? """{"sessionToken":"fixture-session","steamId":"76561198000000000"}"""
+					: """{"pets":0,"items":[]}"""));
+			}));
+			using var client = new BackendPetClient(httpClient);
+			Require(httpClient.BaseAddress == new Uri(expectedBaseUrl), "Backend configuration must use environment, then project setting, then shared Worker.");
+			await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
+			Require(client.IsAuthenticated && requests.SequenceEqual(new[]
+			{
+				new Uri(expectedBaseUrl + "v1/auth/steam"), new Uri(expectedBaseUrl + "v1/inventory"),
+			}), "Authentication and inventory must use the selected backend with its full base path.");
+		}
+		Environment.SetEnvironmentVariable("PDD_BACKEND_URL", "http://127.0.0.1:5155");
+		var injectedHttpClient = new HttpClient(new FixtureHandler(_ => throw new InvalidOperationException("No request is expected.")))
+			{ BaseAddress = new Uri("https://injected.test/") };
+		using var injectedClient = new BackendPetClient(injectedHttpClient);
+		Require(injectedHttpClient.BaseAddress == new Uri("https://injected.test/"), "An explicitly injected HTTP base address must be preserved.");
+	}
+	finally
+	{
+		Environment.SetEnvironmentVariable("PDD_BACKEND_URL", originalEnvironment);
+		Godot.ProjectSettings.Settings.Clear();
+		foreach (var setting in originalSettings) Godot.ProjectSettings.Settings.Add(setting.Key, setting.Value);
+	}
 }
 
 static async Task VerifyExpiredSessionAsync()

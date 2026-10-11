@@ -11,8 +11,10 @@ dotnet restore Tests/BackendClientHarness/BackendClientHarness.csproj --configfi
 dotnet run --no-restore --project Tests/BackendClientHarness/BackendClientHarness.csproj
 ```
 
-The twelve scenarios cover the Steam ticket identity and authenticated inventory
-request contract, offline click queuing, one FIFO grant per click, transport and
+The thirteen scenarios cover the shared Worker default URL, project settings and
+environment overrides (including an explicit local backend), the Steam ticket
+identity and authenticated inventory request contract, offline click queuing,
+one FIFO grant per click, transport and
 rate-limit retries with the original click GUID, replayed grants using a 64-bit
 server total, repeated authoritative inventory refreshes, invalid snapshots,
 expired-session renewal, Steam account changes, and allowlisted Steam endpoints,

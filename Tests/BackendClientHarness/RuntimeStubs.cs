@@ -7,12 +7,13 @@ namespace Godot
 	}
 	public static class ProjectSettings
 	{
-		public static bool HasSetting(string setting) => false;
-		public static Variant GetSetting(string setting) => new();
+		public static Dictionary<string, string> Settings { get; } = new();
+		public static bool HasSetting(string setting) => Settings.ContainsKey(setting);
+		public static Variant GetSetting(string setting) => new(Settings.GetValueOrDefault(setting));
 	}
-	public readonly struct Variant
+	public readonly struct Variant(string? value)
 	{
-		public string AsString() => string.Empty;
+		public string AsString() => value ?? string.Empty;
 	}
 }
 

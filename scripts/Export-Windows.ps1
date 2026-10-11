@@ -36,6 +36,14 @@ function Assert-InRepository([string]$Path) {
     }
 }
 
+function Resolve-BuildToolPath([string]$Path) {
+    $expandedPath = [Environment]::ExpandEnvironmentVariables($Path)
+    if (-not [IO.Path]::IsPathRooted($expandedPath)) {
+        $expandedPath = Join-Path $repoRoot $expandedPath
+    }
+    return [IO.Path]::GetFullPath($expandedPath)
+}
+
 function Invoke-CheckedProcess([string]$Executable, [string[]]$Arguments, [string]$Name, [int]$TimeoutSeconds = 300, [string]$WorkingDirectory = $stageProject) {
     $stdout = Join-Path $runRoot "$Name.stdout.log"
     $stderr = Join-Path $runRoot "$Name.stderr.log"
@@ -58,28 +66,55 @@ function Invoke-CheckedProcess([string]$Executable, [string[]]$Arguments, [strin
     return $log
 }
 
-if (-not $GodotPath) {
-    $GodotPath = 'W:\Godot_v4.6.3-stable_mono_win64\Godot_v4.6.3-stable_mono_win64_console.exe'
+if ($GodotPath) {
+    $GodotPath = Resolve-BuildToolPath $GodotPath
+    if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) {
+        throw "Godot 4.6.3 Mono executable not found: $GodotPath. Pass -GodotPath or set PDD_GODOT_PATH."
+    }
+    $godotCandidates = @($GodotPath)
+} else {
+    # Find a portable extracted Mono runtime before trying the developer's PATH.
+    $godotCandidates = @(
+        foreach ($toolRoot in @((Join-Path $repoRoot 'tools'), (Join-Path $cacheRoot 'build-tools'))) {
+            if (Test-Path -LiteralPath $toolRoot -PathType Container) {
+                Get-ChildItem -LiteralPath $toolRoot -Recurse -File -Filter 'Godot_v4.6.3-stable_mono_win64*.exe' |
+                    Sort-Object @{ Expression = { if ($_.Name -like '*_console.exe') { 0 } else { 1 } } }, FullName |
+                    Select-Object -ExpandProperty FullName
+            }
+        }
+        Get-Command 'godot-mono', 'godot4-mono', 'godot', 'godot4', 'Godot_v4.6.3-stable_mono_win64_console.exe', 'Godot_v4.6.3-stable_mono_win64.exe' -All -CommandType Application -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty Source
+    ) | Select-Object -Unique
 }
-if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) {
-    throw "Godot 4.6.3 Mono executable not found: $GodotPath. Pass -GodotPath or set PDD_GODOT_PATH."
+$version = $null
+foreach ($candidate in $godotCandidates) {
+    $candidateVersion = (& $candidate --version | Out-String).Trim()
+    if ($LASTEXITCODE -eq 0 -and $candidateVersion -match '^4\.6\.3\.stable\.mono\.') {
+        $GodotPath = $candidate
+        $version = $candidateVersion
+        break
+    }
+    if ($GodotPath) { throw "This project requires Godot 4.6.3 Mono; found '$candidateVersion'." }
 }
-$GodotPath = [IO.Path]::GetFullPath($GodotPath)
+if (-not $version) {
+    throw 'Godot 4.6.3 Mono was not found. Extract its complete Windows x64 Mono folder into tools/Godot_v4.6.3-stable_mono_win64, add it to PATH, or pass -GodotPath (relative paths start at the repository root).'
+}
+Write-Host "Godot: $GodotPath"
 $dotnet = Get-Command 'dotnet' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
 if (-not $dotnet) { throw 'The .NET 8 SDK is required. Install it and reopen the build window.' }
-$version = (& $GodotPath --version | Out-String).Trim()
-if ($LASTEXITCODE -ne 0 -or $version -notmatch '^4\.6\.3\.stable\.mono\.') {
-    throw "This project requires Godot 4.6.3 Mono; found '$version'."
-}
 if (-not $TemplatesDirectory) {
     $candidates = @(
+        (Join-Path $repoRoot 'tools/templates-4.6.3'),
         (Join-Path $cacheRoot 'build-tools/templates-4.6.3'),
         (Join-Path $env:APPDATA 'Godot/export_templates/4.6.3.stable.mono')
     )
     $TemplatesDirectory = $candidates | Where-Object { Test-Path -LiteralPath (Join-Path $_ 'windows_release_x86_64.exe') } | Select-Object -First 1
 }
-if (-not $TemplatesDirectory) { throw 'Install the official Godot 4.6.3 Mono export templates or pass -TemplatesDirectory.' }
-$TemplatesDirectory = [IO.Path]::GetFullPath($TemplatesDirectory)
+if (-not $TemplatesDirectory) { throw 'Install the official Godot 4.6.3 Mono export templates, extract them into tools/templates-4.6.3, or pass -TemplatesDirectory.' }
+$TemplatesDirectory = Resolve-BuildToolPath $TemplatesDirectory
+if (-not (Test-Path -LiteralPath (Join-Path $TemplatesDirectory 'version.txt') -PathType Leaf)) {
+    throw "Godot export templates not found: $TemplatesDirectory. Select the extracted templates folder containing version.txt."
+}
 $templateVersion = (Get-Content -LiteralPath (Join-Path $TemplatesDirectory 'version.txt') -Raw).Trim()
 if ($templateVersion -ne '4.6.3.stable.mono') { throw "Incorrect template version: $templateVersion" }
 foreach ($template in @('windows_release_x86_64.exe', 'windows_release_x86_64_console.exe')) {

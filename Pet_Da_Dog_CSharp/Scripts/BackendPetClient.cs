@@ -13,7 +13,7 @@ public sealed record SteamInventoryItem(string ItemId, int ItemDefId, long Quant
 
 public sealed class BackendPetClient : IDisposable
 {
-	private const string DefaultBackendUrl = "http://127.0.0.1:5155";
+	private const string DefaultBackendUrl = "https://petdadawg.americlasagna.workers.dev";
 	private const double RetryDelaySeconds = 2.0;
 	private readonly System.Net.Http.HttpClient _httpClient;
 	// Apply every inventory response in request order, including clicks and exchanges.

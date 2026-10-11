@@ -77,7 +77,7 @@ Do not use the local Godot 4.6.2 console runtime for smoke tests; it was observe
 
 Client config:
 
-- `PDD_BACKEND_URL`, default `http://127.0.0.1:5155`
+- `PDD_BACKEND_URL`, default `https://petdadawg.americlasagna.workers.dev`; set it to `http://127.0.0.1:5155` explicitly for a local backend
 - Godot project setting `pdd/backend_url` supplies the packaged backend URL; the environment variable overrides it.
 - `PDD_STEAM_APP_ID`, or local `Pet_Da_Dog_CSharp/steam_appid.txt` for development
 - The client defaults to the real app, `4817200`; set the development file to this AppID for real Steam inventory tests.
