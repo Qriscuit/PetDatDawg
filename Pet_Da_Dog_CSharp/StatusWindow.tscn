@@ -193,6 +193,7 @@ theme_type_variation = &"WoodlandHeading"
 text = "Your desktop dog"
 
 [node name="DogPortrait" type="TextureRect" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content" unique_id=1232923849]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 size_flags_vertical = 3
@@ -215,6 +216,17 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_type_variation = &"ActionButton"
 text = "Customize this dog"
+
+[node name="DogChoices" type="OptionButton" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Choose a dog you own in Steam. Unlock more dogs by opening Dog Boxes."
+
+[node name="CollectionHint" type="Label" parent="Background/Margin/Layout/Pages/DogsPage/Margin/Content"]
+layout_mode = 2
+text = "Unlock more dogs by opening Dog Boxes in Shop."
+autowrap_mode = 3
 
 [node name="ItemsPage" type="PanelContainer" parent="Background/Margin/Layout/Pages" unique_id=2118073526]
 unique_name_in_owner = true
@@ -259,15 +271,58 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"WoodlandHeading"
-text = "Shop is coming soon"
+text = "Boxes"
 
 [node name="ShopDescription" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content" unique_id=445454451]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 13
-text = "There are no items for purchase yet.
-You can use the bundled accessories in Items to create your dog's look."
+text = "Pet your desktop dog to earn Pets. Spend them on boxes, then open a box to unlock one random dog or accessory."
+autowrap_mode = 3
+
+[node name="BuyDogBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ActionButton"
+text = "Buy Dog Box · 1 Pet"
+disabled = true
+
+[node name="BuyAccessoryBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ActionButton"
+text = "Buy Accessories Box · 2 Pets"
+disabled = true
+
+[node name="BoxSummary" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Your boxes: waiting for Steam"
+
+[node name="BoxChoices" type="OptionButton" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+
+[node name="OpenBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ActionButton"
+text = "Open selected box"
+disabled = true
+
+[node name="RefreshInventory" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Refresh Steam inventory"
+disabled = true
+
+[node name="ShopStatus" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Connect to Steam to earn Pets and use boxes."
 autowrap_mode = 3
 
 [node name="SettingsPage" type="ScrollContainer" parent="Background/Margin/Layout/Pages" unique_id=1312849053]

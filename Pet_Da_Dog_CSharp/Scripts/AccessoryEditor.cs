@@ -427,7 +427,7 @@ public partial class AccessoryEditor : VBoxContainer
 			}
 			_cards[accessory.Id].SetPressedNoSignal(selected);
 			_cardTextures[accessory.Id].Modulate = _wardrobe.GetTint(accessory.Id);
-			((AccessoryCard)_cards[accessory.Id]).RefreshStatus(selected && _session.IsPlacing, equippedIds.Contains(accessory.Id), accessory.IsText);
+			((AccessoryCard)_cards[accessory.Id]).RefreshStatus(selected && _session.IsPlacing, equippedIds.Contains(accessory.Id), accessory.IsText, _wardrobe.CanEquip(accessory.Id));
 		}
 		_selectionLabel!.Text = selectedName ?? NoSelectionText;
 		_selectionLabel.TooltipText = FormatCopy(SelectionTooltipFormat, "name", _selectionLabel.Text);
@@ -524,7 +524,17 @@ public partial class AccessoryPreview : Control
 	public void Configure(AccessoryWardrobe wardrobe)
 	{
 		_wardrobe = wardrobe;
-		wardrobe.Changed += QueueRedraw;
+		wardrobe.Changed += RefreshDogTexture;
+		RefreshDogTexture();
+	}
+	private void RefreshDogTexture()
+	{
+		var texture = ResourceLoader.Load<Texture2D>(_wardrobe?.CurrentDogTexturePath ?? DogTexturePath);
+		if (texture != _dogTexture && texture != null)
+		{
+			_dogTexture = texture;
+			_dogVisibleBounds = AccessoryWardrobe.GetVisibleBounds(texture);
+		}
 		QueueRedraw();
 	}
 
@@ -533,7 +543,7 @@ public partial class AccessoryPreview : Control
 		FinishDrag();
 		if (_wardrobe != null)
 		{
-			_wardrobe.Changed -= QueueRedraw;
+			_wardrobe.Changed -= RefreshDogTexture;
 		}
 		foreach (var image in _hitImages.Values)
 		{

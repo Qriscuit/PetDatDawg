@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 public partial class DesktopPet : Node2D
@@ -33,6 +34,8 @@ public partial class DesktopPet : Node2D
 	private Node2D _visualRoot = null!;
 	private Sprite2D _dogSprite = null!;
 	private Image? _dogImage;
+	private string _activeDogTexturePath = DogTexturePath;
+	private IReadOnlyList<SteamInventoryItem>? _lastInventoryItems;
 	private Texture2D? _heartTexture;
 
 	private Vector2 _visibleDogSize = new(128.0f, 128.0f);
@@ -74,6 +77,9 @@ public partial class DesktopPet : Node2D
 	private bool _lastAlwaysOnTop = PetSettings.DefaultAlwaysOnTop;
 	private float _lastDogScale = PetSettings.DefaultDogScale;
 	private readonly List<FloatingHeart> _floatingHearts = new();
+	private bool _validatePets;
+	private string? _lastValidationStatus;
+	private double _validationTimer;
 
 	private sealed class FloatingHeart
 	{
@@ -123,7 +129,7 @@ public partial class DesktopPet : Node2D
 		ConfigureDogSprite();
 		if (_wardrobe != null)
 		{
-			_wardrobe.Changed += SyncAccessories;
+			_wardrobe.Changed += SyncAppearance;
 		}
 		SyncAccessories();
 		ConfigureHeartTexture();
@@ -148,6 +154,8 @@ public partial class DesktopPet : Node2D
 			if (_editingSession.Active) OnAccessoryModeChanged(true);
 		}
 		_steam.Initialize();
+		_validatePets = Array.IndexOf(OS.GetCmdlineUserArgs(), "--validate-pets") >= 0;
+		if (_validatePets) GD.Print($"PET_VALIDATION: {_steam.Status}");
 		SetProcess(true);
 
 		// Also allow launching directly into Status, including packaged-build smoke checks.
@@ -180,8 +188,14 @@ public partial class DesktopPet : Node2D
 		UpdateFloatingHearts(deltaF);
 		UpdateDogMouseRegion();
 		TickBackend(delta);
+		if (!ReferenceEquals(_lastInventoryItems, _backend.InventoryItems))
+		{
+			_lastInventoryItems = _backend.InventoryItems;
+			_wardrobe?.SetSteamOwnership(_lastInventoryItems.Where(item => item.Quantity > 0).Select(item => item.ItemDefId));
+		}
 		UpdateStatusWindow();
 		_steam.RunCallbacks();
+		if (_validatePets) LogPetValidation(delta);
 	}
 
 	public override void _Input(InputEvent inputEvent)
@@ -230,6 +244,7 @@ public partial class DesktopPet : Node2D
 		if (mouseButton.ButtonIndex == MouseButton.Left)
 		{
 			_backend.EnqueuePetGrant(Guid.NewGuid());
+			if (_validatePets) GD.Print($"PET_VALIDATION: visible dog click queued; pending={_backend.PendingGrantCount}");
 			SpawnFloatingHeart();
 		}
 		else
@@ -257,7 +272,7 @@ public partial class DesktopPet : Node2D
 		_nativeWindowBridge?.SetAccessoryEditing(false);
 		if (_wardrobe != null)
 		{
-			_wardrobe.Changed -= SyncAccessories;
+			_wardrobe.Changed -= SyncAppearance;
 		}
 		if (_settings != null)
 		{
@@ -318,7 +333,8 @@ public partial class DesktopPet : Node2D
 
 	private void ConfigureDogSprite()
 	{
-		_dogSprite.Texture = ResourceLoader.Load<Texture2D>(DogTexturePath)
+		_activeDogTexturePath = _wardrobe?.CurrentDogTexturePath ?? DogTexturePath;
+		_dogSprite.Texture = ResourceLoader.Load<Texture2D>(_activeDogTexturePath)
 			?? ResourceLoader.Load<Texture2D>(FallbackTexturePath);
 		_dogSprite.Centered = true;
 		_dogSprite.Visible = true;
@@ -330,7 +346,9 @@ public partial class DesktopPet : Node2D
 		}
 
 		var textureSize = new Vector2I(_dogSprite.Texture.GetWidth(), _dogSprite.Texture.GetHeight());
-		_dogImage = _dogSprite.Texture.GetImage();
+		_dogImage?.Dispose();
+		// Some texture implementations share their image; retain our own hit-test copy.
+		_dogImage = (Image)_dogSprite.Texture.GetImage().Duplicate();
 		var visibleBounds = AccessoryWardrobe.GetVisibleBounds(_dogSprite.Texture);
 		if (visibleBounds.Size == Vector2I.Zero)
 		{
@@ -370,6 +388,17 @@ public partial class DesktopPet : Node2D
 			var bounds = AccessoryWardrobe.GetVisibleBounds(_heartTexture);
 			if (bounds.Size != Vector2I.Zero) _heartTexture = new AtlasTexture { Atlas = _heartTexture, Region = bounds, FilterClip = true };
 		}
+	}
+
+	private void SyncAppearance()
+	{
+		if (_activeDogTexturePath != (_wardrobe?.CurrentDogTexturePath ?? DogTexturePath))
+		{
+			ConfigureDogSprite();
+			_lastMouseRegion = null;
+		}
+		SyncAccessories();
+		MoveOverlayToBottom(force: true);
 	}
 
 	private void SyncAccessories()
@@ -772,6 +801,22 @@ public partial class DesktopPet : Node2D
 		_backend.Tick(delta, _shutdown.Token);
 	}
 
+	private void LogPetValidation(double delta)
+	{
+		var status = $"{_backend.Status} confirmed={_backend.ConfirmedPets?.ToString() ?? "unknown"}; pending={_backend.PendingGrantCount}";
+		if (_lastValidationStatus != status)
+		{
+			GD.Print($"PET_VALIDATION: {status}");
+			_lastValidationStatus = status;
+		}
+		_validationTimer += delta;
+		if (_validationTimer >= 10.0 && _steam.IsInitialized)
+		{
+			_validationTimer = 0;
+			GD.Print($"PET_VALIDATION: Steam overlay enabled={Steamworks.SteamUtils.IsOverlayEnabled()}");
+		}
+	}
+
 	private void UpdateDogMouseRegion()
 	{
 		if (Engine.IsEmbeddedInEditor())
@@ -920,6 +965,7 @@ public partial class DesktopPet : Node2D
 			_statusWindow.Visible = false;
 			GetTree().Root.AddChild(_statusWindow);
 			_statusWindow.Configure(_settings);
+			_statusWindow.ConfigureSteamInventory(_backend, _wardrobe, _shutdown.Token);
 		}
 
 		UpdateStatusWindow();

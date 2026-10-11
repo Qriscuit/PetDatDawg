@@ -72,6 +72,7 @@ public partial class StatusWindow : Window
 		_baseWindowSize = Size; _baseMinimumWindowSize = MinSize;
 		_baseContentScaleFactor = ContentScaleFactor;
 		BindScene(); ConnectControls();
+		BindInventoryControls();
 		_editingSession = GetNodeOrNull<AccessoryEditingSession>("/root/AccessoryEditingSession");
 		_patrolRoute = GetNodeOrNull<PatrolRoute>("/root/PatrolRoute");
 		CloseRequested += () => { _editingSession?.SetActive(false); SaveLayout(); Hide(); };
@@ -88,6 +89,7 @@ public partial class StatusWindow : Window
 	public override void _Process(double delta)
 	{
 		if (!Engine.IsEditorHint()) SyncEditingState();
+		if (!Engine.IsEditorHint()) UpdateInventoryControls();
 	}
 	private void PreviewTab()
 	{

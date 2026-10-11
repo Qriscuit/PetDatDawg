@@ -195,11 +195,8 @@ public sealed class SteamWebApiClient
 		);
 
 		using var response = await _httpClient.GetAsync(url, cancellationToken);
+		EnsureSteamResponseAccepted(response, "auth");
 		var body = await response.Content.ReadAsStringAsync(cancellationToken);
-		if (!response.IsSuccessStatusCode)
-		{
-			throw new SteamWebApiException($"Steam auth failed with HTTP {(int)response.StatusCode}.");
-		}
 
 		using var document = JsonDocument.Parse(body);
 		var parameters = document.RootElement.GetProperty("response").GetProperty("params");
@@ -231,24 +228,10 @@ public sealed class SteamWebApiClient
 			new FormUrlEncodedContent(form),
 			cancellationToken
 		);
+		EnsureSteamResponseAccepted(response, "inventory grant");
 		var body = await response.Content.ReadAsStringAsync(cancellationToken);
-		if (!response.IsSuccessStatusCode)
-		{
-			throw new SteamWebApiException($"Steam inventory grant failed with HTTP {(int)response.StatusCode}.");
-		}
 
-		using var document = JsonDocument.Parse(body);
-		var responseElement = document.RootElement.GetProperty("response");
-		if (responseElement.TryGetProperty("success", out var successElement) && !ReadBool(successElement))
-		{
-			var error = responseElement.TryGetProperty("error", out var errorElement)
-				? errorElement.GetString()
-				: "unknown inventory error";
-			throw new SteamWebApiException(error ?? "unknown inventory error");
-		}
-
-		var replayed = responseElement.TryGetProperty("replayed", out var replayedElement) && ReadBool(replayedElement);
-		return new GrantPetResult(1, replayed);
+		return SteamPetGrantReceipt.Parse(body, _config.AppId, _config.PetsItemDefId);
 	}
 
 	public async Task<long> GetPetsAsync(string steamId, CancellationToken cancellationToken)
@@ -265,11 +248,8 @@ public sealed class SteamWebApiClient
 		);
 
 		using var response = await _httpClient.GetAsync(url, cancellationToken);
+		EnsureSteamResponseAccepted(response, "inventory read");
 		var body = await response.Content.ReadAsStringAsync(cancellationToken);
-		if (!response.IsSuccessStatusCode)
-		{
-			throw new SteamWebApiException($"Steam inventory read failed with HTTP {(int)response.StatusCode}.");
-		}
 
 		using var document = JsonDocument.Parse(body);
 		var responseElement = document.RootElement.GetProperty("response");
@@ -303,6 +283,25 @@ public sealed class SteamWebApiClient
 		}
 
 		return total;
+	}
+
+	private static void EnsureSteamResponseAccepted(HttpResponseMessage response, string operation)
+	{
+		if (!response.IsSuccessStatusCode)
+			throw new SteamWebApiException($"Steam {operation} failed with HTTP {(int)response.StatusCode}.");
+
+		// Steam can return HTTP 200 with an unsuccessful EResult. Reject that
+		// response before a receipt or empty inventory can become confirmed data.
+		if (response.Headers.TryGetValues("x-eresult", out var resultValues))
+		{
+			var results = resultValues.ToArray();
+			if (results.Length != 1 || results[0].Trim() != "1")
+				throw new SteamWebApiException($"Steam {operation} rejected the request.");
+		}
+		// Error headers may echo credentials or request data; never expose them.
+		if (response.Headers.TryGetValues("x-error_message", out var errors)
+			&& errors.Any(error => !string.IsNullOrWhiteSpace(error)))
+			throw new SteamWebApiException($"Steam {operation} rejected the request.");
 	}
 
 	private bool MatchesPetsItemDef(JsonElement item)

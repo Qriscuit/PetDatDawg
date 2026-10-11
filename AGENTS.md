@@ -2,10 +2,11 @@
 
 ## Project Shape
 
-This repo contains a tiny Godot C# desktop pet client plus a separate ASP.NET Core backend.
+This repo contains a tiny Godot C# desktop pet client, an ASP.NET Core pet-grant backend, and a Cloudflare Worker for the complete inventory and box workflow.
 
 - `Pet_Da_Dog_CSharp/` is the Godot 4.6.3 C# desktop overlay client.
 - `PetDaDog.Backend/` is the deployable ASP.NET Core minimal API backend for Steam auth and Steam Inventory pet grants.
+- `PetDaDog.Worker/` is the Cloudflare Worker for Steam auth, inventory, Pets grants, and buying/opening boxes. Its SQLite Durable Object records operations and serializes each player's requests; Steam remains the inventory authority.
 - `Builds/`, `.godot/`, `bin/`, `obj/`, and exported runtime files are generated artifacts unless a task explicitly targets packaging.
 
 Main client entrypoints:
@@ -16,6 +17,7 @@ Main client entrypoints:
 - `Pet_Da_Dog_CSharp/Scripts/NativeWindowBridge.cs` applies Windows overlay styles and owns the native tray menu.
 - `Pet_Da_Dog_CSharp/Scripts/SteamIntegration.cs` wraps Steamworks.NET initialization and Web API ticket requests.
 - `Pet_Da_Dog_CSharp/Scripts/BackendPetClient.cs` talks to the backend and keeps pending pet grants in memory.
+- `Pet_Da_Dog_CSharp/Scripts/SteamCosmeticCatalog.cs` maps the 88 Steam cosmetic itemdefs to local art; `StatusWindow.Inventory.cs` binds Shop and dog selection controls.
 
 Main backend entrypoint:
 
@@ -43,9 +45,11 @@ The click path is:
 
 `SteamIntegration` initializes Steam with `PDD_STEAM_APP_ID` or local `steam_appid.txt`, requests a Web API ticket for identity `petdadog-backend`, runs Steam callbacks each frame, and shuts Steam down on exit.
 
-`BackendPetClient` authenticates with `/v1/auth/steam`, sends queued grants to `/v1/pets/grant`, and reads totals from `/v1/pets`. It is intentionally non-authoritative.
+`BackendPetClient` authenticates with `/v1/auth/steam`, sends queued grants to `/v1/pets/grant`, and reads inventory from `/v1/inventory`. It is intentionally non-authoritative.
 
 The backend uses Steam `ISteamUserAuth/AuthenticateUserTicket` for identity, HMAC-signed short-lived backend session tokens for API auth, `IInventoryService/AddItem` for grants, and `IInventoryService/GetInventory` to sum the configured pets itemdef quantity.
+
+The Worker also checks app ownership, serves `/v1/inventory`, and handles `/v1/boxes/buy` and `/v1/boxes/open` through Steam `ExchangeItem`. Pets itemdef is 100; Dog Box 1001 costs 1 Pet and opens through generator 1101; Accessories Box 1000 costs 2 Pets and opens through generator 1100. ExchangeItem has no documented request ID: persist an intent before calling Steam and never blindly repeat an uncertain exchange. Pending exchanges recover from the Worker after a client restart. Confirmed inventory gates Steam cosmetics; only local outfit/dog selection preferences are saved. Existing starter cosmetics remain available.
 
 ## Commands
 
@@ -74,7 +78,9 @@ Do not use the local Godot 4.6.2 console runtime for smoke tests; it was observe
 Client config:
 
 - `PDD_BACKEND_URL`, default `http://127.0.0.1:5155`
+- Godot project setting `pdd/backend_url` supplies the packaged backend URL; the environment variable overrides it.
 - `PDD_STEAM_APP_ID`, or local `Pet_Da_Dog_CSharp/steam_appid.txt` for development
+- The client defaults to the real app, `4817200`; set the development file to this AppID for real Steam inventory tests.
 - `PDD_DISABLE_STEAM=1` for local smoke/debug runs without Steam
 - `PDD_DISABLE_TRAY=1` for local smoke/debug runs without the tray icon
 
@@ -86,6 +92,10 @@ Backend config:
 - `PDD_BACKEND_SESSION_SECRET` with at least 32 UTF-8 bytes
 
 Real pet grants require the app's actual Steamworks Inventory itemdef and publisher key. Steam AppID `480` is only useful for local client initialization tests.
+
+Worker configuration and deployment are covered in `docs/CLOUDFLARE_SETUP.md`. Node 22.13 or newer is required. From `PetDaDog.Worker`, use `npm test`, `npm run test:runtime`, and `npm run check` for fake-Steam verification and a deployment dry run. Real deployment is separate from these checks and requires Cloudflare login and backend-only secrets.
+
+Client HTTP tests: `dotnet run --project Tests/BackendClientHarness/BackendClientHarness.csproj`. Godot ownership/Shop smoke: `Pet_Da_Dog_CSharp/Tests/Run-SteamInventorySmoke.ps1` with Godot 4.6.3.
 
 ## Development Notes For Future Agents
 

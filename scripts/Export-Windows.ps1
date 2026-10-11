@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [string]$GodotPath = 'W:\Godot_v4.6.3-stable_mono_win64\Godot_v4.6.3-stable_mono_win64_console.exe',
-    [string]$TemplatesDirectory,
+    [string]$GodotPath = $env:PDD_GODOT_PATH,
+    [string]$TemplatesDirectory = $env:PDD_GODOT_TEMPLATES,
     [switch]$StageOnly
 )
 
@@ -15,6 +15,20 @@ $runRoot = Join-Path $cacheRoot ('windows-export/' + [DateTime]::UtcNow.ToString
 $stageProject = Join-Path $runRoot 'project'
 $packagePath = Join-Path $runRoot 'package'
 
+function Copy-ClientSource([string]$Source, [string]$Destination) {
+    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+    foreach ($item in Get-ChildItem -LiteralPath $Source -Force) {
+        if ($item.PSIsContainer) {
+            if ($item.Name -notin @('.godot', '.git', '.vs', 'bin', 'obj', 'export_templates', 'node_modules')) {
+                Copy-ClientSource $item.FullName (Join-Path $Destination $item.Name)
+            }
+        } elseif ($item.Name -notmatch '^(?:\.env(?:\..*)?|\.dev\.vars(?:\..*)?|export_credentials\.cfg)$' -and
+                  $item.Extension -notin @('.pem', '.key', '.pfx', '.p12')) {
+            Copy-Item -LiteralPath $item.FullName -Destination $Destination -Force
+        }
+    }
+}
+
 function Assert-InRepository([string]$Path) {
     $fullPath = [IO.Path]::GetFullPath($Path)
     if (-not $fullPath.StartsWith($repoRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
@@ -27,6 +41,9 @@ function Invoke-CheckedProcess([string]$Executable, [string[]]$Arguments, [strin
     $stderr = Join-Path $runRoot "$Name.stderr.log"
     $quoted = $Arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
     $process = Start-Process -FilePath $Executable -ArgumentList $quoted -WorkingDirectory $WorkingDirectory -PassThru -WindowStyle Hidden -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+    # Windows PowerShell can lose ExitCode for a short-lived child unless its
+    # native handle is acquired before waiting for completion.
+    $null = $process.Handle
     if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
         $process.Kill()
         throw "$Name timed out. Logs: $runRoot"
@@ -41,7 +58,15 @@ function Invoke-CheckedProcess([string]$Executable, [string[]]$Arguments, [strin
     return $log
 }
 
-if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) { throw "Godot executable not found: $GodotPath" }
+if (-not $GodotPath) {
+    $GodotPath = 'W:\Godot_v4.6.3-stable_mono_win64\Godot_v4.6.3-stable_mono_win64_console.exe'
+}
+if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) {
+    throw "Godot 4.6.3 Mono executable not found: $GodotPath. Pass -GodotPath or set PDD_GODOT_PATH."
+}
+$GodotPath = [IO.Path]::GetFullPath($GodotPath)
+$dotnet = Get-Command 'dotnet' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+if (-not $dotnet) { throw 'The .NET 8 SDK is required. Install it and reopen the build window.' }
 $version = (& $GodotPath --version | Out-String).Trim()
 if ($LASTEXITCODE -ne 0 -or $version -notmatch '^4\.6\.3\.stable\.mono\.') {
     throw "This project requires Godot 4.6.3 Mono; found '$version'."
@@ -65,20 +90,38 @@ Assert-InRepository $runRoot
 New-Item -ItemType Directory -Force -Path $stageProject, $packagePath | Out-Null
 Write-Host "Staging complete Windows export in $runRoot"
 # Build an isolated snapshot so a failed export cannot mix new resources with old assemblies.
-Get-ChildItem -LiteralPath $sourceProject -Force | Where-Object {
-    $_.Name -notin @('.godot', '.git', '.vs', 'bin', 'obj', 'export_templates')
-} | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $stageProject -Recurse -Force }
+# Only client files are staged; local secret and credential files never enter the package.
+Copy-ClientSource $sourceProject $stageProject
+$stagedConfigPath = Join-Path $stageProject 'project.godot'
+$stagedConfig = [IO.File]::ReadAllText($stagedConfigPath)
+$backendMatch = [regex]::Match($stagedConfig, '(?ms)^\[pdd\]\s*\r?\n(?:(?!^\[).)*?^backend_url="([^"\r\n]+)"')
+$backendUri = $null
+if (-not $backendMatch.Success -or
+    -not [Uri]::TryCreate($backendMatch.Groups[1].Value, [UriKind]::Absolute, [ref]$backendUri) -or
+    $backendUri.Scheme -ne 'https' -or $backendUri.UserInfo) {
+    throw 'Set pdd/backend_url in project.godot to the public HTTPS Worker address before exporting.'
+}
+$steamAppId = '4817200'
+$sourceAppIdPath = Join-Path $stageProject 'steam_appid.txt'
+if (Test-Path -LiteralPath $sourceAppIdPath -PathType Leaf) {
+    $steamAppId = (Get-Content -LiteralPath $sourceAppIdPath -Raw).Trim()
+}
+if ($steamAppId -notmatch '^[1-9][0-9]*$' -or $steamAppId -eq '480') {
+    throw 'Use the real public Steam AppID in steam_appid.txt before exporting (this app uses 4817200).'
+}
+Write-Host "Packaged Worker: $($backendUri.AbsoluteUri)"
+Write-Host "Packaged Steam AppID: $steamAppId"
 $presetPath = Join-Path $stageProject 'export_presets.cfg'
 $preset = Get-Content -LiteralPath $presetPath -Raw
 $releaseTemplate = (Join-Path $TemplatesDirectory 'windows_release_x86_64.exe').Replace('\', '/')
 $preset = $preset -replace '(?m)^custom_template/release=.*$', ('custom_template/release="' + $releaseTemplate + '"')
-Set-Content -LiteralPath $presetPath -Value $preset -Encoding utf8
+# Godot's preset parser requires UTF-8 without the Windows PowerShell BOM.
+[IO.File]::WriteAllText($presetPath, $preset)
 
-$null = Invoke-CheckedProcess 'dotnet' @('build', (Join-Path $stageProject 'PetDaDogCSharp.csproj')) 'build-client'
+# The editor resolves C# autoloads from Debug output during the import pass.
+$null = Invoke-CheckedProcess $dotnet.Source @('build', (Join-Path $stageProject 'PetDaDogCSharp.csproj'), '--configuration', 'Debug', '--nologo') 'build-editor'
 # Godot initializes the project theme before first importing its textures. Bootstrap
 # only this fresh staging copy without it, then validate the actual saved configuration.
-$stagedConfigPath = Join-Path $stageProject 'project.godot'
-$stagedConfig = [IO.File]::ReadAllText($stagedConfigPath)
 try {
     [IO.File]::WriteAllText($stagedConfigPath, ($stagedConfig -replace '(?m)^theme/custom=.*\r?\n?', ''))
     $null = Invoke-CheckedProcess $GodotPath @('--headless', '--path', $stageProject, '--editor', '--import') 'import-textures'
@@ -86,6 +129,7 @@ try {
     [IO.File]::WriteAllText($stagedConfigPath, $stagedConfig)
 }
 $null = Invoke-CheckedProcess $GodotPath @('--headless', '--path', $stageProject, '--editor', '--import') 'import-resources'
+$null = Invoke-CheckedProcess $dotnet.Source @('build', (Join-Path $stageProject 'PetDaDogCSharp.csproj'), '--configuration', 'Release', '--nologo') 'build-release'
 $exportExe = Join-Path $packagePath 'PetDaDogCSharp.exe'
 $null = Invoke-CheckedProcess $GodotPath @('--headless', '--path', $stageProject, '--export-release', 'Windows Desktop', $exportExe) 'export-windows'
 
@@ -97,9 +141,7 @@ foreach ($required in @('PetDaDogCSharp.dll', 'GodotSharp.dll', 'Steamworks.NET.
     if (-not (Get-ChildItem -LiteralPath $dataPath -Recurse -File -Filter $required)) { throw "Incomplete managed/runtime export: $required missing." }
 }
 # This is only the public development App ID. Publisher keys belong exclusively to the backend.
-if (Test-Path -LiteralPath (Join-Path $sourceProject 'steam_appid.txt')) {
-    Copy-Item -LiteralPath (Join-Path $sourceProject 'steam_appid.txt') -Destination $packagePath
-}
+[IO.File]::WriteAllText((Join-Path $packagePath 'steam_appid.txt'), $steamAppId + [Environment]::NewLine)
 
 $savedEnvironment = @{}
 foreach ($name in @('PDD_DISABLE_STEAM', 'PDD_DISABLE_TRAY', 'APPDATA', 'LOCALAPPDATA')) { $savedEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
@@ -115,6 +157,17 @@ try {
 } finally {
     foreach ($name in $savedEnvironment.Keys) { [Environment]::SetEnvironmentVariable($name, $savedEnvironment[$name], 'Process') }
 }
+
+@(
+    'Pet Da Dog Windows build',
+    "Built at (UTC): $([DateTime]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss'))",
+    "Godot: $version",
+    "Worker: $($backendUri.AbsoluteUri)",
+    "Steam AppID: $steamAppId",
+    'Validation: Release build, resource import, complete export, Steam-disabled launch smoke passed.',
+    'Keep this entire folder together. Launch PetDaDogCSharp.exe with Steam running.',
+    'This package contains only the client; Steam publisher keys remain on the backend.'
+) | Set-Content -LiteralPath (Join-Path $packagePath 'Build-info.txt') -Encoding utf8
 
 if ($StageOnly) {
     Write-Host "Validated package ready: $packagePath"

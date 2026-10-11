@@ -1,0 +1,125 @@
+{
+  "format": 1,
+  "restore": {
+    "S:\\CodexProjects\\PetDaDog\\Tests\\BackendGrantHarness\\BackendGrantHarness.csproj": {}
+  },
+  "projects": {
+    "S:\\CodexProjects\\PetDaDog\\PetDaDog.Backend\\PetDaDog.Backend.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "S:\\CodexProjects\\PetDaDog\\PetDaDog.Backend\\PetDaDog.Backend.csproj",
+        "projectName": "PetDaDog.Backend",
+        "projectPath": "S:\\CodexProjects\\PetDaDog\\PetDaDog.Backend\\PetDaDog.Backend.csproj",
+        "packagesPath": "C:\\Users\\Hurshuuuuuu\\.nuget\\packages\\",
+        "outputPath": "S:\\CodexProjects\\PetDaDog\\PetDaDog.Backend\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "S:\\CodexProjects\\PetDaDog\\Tests\\BackendGrantHarness\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "S:\\CodexProjects\\PetDaDog\\Tests\\BackendGrantHarness\\BackendGrantHarness.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "S:\\CodexProjects\\PetDaDog\\Tests\\BackendGrantHarness\\BackendGrantHarness.csproj",
+        "projectName": "BackendGrantHarness",
+        "projectPath": "S:\\CodexProjects\\PetDaDog\\Tests\\BackendGrantHarness\\BackendGrantHarness.csproj",
+        "packagesPath": "C:\\Users\\Hurshuuuuuu\\.nuget\\packages\\",
+        "outputPath": "S:\\CodexProjects\\PetDaDog\\Tests\\BackendGrantHarness\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "S:\\CodexProjects\\PetDaDog\\Tests\\BackendGrantHarness\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "S:\\CodexProjects\\PetDaDog\\PetDaDog.Backend\\PetDaDog.Backend.csproj": {
+                "projectPath": "S:\\CodexProjects\\PetDaDog\\PetDaDog.Backend\\PetDaDog.Backend.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

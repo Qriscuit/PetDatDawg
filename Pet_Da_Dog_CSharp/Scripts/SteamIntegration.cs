@@ -10,7 +10,6 @@ public sealed class SteamIntegration : IDisposable
 {
 	public const string BackendIdentity = "petdadog-backend";
 
-	private const uint DefaultDevelopmentAppId = 480;
 	private const double AuthTicketTimeoutSeconds = 15.0;
 
 	private Callback<GetTicketForWebApiResponse_t>? _webApiTicketCallback;
@@ -38,6 +37,8 @@ public sealed class SteamIntegration : IDisposable
 		try
 		{
 			var appId = ResolveAppId();
+			// These variables affect this process only and override a stale development file.
+			SteamAppId.ConfigureProcess(appId);
 			SteamAppId.WriteDevelopmentFileIfMissing(appId);
 
 			if (!SteamAPI.Init())
@@ -81,25 +82,41 @@ public sealed class SteamIntegration : IDisposable
 			throw new InvalidOperationException("A Steam Web API ticket request is already in progress.");
 		}
 
-		_ticketCompletion = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-		_activeTicket = SteamUser.GetAuthTicketForWebApi(BackendIdentity);
-
-		using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-		timeout.CancelAfter(TimeSpan.FromSeconds(AuthTicketTimeoutSeconds));
-		using var _ = timeout.Token.Register(() =>
-			_ticketCompletion.TrySetException(new TimeoutException("Timed out waiting for Steam Web API ticket."))
-		);
-
-		return await _ticketCompletion.Task;
+		cancellationToken.ThrowIfCancellationRequested();
+		CancelActiveTicket();
+		var ticket = SteamUser.GetAuthTicketForWebApi(BackendIdentity);
+		var completion = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+		_ticketCompletion = completion;
+		_activeTicket = ticket;
+		try
+		{
+			if (ticket.Equals(HAuthTicket.Invalid))
+				throw new InvalidOperationException("Steam could not create a Web API ticket.");
+			using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			timeout.CancelAfter(TimeSpan.FromSeconds(AuthTicketTimeoutSeconds));
+			using var registration = timeout.Token.Register(() =>
+			{
+				// Capture this request, so a late cancellation cannot cancel a renewal.
+				if (cancellationToken.IsCancellationRequested) completion.TrySetCanceled(cancellationToken);
+				else completion.TrySetException(new TimeoutException("Timed out waiting for Steam Web API ticket."));
+			});
+			return await completion.Task;
+		}
+		catch
+		{
+			if (_activeTicket.HasValue && _activeTicket.Value.Equals(ticket)) CancelActiveTicket();
+			throw;
+		}
+		finally
+		{
+			if (ReferenceEquals(_ticketCompletion, completion)) _ticketCompletion = null;
+		}
 	}
 
 	public void Dispose()
 	{
-		if (_activeTicket.HasValue)
-		{
-			SteamUser.CancelAuthTicket(_activeTicket.Value);
-			_activeTicket = null;
-		}
+		_ticketCompletion?.TrySetCanceled();
+		CancelActiveTicket();
 
 		_webApiTicketCallback?.Dispose();
 		_webApiTicketCallback = null;
@@ -113,7 +130,7 @@ public sealed class SteamIntegration : IDisposable
 
 	private void OnWebApiTicket(GetTicketForWebApiResponse_t response)
 	{
-		if (_ticketCompletion == null)
+		if (_ticketCompletion == null || !_activeTicket.HasValue || !response.m_hAuthTicket.Equals(_activeTicket.Value))
 		{
 			return;
 		}
@@ -127,6 +144,11 @@ public sealed class SteamIntegration : IDisposable
 		}
 
 		var ticketLength = checked((int)response.m_cubTicket);
+		if (ticketLength <= 0 || ticketLength > response.m_rgubTicket.Length)
+		{
+			_ticketCompletion.TrySetException(new InvalidOperationException("Steam returned an invalid Web API ticket length."));
+			return;
+		}
 		var builder = new StringBuilder(ticketLength * 2);
 		for (var i = 0; i < ticketLength; i++)
 		{
@@ -139,13 +161,22 @@ public sealed class SteamIntegration : IDisposable
 	private static uint ResolveAppId()
 	{
 		var configured = System.Environment.GetEnvironmentVariable("PDD_STEAM_APP_ID");
-		if (uint.TryParse(configured, NumberStyles.None, CultureInfo.InvariantCulture, out var envAppId))
+		if (!string.IsNullOrWhiteSpace(configured))
 		{
+			if (!uint.TryParse(configured.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var envAppId) || envAppId == 0)
+				throw new InvalidOperationException("PDD_STEAM_APP_ID must be a valid Steam AppID.");
 			return envAppId;
 		}
 
 		return SteamAppId.TryReadDevelopmentFile(out var fileAppId)
 			? fileAppId
-			: DefaultDevelopmentAppId;
+			: SteamAppId.GameAppId;
+	}
+
+	private void CancelActiveTicket()
+	{
+		if (!_activeTicket.HasValue) return;
+		if (_initialized && !_activeTicket.Value.Equals(HAuthTicket.Invalid)) SteamUser.CancelAuthTicket(_activeTicket.Value);
+		_activeTicket = null;
 	}
 }

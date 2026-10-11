@@ -76,8 +76,8 @@ public partial class AccessorySmokeTest : Node
 			Require(Mathf.IsEqualApprox(Mathf.Max(definition.Size.X, definition.Size.Y), 0.26f), "Accessory maximum size uses dog height.");
 			Require(!definition.CanRecolor, $"Existing colored artwork keeps its fixed color: {id}.");
 		}
-		Require(wardrobe.Catalog.Count == 7 && wardrobe.Find(AccessoryWardrobe.TextAccessoryId)?.IsText == true,
-			"Catalog includes all six image accessories and the editable Text Box.");
+		Require(wardrobe.Catalog.Count == 50 && wardrobe.Find(AccessoryWardrobe.TextAccessoryId)?.IsText == true,
+			"Catalog includes six starter accessories, the editable Text Box, and 43 Steam accessories.");
 		foreach (var id in new[] { "DragonWing.jpg", "FairyWing.jpg", "SafetyGlasses.jpg" })
 		{
 			var definition = wardrobe.Find(id);
@@ -287,7 +287,7 @@ public partial class AccessorySmokeTest : Node
 
 		var config = new ConfigFile();
 		Require(config.Load(_storagePath) == Error.Ok, "Saved cosmetic config is readable.");
-		Require(config.GetSections().All(section => section is "placements" or "colors" or "sizes" or "rotations" or "text" or "layers"), "Cosmetic save contains only outfit preferences, without pets totals or grants.");
+		Require(config.GetSections().All(section => section is "placements" or "colors" or "sizes" or "rotations" or "text" or "layers" or "dog"), "Cosmetic save contains only outfit preferences, without pets totals or grants.");
 		config.SetValue("placements", "SquareCharm.png", new Vector2(-20, 5));
 		config.SetValue("placements", "SFlower2.png", "invalid position");
 		config.SetValue("placements", "removed-asset.png", Vector2.One);
@@ -1077,14 +1077,16 @@ public partial class AccessorySmokeTest : Node
 		var grants = backend.PendingGrantCount;
 		var expectedCounts = new Dictionary<string, int>
 		{
-			["Wings"] = 2, ["Collars"] = 0, ["Glasses"] = 1, ["Decorations"] = 3, ["Text"] = 1
+			["Wings"] = 5, ["Collars"] = 2, ["Glasses"] = 5, ["Decorations"] = 37, ["Text"] = 1
 		};
 		Require(rows.Keys.SequenceEqual(expectedCounts.Keys), "The browser stacks Wings, Collars, Glasses, Decorations and Text in order.");
-		Require(!rows["Collars"].Expanded && !rows["Collars"].Scroll.Visible, "The empty Collars shelf starts collapsed.");
+		Require(!rows["Collars"].Expanded && !rows["Collars"].Scroll.Visible, "The populated Collars shelf retains its authored collapsed state.");
 		var displayedCards = new HashSet<Button>();
 		foreach (var (category, row) in rows)
 		{
 			var rowCards = row.Cards.GetChildren().OfType<Button>().ToArray();
+			Require(_wardrobe.Catalog.Count(item => AccessoryCategories.For(item) == category) == expectedCounts[category],
+				$"{category} contains the expected starter and Steam catalog definitions.");
 			Require(rowCards.Length == expectedCounts[category] && rowCards.All(displayedCards.Add),
 				$"{category} has the correct accessory count without duplicated cards.");
 			Require(row.Scroll.HorizontalScrollMode == ScrollContainer.ScrollMode.Auto && row.Scroll.VerticalScrollMode == ScrollContainer.ScrollMode.Disabled,
@@ -1100,9 +1102,26 @@ public partial class AccessorySmokeTest : Node
 		Require(displayedCards.SetEquals(cards.Values), "Every catalog card appears in exactly one category shelf.");
 		rows["Collars"].HeaderButton.ButtonPressed = true;
 		await SettleFrames();
-		Require(rows["Collars"].Cards.GetChildren().OfType<Label>().Any(label => label.Text.Contains("No accessories", StringComparison.OrdinalIgnoreCase)),
-			"Opening the empty category shows an honest empty message.");
+		Require(rows["Collars"].Cards.GetChildren().OfType<AccessoryCard>().All(card => card.Disabled && card.Status.Text == card.LockedStatusText),
+			"The populated Collars shelf shows its unowned Steam accessories as locked.");
+		Require(!rows["Collars"].Cards.GetChildren().OfType<Label>().Any(label => label.Visible && label.Text.Contains("No accessories", StringComparison.OrdinalIgnoreCase)),
+			"A populated shelf hides its empty-category message.");
 		rows["Collars"].HeaderButton.ButtonPressed = false;
+		var emptyRow = ResourceLoader.Load<PackedScene>("res://UI/AccessoryCategoryRow.tscn").Instantiate<AccessoryCategoryRow>();
+		emptyRow.Visible = false;
+		AddChild(emptyRow);
+		try
+		{
+			emptyRow.Configure("Empty fixture", 0);
+			emptyRow.Expanded = false;
+			Require(!emptyRow.Scroll.Visible && !emptyRow.Cards.GetChildren().OfType<Button>().Any(),
+				"An empty category can remain collapsed without placeholder accessory cards.");
+			emptyRow.HeaderButton.ButtonPressed = true;
+			Require(emptyRow.Expanded && emptyRow.Scroll.Visible && emptyRow.Cards.GetChildren().OfType<Label>()
+				.Any(label => label.Visible && label.Text.Contains("No accessories", StringComparison.OrdinalIgnoreCase)),
+				"Opening a separate empty category still shows its honest empty message.");
+		}
+		finally { emptyRow.Free(); }
 
 		var originalSize = window.Size;
 		window.Size = window.MinSize;
@@ -1180,14 +1199,25 @@ public partial class AccessorySmokeTest : Node
 			var dogsPage = GetField<Control>(window, "_dogsPage");
 			Require(dogsPage.IsVisibleInTree(), "The Dogs tab shows the current dog.");
 			Require(Descendants(dogsPage).OfType<TextureRect>().Count(item => item.Texture != null) == 1,
-				"Dogs displays the single original dog without extra breed choices.");
+				"Dogs displays one portrait for the current selected dog.");
+			var dogChoices = window.GetNode<OptionButton>("%DogChoices");
+			Require(dogChoices.ItemCount == 1 && dogChoices.GetItemId(0) == 0 && !dogChoices.IsItemDisabled(0),
+				"The offline dog selector shows the always-available Starter dog.");
+			Require(dogChoices.Selected == 0,
+				"The Starter dog remains selected with no owned Steam dogs.");
 			await Capture(window, "woodland-dogs");
 			tabs[2].EmitSignal(BaseButton.SignalName.Pressed);
 			await Settle();
 			var shopPage = GetField<Control>(window, "_shopPage");
-			Require(shopPage.IsVisibleInTree() && Descendants(shopPage).OfType<Label>().Any(label => label.Text.Contains("coming soon", StringComparison.OrdinalIgnoreCase)),
-				"Shop honestly explains that it is coming soon.");
-			Require(!Descendants(shopPage).OfType<Button>().Any(), "Shop has no placeholder purchasing controls.");
+			Require(shopPage.IsVisibleInTree() && window.GetNode<Label>("%ShopStatus").Text.Contains("Connect to Steam", StringComparison.Ordinal),
+				"Shop explains that Steam must connect before boxes are available.");
+			var buyDog = window.GetNode<Button>("%BuyDogBox");
+			var buyAccessory = window.GetNode<Button>("%BuyAccessoryBox");
+			Require(buyDog.Text == "Buy Dog Box · 1 Pet" && buyAccessory.Text == "Buy Accessories Box · 2 Pets",
+				"Shop shows the dog and accessory box prices beside their purchase controls.");
+			Require(new[] { buyDog, buyAccessory, window.GetNode<Button>("%OpenBox"), window.GetNode<Button>("%RefreshInventory") }
+				.All(button => button.Disabled) && window.GetNode<OptionButton>("%BoxChoices").Disabled,
+				"Offline shop purchase, opening, refresh and box-selection controls remain disabled.");
 			await Capture(window, "woodland-shop");
 			tabs[3].EmitSignal(BaseButton.SignalName.Pressed);
 			await Settle();

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PetDaDog.Backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+72e96944ace6b701b3e96a6d086958ee9e83e959")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bba4e5983a6b58a691790c0e0d27618aa9e8dd1b")]
 [assembly: System.Reflection.AssemblyProductAttribute("PetDaDog.Backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PetDaDog.Backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

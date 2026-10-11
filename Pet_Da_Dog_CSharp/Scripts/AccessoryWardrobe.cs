@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 public sealed record AccessoryDefinition(string Id, string Name, Texture2D Texture, Vector2 Size, bool CanRecolor = false)
 {
 	public bool IsText { get; init; }
+	public int SteamItemDefId { get; init; }
 }
 public sealed record AccessoryPlacement(string Id, Vector2 Position)
 {
@@ -47,6 +48,8 @@ public partial class AccessoryWardrobe : Node
 	};
 	private readonly List<AccessoryDefinition> _catalog = new();
 	private readonly List<AccessoryPlacement> _equipped = new();
+	private HashSet<int> _ownedSteamItems = new();
+	private int _selectedDogItemDefId;
 	private readonly List<string> _layerOrder = new() { DogLayerId };
 	private readonly Dictionary<string, Color> _colors = new();
 	private readonly Dictionary<string, float> _scales = new();
@@ -63,7 +66,9 @@ public partial class AccessoryWardrobe : Node
 
 	[Export] public string StoragePath { get; set; } = "user://accessories.cfg";
 	public IReadOnlyList<AccessoryDefinition> Catalog => _catalog.AsReadOnly();
-	public IReadOnlyList<AccessoryPlacement> Equipped => _equipped.AsReadOnly();
+	public IReadOnlyList<AccessoryPlacement> Equipped => _equipped.FindAll(item => CanEquip(item.Id)).AsReadOnly();
+	public int SelectedDogItemDefId => _ownedSteamItems.Contains(_selectedDogItemDefId) ? _selectedDogItemDefId : 0;
+	public string CurrentDogTexturePath => SteamCosmeticCatalog.Find(SelectedDogItemDefId)?.AssetPath ?? "res://Sprites/Doggo.png";
 	// Bottom-to-top drawing order. The dog is present even with an empty outfit.
 	public IReadOnlyList<string> LayerOrder => _layerOrder.AsReadOnly();
 	public event Action? Changed;
@@ -74,6 +79,14 @@ public partial class AccessoryWardrobe : Node
 	{
 		LoadCatalog(AssetDirectory);
 		_catalog.Add(new AccessoryDefinition(TextAccessoryId, "Text Box", WoodlandTheme.Icon("text-box")!, new Vector2(1.15f, 0.483f), true) { IsText = true });
+		foreach (var item in SteamCosmeticCatalog.All)
+		{
+			if (item.Kind != "accessory") continue;
+			var texture = SteamCosmeticCatalog.CroppedTexture(item.AssetPath);
+			if (texture == null) continue;
+			var size = texture.GetSize() * (AccessorySize / Mathf.Max(texture.GetWidth(), texture.GetHeight()));
+			_catalog.Add(new AccessoryDefinition(item.AccessoryId, item.Name, texture, size) { SteamItemDefId = item.ItemDefId });
+		}
 		LoadPlacements();
 	}
 
@@ -86,10 +99,27 @@ public partial class AccessoryWardrobe : Node
 	}
 
 	public AccessoryDefinition? Find(string id) => _catalog.Find(item => item.Id == id);
+	public bool CanEquip(string id) => Find(id) is { } item && (item.SteamItemDefId == 0 || _ownedSteamItems.Contains(item.SteamItemDefId));
+	public bool OwnsSteamItem(int itemDefId) => _ownedSteamItems.Contains(itemDefId);
+	public void SetSteamOwnership(IEnumerable<int> itemDefIds)
+	{
+		var owned = new HashSet<int>(itemDefIds);
+		if (_ownedSteamItems.SetEquals(owned)) return;
+		_ownedSteamItems = owned;
+		// Ownership comes only from the current Steam response and is never saved as a preference.
+		Changed?.Invoke();
+	}
+	public void SelectDog(int itemDefId)
+	{
+		if (itemDefId != 0 && (!OwnsSteamItem(itemDefId) || SteamCosmeticCatalog.Find(itemDefId)?.Kind != "dog")) return;
+		if (_selectedDogItemDefId == itemDefId) return;
+		_selectedDogItemDefId = itemDefId;
+		NotifyChanged(); Save();
+	}
 	public Color GetTint(string id) => _colors.TryGetValue(id, out var tint) ? tint : Colors.White;
 	public float GetScale(string id) => _scales.TryGetValue(id, out var scale) ? scale : 1;
 	public float GetRotationDegrees(string id) => _rotations.TryGetValue(id, out var rotation) ? rotation : 0;
-	public AccessoryPlacement? GetPlacement(string id) => _equipped.Find(item => item.Id == id);
+	public AccessoryPlacement? GetPlacement(string id) => CanEquip(id) ? _equipped.Find(item => item.Id == id) : null;
 	public int GetLayerIndex(string id) => _layerOrder.IndexOf(id);
 	public bool CanMoveLayer(string id, int direction)
 	{
@@ -252,7 +282,7 @@ public partial class AccessoryWardrobe : Node
 
 	public void Equip(string id, Vector2 normalizedPosition)
 	{
-		if (Find(id) == null || !normalizedPosition.IsFinite())
+		if (Find(id) == null || (!_loading && !CanEquip(id)) || !normalizedPosition.IsFinite())
 		{
 			return;
 		}
@@ -315,6 +345,7 @@ public partial class AccessoryWardrobe : Node
 	public bool Save()
 	{
 		var config = new ConfigFile();
+		config.SetValue("dog", "itemdef", _selectedDogItemDefId);
 		foreach (var item in _equipped)
 		{
 			config.SetValue(PlacementSection, item.Id, item.Position);
@@ -352,6 +383,7 @@ public partial class AccessoryWardrobe : Node
 			return;
 		}
 		_loading = true;
+		_selectedDogItemDefId = config.GetValue("dog", "itemdef", 0).AsInt32();
 		var text = config.GetValue(TextSection, TextAccessoryId, DefaultText);
 		if (text.VariantType == Variant.Type.String) SetText(text.AsString());
 		var background = config.GetValue(TextSection, TextBackgroundKey, true);

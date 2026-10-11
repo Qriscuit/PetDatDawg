@@ -42,6 +42,10 @@ project/assembly_name="PetDaDogCSharp"
 
 theme/custom="res://UI/Theme/DefaultTheme.tres"
 
+[pdd]
+
+backend_url="https://petdadawg.americlasagna.workers.dev"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

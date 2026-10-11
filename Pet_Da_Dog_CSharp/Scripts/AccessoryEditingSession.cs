@@ -46,7 +46,7 @@ public partial class AccessoryEditingSession : Node
 
 	public void ChooseAccessory(string id)
 	{
-		if (!Active || _wardrobe?.Find(id) == null) return;
+		if (!Active || _wardrobe?.CanEquip(id) != true) return;
 		CompleteGesture();
 		EditStarting?.Invoke();
 		SelectedId = id;
@@ -98,7 +98,7 @@ public partial class AccessoryEditingSession : Node
 
 	public bool PlaceAt(Vector2 normalizedPosition)
 	{
-		if (!Active || SelectedId == null || _wardrobe == null || !normalizedPosition.IsFinite()) return false;
+		if (!Active || SelectedId == null || _wardrobe?.CanEquip(SelectedId) != true || !normalizedPosition.IsFinite()) return false;
 		if (!IsDragging && !BeginGesture("place accessory")) return false;
 		_wardrobe.Equip(SelectedId, normalizedPosition);
 		IsPlacing = false;
@@ -122,6 +122,10 @@ public partial class AccessoryEditingSession : Node
 
 	private void OnWardrobeChanged()
 	{
+		if (SelectedId != null && _wardrobe?.CanEquip(SelectedId) != true)
+		{
+			CancelInteraction(); SelectedId = null; StateChanged?.Invoke(); return;
+		}
 		if (SelectedId == null || IsPlacing || IsDragging || _wardrobe?.GetPlacement(SelectedId) != null) return;
 		SelectedId = null;
 		StateChanged?.Invoke();

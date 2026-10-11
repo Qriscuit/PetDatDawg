@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "petdadawg",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-10",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true }
+  },
+  "vars": {
+    "PDD_STEAM_APP_ID": "4817200",
+    "PDD_STEAM_PETS_ITEMDEF_ID": "100",
+    "PDD_GRANTS_PER_MINUTE": "300"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "PLAYER_INVENTORY", "class_name": "PlayerInventory" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PlayerInventory"] }]
+}

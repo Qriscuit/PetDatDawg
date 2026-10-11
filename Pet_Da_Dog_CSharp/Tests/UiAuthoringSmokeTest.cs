@@ -262,8 +262,8 @@ public partial class UiAuthoringSmokeTest : Node
 		Require(cards.Values.All(value => value.GetNode<Label>("%CardName").GetThemeFontSize("font_size") == 19
 			&& value.GetThemeStylebox("normal") is StyleBoxFlat style && style.BgColor == Colors.LightPink),
 			"Live cards preserve exported template fonts and StyleBoxes.");
-		Require(cards.Values.All(value => value.GetNode<Label>("%CardStatus").Text == "Choose my item"
-			&& value.TooltipText.StartsWith("Custom choice: ", StringComparison.Ordinal)),
+		Require(cards.All(pair => pair.Value.GetNode<Label>("%CardStatus").Text == (wardrobe.CanEquip(pair.Key) ? "Choose my item" : "Unlock from a box")
+			&& pair.Value.TooltipText.StartsWith("Custom choice: ", StringComparison.Ordinal)),
 			"Catalog refresh preserves exported card state captions and tooltips.");
 		var rows = GetField<Dictionary<string, AccessoryCategoryRow>>(editor, "_categoryRows");
 		Require(rows.Count == AccessoryCategories.OrderedNames.Length && rows.Values.All(value => value.GetThemeConstant("separation") == 15

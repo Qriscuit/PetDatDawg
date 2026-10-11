@@ -15,6 +15,7 @@ public partial class AccessoryCard : Button
 	[ExportGroup("State captions")]
 	[Export] public string AvailableStatusText { get; set; } = "Click to place";
 	[Export] public string EquippedStatusText { get; set; } = "Equipped";
+	[Export] public string LockedStatusText { get; set; } = "Unlock from a box";
 	[Export] public string ItemPlacementStatusText { get; set; } = "Click the dog";
 	[Export] public string TextPlacementStatusText { get; set; } = "Place near dog";
 	/// <summary>Named tokens: {name}, {id}, and {category}.</summary>
@@ -34,9 +35,10 @@ public partial class AccessoryCard : Button
 		RefreshSample();
 	}
 
-	public void RefreshStatus(bool placing, bool equipped, bool isText)
+	public void RefreshStatus(bool placing, bool equipped, bool isText, bool owned = true)
 	{
-		Status.Text = placing ? isText ? TextPlacementStatusText : ItemPlacementStatusText
+		Disabled = !owned;
+		Status.Text = !owned ? LockedStatusText : placing ? isText ? TextPlacementStatusText : ItemPlacementStatusText
 			: equipped ? EquippedStatusText : AvailableStatusText;
 	}
 

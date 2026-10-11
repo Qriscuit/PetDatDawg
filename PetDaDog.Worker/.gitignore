@@ -1,0 +1,8 @@
+node_modules/
+.npm-cache/
+.wrangler/
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+!.dev.vars.example

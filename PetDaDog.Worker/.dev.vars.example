@@ -1,0 +1,3 @@
+# Copy to .dev.vars for LOCAL testing; never commit the copy.
+PDD_STEAM_PUBLISHER_KEY="replace-with-your-publisher-key"
+PDD_BACKEND_SESSION_SECRET="replace-with-at-least-32-random-secret-bytes"

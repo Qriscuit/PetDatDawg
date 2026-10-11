@@ -1,0 +1,19 @@
+{
+  "name": "petdadog-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run --outdir .wrangler/build",
+    "test": "node --test test/*.test.js",
+    "test:runtime": "node test/runtime-smoke.js"
+  },
+  "devDependencies": {
+    "wrangler": "4.149.0"
+  }
+}
