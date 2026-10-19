@@ -534,13 +534,17 @@ public partial class NativeWindowBridge : Node
 		// alone. FRAMECHANGED on every refresh forces unnecessary native repainting.
 		if (!styleChanged && !topmostChanged && !forceZOrder) return;
 		if (styleChanged) SetWindowLongPtr(hwnd, GwlExStyle, new IntPtr(style));
-		ApplyWindowZOrder(hwnd, alwaysOnTop, forceZOrder || topmostChanged, styleChanged);
+		// Input passthrough changes no frame geometry. FRAMECHANGED makes Godot's
+		// Windows GL backend resize its surface even with SWP_NOSIZE, causing flashes
+		// whenever the cursor crosses a dog pixel. Other style repairs still refresh it.
+		var frameChanged = ((style ^ previousStyle) & ~WsExTransparent) != 0;
+		ApplyWindowZOrder(hwnd, alwaysOnTop, forceZOrder || topmostChanged, frameChanged);
 	}
 
-	private static void ApplyWindowZOrder(IntPtr hwnd, bool alwaysOnTop, bool forceZOrder, bool styleChanged)
+	private static void ApplyWindowZOrder(IntPtr hwnd, bool alwaysOnTop, bool forceZOrder, bool frameChanged)
 	{
 		var flags = SwpNoMove | SwpNoSize | SwpNoActivate;
-		if (styleChanged) flags |= SwpFrameChanged;
+		if (frameChanged) flags |= SwpFrameChanged;
 
 		if (!forceZOrder)
 		{

@@ -12,6 +12,7 @@ public partial class DogPresetsWindow : Window
 	private PackedScene _cardScene = null!;
 	private readonly List<(DogPreset Preset, Button Apply, Label Availability)> _cards = new();
 	private bool _positioned;
+	private MenuFontScale? _menuFonts;
 	public event Action? BeforeSave;
 	public event Action<string>? ApplyRequested;
 
@@ -29,6 +30,7 @@ public partial class DogPresetsWindow : Window
 		CloseRequested += Hide;
 		_grid.Resized += UpdateColumns;
 		RebuildCards();
+		_menuFonts = MenuFontScale.Attach(this);
 	}
 
 	public void Configure(AccessoryWardrobe wardrobe)
@@ -43,6 +45,7 @@ public partial class DogPresetsWindow : Window
 	public void ShowPresets(Window owner)
 	{
 		ContentScaleFactor = owner.ContentScaleFactor;
+		ApplyMenuFontScale(owner is StatusWindow status ? status.MenuFontScale : PetSettings.DefaultFontScale);
 		if (Mode == ModeEnum.Minimized) Mode = ModeEnum.Windowed;
 		if (DisplayServer.GetName() != "headless")
 		{
@@ -54,6 +57,8 @@ public partial class DogPresetsWindow : Window
 		_positioned = true;
 		Show(); GrabFocus();
 	}
+
+	public void ApplyMenuFontScale(float scale) => _menuFonts?.Apply(scale);
 
 	private void SaveCurrent()
 	{

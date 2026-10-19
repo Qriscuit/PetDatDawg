@@ -54,7 +54,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="BrandRow" type="HBoxContainer" parent="Background/Margin/Layout/Header/Content" unique_id=1999859502]
+[node name="BrandRow" type="HFlowContainer" parent="Background/Margin/Layout/Header/Content" unique_id=1999859502]
 layout_mode = 2
 
 [node name="Title" type="Label" parent="Background/Margin/Layout/Header/Content/BrandRow" unique_id=248502226]
@@ -177,7 +177,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="PresetsHeadingRow" type="HBoxContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
+[node name="PresetsHeadingRow" type="HFlowContainer" parent="Background/Margin/Layout/Pages/DogsPage/Margin/DogsScroll/Content"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
@@ -303,18 +303,25 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin" unique_id=387180359]
+[node name="ShopScroll" type="ScrollContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 3
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll" unique_id=387180359]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content" unique_id=114758296]
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content" unique_id=114758296]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"WoodlandHeading"
 text = "Boxes"
 
-[node name="ShopDescription" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content" unique_id=445454451]
+[node name="ShopDescription" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content" unique_id=445454451]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
@@ -322,45 +329,50 @@ theme_override_font_sizes/font_size = 13
 text = "Earn Pets from mouse clicks and key presses anywhere on your desktop while Pet Da Dog runs. Spend them on boxes, then open a box to unlock one random dog or accessory."
 autowrap_mode = 3
 
-[node name="BuyDogBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+[node name="BuyDogBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ActionButton"
 text = "Buy Dog Box · 1 Pet"
+autowrap_mode = 3
 disabled = true
 
-[node name="BuyAccessoryBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+[node name="BuyAccessoryBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ActionButton"
 text = "Buy Accessories Box · 2 Pets"
+autowrap_mode = 3
 disabled = true
 
-[node name="BoxSummary" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+[node name="BoxSummary" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Your boxes: waiting for Steam"
+autowrap_mode = 3
 
-[node name="BoxChoices" type="OptionButton" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+[node name="BoxChoices" type="OptionButton" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 disabled = true
 
-[node name="OpenBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+[node name="OpenBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ActionButton"
 text = "Open selected box"
+autowrap_mode = 3
 disabled = true
 
-[node name="RefreshInventory" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+[node name="RefreshInventory" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SecondaryButton"
 text = "Refresh Steam inventory"
+autowrap_mode = 3
 disabled = true
 
-[node name="ShopStatus" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/Content"]
+[node name="ShopStatus" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Connect to Steam to earn Pets and use boxes."
@@ -418,9 +430,10 @@ theme_override_font_sizes/font_size = 13
 text = "No patrol route set. Your dog uses its usual walk."
 autowrap_mode = 3
 
-[node name="Actions" type="HBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content" unique_id=206246758]
+[node name="Actions" type="HFlowContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content" unique_id=206246758]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
 
 [node name="EditPatrolRoute" type="Button" parent="Background/Margin/Layout/Pages/SettingsPage/Content/PatrolRouteSettings/Margin/Content/Actions" unique_id=443207845]
 unique_name_in_owner = true
@@ -503,6 +516,7 @@ unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Pause automatic walking while keeping your saved patrol route. You can still move the dog in Items."
 text = "Keep dog stationary"
+autowrap_mode = 3
 
 [node name="BounceEnabled" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
 unique_name_in_owner = true
@@ -510,23 +524,27 @@ layout_mode = 2
 button_pressed = true
 tooltip_text = "Turn off the bouncing animation while your dog walks."
 text = "Bounce while moving"
+autowrap_mode = 3
 
 [node name="FlipHorizontally" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Mirror your dog and its outfit horizontally. Walking and patrol movement continue."
 text = "Flip horizontally"
+autowrap_mode = 3
 
 [node name="AlwaysOnTop" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=169955784]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "Keep dog above other windows"
+autowrap_mode = 3
 
 [node name="DogClickThrough" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=1378207004]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Let clicks pass through the dog"
+autowrap_mode = 3
 
 [node name="ClickThroughHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=855078397]
 layout_mode = 2
@@ -676,6 +694,46 @@ max_value = 1.75
 step = 0.01
 value = 1.0
 
+[node name="FontScaleSetting" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+
+[node name="TitleRow" type="HBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/FontScaleSetting"]
+layout_mode = 2
+
+[node name="Caption" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/FontScaleSetting/TitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Font size"
+
+[node name="FontScaleValue" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/FontScaleSetting/TitleRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+text = "100%"
+horizontal_alignment = 2
+autowrap_mode = 3
+
+[node name="FontScale" type="HSlider" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content/FontScaleSetting"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+scrollable = false
+min_value = 0.75
+max_value = 1.5
+step = 0.05
+value = 1.0
+
+[node name="FontScaleHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+text = "Change menu text size separately from Menu size."
+autowrap_mode = 3
+
 [node name="MenuSettings" type="PanelContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -705,8 +763,7 @@ layout_mode = 2
 button_pressed = true
 tooltip_text = "Your shortcut and tray icon can still open the menu when this is turned off."
 text = "Open menu on right-click"
-clip_text = true
-text_overrun_behavior = 3
+autowrap_mode = 3
 
 [node name="MenuAccessHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content"]
 layout_mode = 2

@@ -411,8 +411,9 @@ Use these logs for diagnosis:
   guarantee that header-only failures appear there.
   [Inventory response and error-log documentation](https://partner.steamgames.com/doc/webapi/IInventoryService?l=english)
 
-The transparent dog window clips rendering to its moving visible region, which
-also clips Steam's injected overlay. Handle this for every player through the
+The transparent dog window now keeps a stable drawing region across its entire
+overlay viewport; cursor alpha tests independently preserve desktop click-through.
+Steam's injected overlay can render within that surface. Handle this for every player through the
 app's Steamworks Installation → General Installation overlay configuration;
 requiring each player to change their Library preferences is not the intended
 solution. Steam documents that Software app types have the overlay disabled by

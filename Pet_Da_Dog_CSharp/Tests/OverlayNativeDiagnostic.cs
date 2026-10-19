@@ -64,9 +64,10 @@ public partial class OverlayNativeDiagnostic : Node
 		_appearance = AccessoryGeometry.BoundsFromCorners(_pet!.EditableDog, GetField<Rect2>(_pet, "_appearanceLocalRect"));
 		if (_controls?.GetRenderBounds() is Rect2 controls) _appearance = _appearance.Merge(controls);
 		var region = GetField<Rect2I?>(_pet, "_lastMouseRegion")!.Value;
+		var visible = _appearance.Grow(2);
 		using var viewport = GetTree().Root.GetTexture().GetImage(); var outsideAlpha = 0;
 		for (var y = 0; y < viewport.GetHeight(); y++) for (var x = 0; x < viewport.GetWidth(); x++)
-			if (!region.HasPoint(new Vector2I(x, y)) && viewport.GetPixel(x, y).A > 1f / 255) outsideAlpha++;
+			if (!visible.HasPoint(new Vector2(x, y)) && viewport.GetPixel(x, y).A > 1f / 255) outsideAlpha++;
 		_worstGpu = Math.Max(_worstGpu, outsideAlpha);
 		if (save) { using var cropped = viewport.GetRegion(CropRect(viewport)); cropped.SavePng($"{Output}/{name}-viewport.png"); }
 		GD.Print($"OVERLAY_DIAG {name} gpu_margin_nontransparent={outsideAlpha}, render_region={region}, appearance={_appearance}");

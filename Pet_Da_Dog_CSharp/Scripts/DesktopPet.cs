@@ -20,7 +20,6 @@ public partial class DesktopPet : Node2D
 	private const float StepFrequency = 8.0f;
 	private const float GroundMargin = 2.0f;
 	private const int OverlayPadding = 28;
-	private const int RenderRegionPadding = 2;
 	private const float LayoutRefreshSeconds = 1.0f;
 	private const float InvisibleDogAlphaThreshold = 0.01f;
 	private const float HeartLifetimeSeconds = 1.8f;
@@ -472,7 +471,6 @@ public partial class DesktopPet : Node2D
 		if (_activeDogTexturePath != (_wardrobe?.CurrentDogTexturePath ?? DogTexturePath))
 		{
 			ConfigureDogSprite();
-			_lastMouseRegion = null;
 		}
 		SyncAccessories();
 		MoveOverlayToBottom(force: true);
@@ -614,7 +612,6 @@ public partial class DesktopPet : Node2D
 		_windowSize = targetSize;
 		ClampDogToWalkBounds();
 		AnimateDog();
-		_lastMouseRegion = null;
 
 		SetOverlayGeometry(targetPosition, targetSize);
 		ConfigureOverlayWindow();
@@ -656,7 +653,6 @@ public partial class DesktopPet : Node2D
 		SetOverlayGeometry(usable.Position, size);
 		_patrolPosition = ClampPatrolPoint(_patrolPosition);
 		if (_patrolEditing) _editPosition = ClampPatrolPoint(_editPosition);
-		_lastMouseRegion = null;
 		_patrolEditor?.RefreshLayout(usable);
 		ConfigureOverlayWindow();
 		RefreshNativeWindowStyles(forceZOrder: false);
@@ -732,7 +728,6 @@ public partial class DesktopPet : Node2D
 		}
 		_nativeWindowBridge?.SetAccessoryEditing(_accessoryEditing || active);
 		ApplyDogSettings(refreshLayout: false);
-		_lastMouseRegion = null;
 		UpdateDogMouseRegion();
 	}
 
@@ -932,27 +927,12 @@ public partial class DesktopPet : Node2D
 			return;
 		}
 
-		// Windows also clips rendering to this region, so include accessory overhang.
-		// Local dog feedback/menu hits still check the original texture alpha.
-		var rect = _appearanceLocalRect;
-		var globalBounds = AccessoryGeometry.BoundsFromCorners(_dogSprite, rect);
-		foreach (var heart in _floatingHearts)
-			globalBounds = globalBounds.Merge(AccessoryGeometry.BoundsFromCorners(heart.Sprite, heart.Sprite.GetRect()));
-		if (_pettingHand?.Visible == true)
-			globalBounds = globalBounds.Merge(AccessoryGeometry.BoundsFromCorners(_pettingHand, _pettingHand.GetRect()));
-		if (_petCounter?.GetRenderBounds() is Rect2 counterBounds)
-			globalBounds = globalBounds.Merge(counterBounds);
-		if (_accessoryEditing && _accessoryControls?.GetRenderBounds() is Rect2 controlsBounds)
-			globalBounds = globalBounds.Merge(controlsBounds);
-		if (_patrolEditing) globalBounds = new Rect2(Vector2.Zero, _windowSize);
-		// Godot maps this polygon to SetWindowRgn on Windows. Reapplying identical
-		// regions still causes native window-position messages; fractional tight edges
-		// also clip filtered sprite pixels. Round outward, pad, and update only on change.
-		var start = new Vector2I(Mathf.FloorToInt(globalBounds.Position.X) - RenderRegionPadding,
-			Mathf.FloorToInt(globalBounds.Position.Y) - RenderRegionPadding);
-		var end = new Vector2I(Mathf.CeilToInt(globalBounds.End.X) + RenderRegionPadding,
-			Mathf.CeilToInt(globalBounds.End.Y) + RenderRegionPadding);
-		var region = new Rect2I(start, end - start).Intersection(new Rect2I(Vector2I.Zero, _windowSize));
+		// On Windows this polygon is also the native drawing clip (SetWindowRgn).
+		// Moving a tight clip with every animation frame sends window-position messages
+		// and disrupts transparent presentation, especially on wide render surfaces.
+		// Keep the drawing surface fixed until the overlay size changes. Input remains
+		// independently gated by the current dog/control pixels below, every frame.
+		var region = new Rect2I(Vector2I.Zero, _windowSize);
 		if (_lastMouseRegion != region)
 		{
 			var points = new[] { (Vector2)region.Position, new Vector2(region.End.X, region.Position.Y),
@@ -964,8 +944,8 @@ public partial class DesktopPet : Node2D
 		// Keep decorative pixels and transparent gaps clickable through to the desktop.
 		// Global mouse polling continues while passthrough is on, restoring dog input on entry.
 		var pointerOutsideDog = IsPointerOutsideDog();
-		DisplayServer.WindowSetFlag(DisplayServer.WindowFlags.MousePassthrough,
-			ShouldDogPassThrough() || pointerOutsideDog, MainWindowId);
+		SetOverlayFlag(DisplayServer.WindowFlags.MousePassthrough,
+			ShouldDogPassThrough() || pointerOutsideDog);
 		_nativeWindowBridge?.SetPointerPassthrough(pointerOutsideDog);
 	}
 
@@ -1118,7 +1098,6 @@ public partial class DesktopPet : Node2D
 			{
 				SetOverlayGeometry(usable.Position, _windowSize);
 			}
-			_lastMouseRegion = null;
 			ClampEditingDog();
 		}
 		else
@@ -1144,7 +1123,6 @@ public partial class DesktopPet : Node2D
 		_fallingToGround = false; _walkX = _editPosition.X; _stepPhase = 0;
 		MoveOverlayToBottom(force: true);
 		ClampDogToWalkBounds();
-		_lastMouseRegion = null;
 	}
 
 	private void ClampEditingDog()

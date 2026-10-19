@@ -22,6 +22,7 @@ public partial class PetSettings : Node
     public const float DefaultDogTransparency = 1.0f;
     public const float DefaultDogScale = 1.0f;
     public const float DefaultUiScale = 1.0f;
+    public const float DefaultFontScale = 1.0f;
 
     public const float MinDogTransparency = 0.0f;
     public const float MaxDogTransparency = 1.0f;
@@ -29,6 +30,8 @@ public partial class PetSettings : Node
     public const float MaxDogScale = 2.0f;
     public const float MinUiScale = 0.75f;
     public const float MaxUiScale = 1.75f;
+    public const float MinFontScale = 0.75f;
+    public const float MaxFontScale = 1.5f;
 
     private const string SettingsPath = "user://pet_settings.cfg";
     private const string Section = "dog";
@@ -46,6 +49,7 @@ public partial class PetSettings : Node
     private float _dogTransparency = DefaultDogTransparency;
     private float _dogScale = DefaultDogScale;
     private float _uiScale = DefaultUiScale;
+    private float _fontScale = DefaultFontScale;
     private bool _hasSeenWelcome;
 
     public bool AlwaysOnTop => _alwaysOnTop;
@@ -61,6 +65,7 @@ public partial class PetSettings : Node
     public float DogTransparency => _dogTransparency;
     public float DogScale => _dogScale;
     public float UiScale => _uiScale;
+    public float FontScale => _fontScale;
     public bool HasSeenWelcome => _hasSeenWelcome;
     public void DismissWelcome() => SetBool(ref _hasSeenWelcome, true);
 
@@ -140,6 +145,11 @@ public partial class PetSettings : Node
         SetFloat(ref _uiScale, Mathf.Clamp(value, MinUiScale, MaxUiScale));
     }
 
+    public void SetFontScale(float value)
+    {
+        if (float.IsFinite(value)) SetFloat(ref _fontScale, Mathf.Clamp(value, MinFontScale, MaxFontScale));
+    }
+
     private void Load()
     {
         var config = new ConfigFile();
@@ -168,6 +178,8 @@ public partial class PetSettings : Node
         _dogTransparency = Mathf.Clamp(ReadFloat(config, "dog_transparency", DefaultDogTransparency), MinDogTransparency, MaxDogTransparency);
         _dogScale = Mathf.Clamp(ReadFloat(config, "dog_scale", DefaultDogScale), MinDogScale, MaxDogScale);
         _uiScale = Mathf.Clamp(ReadFloat(config, "ui_scale", DefaultUiScale), MinUiScale, MaxUiScale);
+        var fontScale = ReadFloat(config, "font_scale", DefaultFontScale);
+        _fontScale = float.IsFinite(fontScale) ? Mathf.Clamp(fontScale, MinFontScale, MaxFontScale) : DefaultFontScale;
         _hasSeenWelcome = ReadBool(config, "welcome_seen", false);
     }
 
@@ -187,6 +199,7 @@ public partial class PetSettings : Node
         config.SetValue(Section, "dog_transparency", DogTransparency);
         config.SetValue(Section, "dog_scale", DogScale);
         config.SetValue(Section, "ui_scale", UiScale);
+        config.SetValue(Section, "font_scale", FontScale);
         config.SetValue(Section, "welcome_seen", HasSeenWelcome);
 
         var error = config.Save(SettingsPath);

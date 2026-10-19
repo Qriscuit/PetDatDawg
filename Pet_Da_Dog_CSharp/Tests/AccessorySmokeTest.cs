@@ -1089,7 +1089,7 @@ public partial class AccessorySmokeTest : Node
 		var visible = appearance.Grow(2).Intersection(new Rect2(Vector2.Zero, GetField<Vector2I>(pet, "_windowSize")));
 		var region = GetField<Rect2I?>(pet, "_lastMouseRegion")!.Value;
 		Require(region.Position.X <= visible.Position.X && region.Position.Y <= visible.Position.Y && region.End.X >= visible.End.X && region.End.Y >= visible.End.Y,
-			"The integer render region rounds outward and includes filtered dog, accessory, direct editing controls and heart edges.");
+			"The fixed render region includes filtered dog, accessory, direct editing controls and heart edges.");
 		CallPrivate(pet, "UpdateDogMouseRegion");
 		Require(GetField<Rect2I?>(pet, "_lastMouseRegion") == region, "An unchanged appearance keeps the same cached native render region.");
 		if (OS.GetName() == "Windows")
@@ -1100,7 +1100,7 @@ public partial class AccessorySmokeTest : Node
 			{
 				Require(GetWindowRgn(hwnd, handle) != 0 && GetRgnBox(handle, out var native) != 0 &&
 					new Rect2I(native.Left, native.Top, native.Right - native.Left, native.Bottom - native.Top) == region,
-					"The actual Windows render clip matches the stable padded Godot region.");
+					"The actual Windows render clip matches the fixed Godot viewport region.");
 			}
 			finally { DeleteObject(handle); }
 			var bridge = GetNode<NativeWindowBridge>("/root/NativeWindowBridge");
@@ -1113,9 +1113,10 @@ public partial class AccessorySmokeTest : Node
 		using var image = pet.GetViewport().GetTexture().GetImage();
 		var outsideAlpha = 0;
 		for (var y = 0; y < image.GetHeight(); y++) for (var x = 0; x < image.GetWidth(); x++)
-			if (!region.HasPoint(new Vector2I(x, y)) && image.GetPixel(x, y).A > 1f / 255) outsideAlpha++;
-		Require(outsideAlpha == 0, "Transparent GPU margins contain no menu-colored pixels outside the dog, controls and heart render region.");
-		var crop = region.Intersection(new Rect2I(Vector2I.Zero, new Vector2I(image.GetWidth(), image.GetHeight())));
+			if (!visible.HasPoint(new Vector2(x, y)) && image.GetPixel(x, y).A > 1f / 255) outsideAlpha++;
+		Require(outsideAlpha == 0, "Transparent GPU margins contain no menu-colored pixels outside the current dog, controls and heart bounds.");
+		var crop = new Rect2I((Vector2I)visible.Position, (Vector2I)visible.Size).Intersection(
+			new Rect2I(Vector2I.Zero, new Vector2I(image.GetWidth(), image.GetHeight())));
 		using var cropped = image.GetRegion(crop);
 		Require(cropped.SavePng($"{OutputDirectory}/{name}-overlay.png") == Error.Ok, "Cropped native transparent-overlay regression capture saves.");
 	}

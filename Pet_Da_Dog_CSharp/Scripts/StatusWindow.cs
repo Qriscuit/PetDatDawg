@@ -54,6 +54,7 @@ public partial class StatusWindow : Window
 	private Label? _patrolSummary, _patrolSaveStatus;
 	private bool _refreshingControls, _placed;
 	private float _appliedUiScale = -1;
+	private MenuFontScale? _menuFonts;
 	private StatusTab _activeTab = StatusTab.Items;
 	private Label? _petsValueLabel, _backendStatusLabel, _steamStatusLabel, _connectionSummary;
 	private Button? _dogsTabButton, _itemsTabButton, _shopTabButton, _settingsTabButton;
@@ -66,8 +67,9 @@ public partial class StatusWindow : Window
 	private Label? _menuHotkeyHelp, _menuHotkeyStatus;
 	private string _menuHotkeyIdleHelp = string.Empty;
 	private bool _recordingMenuHotkey;
-	private HSlider? _dogTransparencySlider, _dogScaleSlider, _uiScaleSlider;
-	private Label? _dogTransparencyValueLabel, _dogScaleValueLabel, _uiScaleValueLabel;
+	private HSlider? _dogTransparencySlider, _dogScaleSlider, _uiScaleSlider, _fontScaleSlider;
+	private Label? _dogTransparencyValueLabel, _dogScaleValueLabel, _uiScaleValueLabel, _fontScaleValueLabel;
+	public float MenuFontScale => _settings?.FontScale ?? PetSettings.DefaultFontScale;
 
 	public override void _Ready()
 	{
@@ -82,6 +84,7 @@ public partial class StatusWindow : Window
 		_nativeWindowBridge = GetNodeOrNull<NativeWindowBridge>("/root/NativeWindowBridge");
 		BindInventoryControls();
 		BindPresetControls();
+		_menuFonts = global::MenuFontScale.Attach(this);
 		_editingSession = GetNodeOrNull<AccessoryEditingSession>("/root/AccessoryEditingSession");
 		_patrolRoute = GetNodeOrNull<PatrolRoute>("/root/PatrolRoute");
 		CloseRequested += () => { CancelMenuHotkeyCapture(); _editingSession?.SetActive(false); SaveLayout(); Hide(); };
@@ -146,9 +149,11 @@ public partial class StatusWindow : Window
 		_dogTransparencySlider = GetNode<HSlider>("%DogTransparency");
 		_dogScaleSlider = GetNode<HSlider>("%DogScale");
 		_uiScaleSlider = GetNode<HSlider>("%UiScale");
+		_fontScaleSlider = GetNode<HSlider>("%FontScale");
 		_dogTransparencyValueLabel = GetNode<Label>("%DogTransparencyValue");
 		_dogScaleValueLabel = GetNode<Label>("%DogScaleValue");
 		_uiScaleValueLabel = GetNode<Label>("%UiScaleValue");
+		_fontScaleValueLabel = GetNode<Label>("%FontScaleValue");
 		_editPatrolButton = GetNode<Button>("%EditPatrolRoute");
 		_clearPatrolButton = GetNode<Button>("%ClearPatrolRoute");
 		_usePatrolCheck = GetNode<CheckBox>("%UsePatrolRoute");
@@ -197,6 +202,7 @@ public partial class StatusWindow : Window
 		_dogTransparencySlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetDogTransparency((float)value); };
 		_dogScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetDogScale((float)value); };
 		_uiScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetUiScale((float)value); };
+		_fontScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetFontScale((float)value); };
 		_editPatrolButton!.Pressed += BeginPatrolEdit;
 		_clearPatrolButton!.Pressed += () => _patrolRoute?.ClearRoute();
 		_usePatrolCheck!.Toggled += enabled => { if (!_syncingPatrol) _patrolRoute?.SetEnabled(enabled); };
@@ -326,6 +332,7 @@ public partial class StatusWindow : Window
 		RefreshMenuShortcutControls();
 		SetValue(_dogTransparencySlider, _dogTransparencyValueLabel, _settings.DogTransparency);
 		SetValue(_dogScaleSlider, _dogScaleValueLabel, _settings.DogScale); SetValue(_uiScaleSlider, _uiScaleValueLabel, _settings.UiScale);
+		SetValue(_fontScaleSlider, _fontScaleValueLabel, _settings.FontScale);
 		_welcomePanel!.Visible = !_settings.HasSeenWelcome; _refreshingControls = false;
 	}
 
@@ -395,6 +402,8 @@ public partial class StatusWindow : Window
 	}
 	private void ApplyUiScale()
 	{
+		_menuFonts?.Apply(MenuFontScale);
+		_presetsWindow?.ApplyMenuFontScale(MenuFontScale);
 		var scale = _settings?.UiScale ?? PetSettings.DefaultUiScale;
 		if (Mathf.IsEqualApprox(scale, _appliedUiScale)) return;
 		_appliedUiScale = scale;

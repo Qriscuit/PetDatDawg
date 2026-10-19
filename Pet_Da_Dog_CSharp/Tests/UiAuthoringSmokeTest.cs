@@ -82,10 +82,11 @@ public partial class UiAuthoringSmokeTest : Node
 			var wardrobe = GetNode<AccessoryWardrobe>("/root/AccessoryWardrobe");
 			wardrobe.StoragePath = $"{OutputDirectory}/outfit.cfg";
 			var route = GetNode<PatrolRoute>("/root/PatrolRoute"); route.StoragePath = $"{OutputDirectory}/route.cfg";
-			var settings = GetNode<PetSettings>("/root/PetSettings"); settings.SetUiScale(1);
+			var settings = GetNode<PetSettings>("/root/PetSettings"); settings.SetUiScale(1); settings.SetFontScale(1);
 			settings.SetStationary(false); settings.SetBounceEnabled(true);
 			await VerifySavedSceneOverrides(settings);
 			await VerifyMenuScaleAndScrolling(settings);
+			await VerifyFontScaling(settings);
 			await VerifyMovementSettings(settings, route);
 			await VerifyCounterAndMenuSettings(settings);
 			await VerifyAccessoryTemplateOverrides(wardrobe);
@@ -246,7 +247,7 @@ public partial class UiAuthoringSmokeTest : Node
 		await Settle();
 		var size = menu.Size; var minimum = menu.MinSize; var position = menu.Position;
 		var scroll = menu.GetNode<ScrollContainer>("%SettingsPage");
-		var sliders = new[] { menu.GetNode<HSlider>("%DogTransparency"), menu.GetNode<HSlider>("%DogScale"), menu.GetNode<HSlider>("%UiScale") };
+		var sliders = new[] { menu.GetNode<HSlider>("%DogTransparency"), menu.GetNode<HSlider>("%DogScale"), menu.GetNode<HSlider>("%UiScale"), menu.GetNode<HSlider>("%FontScale") };
 		foreach (var scale in new[] { PetSettings.MinUiScale, 1f, PetSettings.MaxUiScale })
 		{
 			settings.SetUiScale(scale); await Settle();
@@ -266,7 +267,7 @@ public partial class UiAuthoringSmokeTest : Node
 				var transparency = settings.DogTransparency; var dogScale = settings.DogScale;
 				PushMouseButton(menu, visible.GetCenter(), direction, true); await Settle();
 				Require(Mathf.IsEqualApprox(settings.UiScale, scale) && Mathf.IsEqualApprox(settings.DogScale, dogScale)
-					&& Mathf.IsEqualApprox(settings.DogTransparency, transparency) && menu.Size == size && menu.Position == position,
+					&& Mathf.IsEqualApprox(settings.FontScale, 1) && Mathf.IsEqualApprox(settings.DogTransparency, transparency) && menu.Size == size && menu.Position == position,
 					$"Wheeling over {slider.Name} scrolls without changing any scale, visibility or window geometry.");
 				if (bar.MaxValue > bar.Page + 1)
 					Require(direction == MouseButton.WheelDown ? scroll.ScrollVertical > before : scroll.ScrollVertical < before,
@@ -369,6 +370,105 @@ public partial class UiAuthoringSmokeTest : Node
 		Require(browser.Size == resized && browser.MinSize == minimum && Mathf.IsEqualApprox(browser.ContentScaleFactor, PetSettings.MinUiScale),
 			"Reopening presets with a different UI scale preserves manual size and authored minimum.");
 		browser.Hide();
+	}
+
+	private async Task VerifyFontScaling(PetSettings settings)
+	{
+		settings.SetUiScale(1); settings.SetFontScale(1);
+		var menu = LoadScene<StatusWindow>("res://StatusWindow.tscn"); menu.Visible = false; menu.InitialTab = 3;
+		var authoredText = new Label { Text = "Authored custom text", Visible = false };
+		authoredText.AddThemeFontSizeOverride("font_size", 21); menu.GetNode<Control>("%DogsPage").AddChild(authoredText);
+		AddFixture(menu); menu.Configure(settings); menu.ShowStatusWindow(); await Settle();
+		var size = menu.Size; var minimum = menu.MinSize; var position = menu.Position;
+		var theme = menu.Theme; var themeSize = theme.DefaultFontSize;
+		var value = menu.GetNode<Label>("%FontScaleValue");
+		var inherited = menu.GetNode<Button>("%SettingsTab"); var inheritedSize = inherited.GetThemeFontSize("font_size");
+		var inheritedOverride = inherited.HasThemeFontSizeOverride("font_size");
+		var slider = menu.GetNode<HSlider>("%FontScale"); var scroll = menu.GetNode<ScrollContainer>("%SettingsPage");
+		Require(slider.MinValue == PetSettings.MinFontScale && slider.MaxValue == PetSettings.MaxFontScale && !slider.Scrollable,
+			"Font size has a separate 75–150% wheel-safe slider.");
+		foreach (var scale in new[] { PetSettings.MinFontScale, PetSettings.MaxFontScale, 1f, PetSettings.MaxFontScale })
+		{
+			settings.SetFontScale(scale); await Settle();
+			Require(authoredText.GetThemeFontSize("font_size") == Mathf.RoundToInt(21 * scale)
+				&& inherited.GetThemeFontSize("font_size") == Mathf.RoundToInt(inheritedSize * scale)
+				&& value.GetThemeFontSize("font_size") == Mathf.RoundToInt(13 * scale),
+				$"Font scaling uses authored and inherited text sizes without compounding at {scale:P0}.");
+			Require(menu.Theme == theme && theme.DefaultFontSize == themeSize && menu.Size == size && menu.MinSize == minimum
+				&& menu.Position == position && Mathf.IsEqualApprox(menu.ContentScaleFactor, 1) && Mathf.IsEqualApprox(settings.UiScale, 1),
+				"Font size leaves shared themes, menu scale and native window geometry unchanged.");
+			Require(value.Text == $"{Mathf.RoundToInt(scale * 100)}%", "Font size shows the saved percentage.");
+		}
+		var dynamicLabel = new Label { Text = "New runtime card", Visible = false };
+		dynamicLabel.AddThemeFontSizeOverride("font_size", 17); menu.GetNode<Control>("%DogsPage").AddChild(dynamicLabel); await Settle();
+		Require(dynamicLabel.GetThemeFontSize("font_size") == Mathf.RoundToInt(17 * PetSettings.MaxFontScale),
+			"Controls created after a font change receive the same scale from their original size.");
+		var popup = menu.GetNode<OptionButton>("%PetCounterPosition").GetPopup();
+		var basePopup = LoadScene<StatusWindow>("res://StatusWindow.tscn"); basePopup.Visible = false; AddFixture(basePopup);
+		Require(popup.GetThemeFontSize("font_size") == Mathf.RoundToInt(basePopup.GetNode<OptionButton>("%PetCounterPosition").GetPopup().GetThemeFontSize("font_size") * PetSettings.MaxFontScale),
+			"Option popups use the chosen font size too.");
+		basePopup.SetProcess(false);
+		foreach (var tab in new[] { "%DogsTab", "%ItemsTab", "%ShopTab", "%SettingsTab" })
+		{
+			menu.GetNode<Button>(tab).EmitSignal(BaseButton.SignalName.Pressed); await Settle();
+			Require(menu.GetVisibleRect().Grow(1).Encloses(menu.GetNode<Control>("Background").GetGlobalRect()) && menu.Size == size,
+				$"The {tab} page fits the unchanged window with 150% fonts.");
+		}
+		menu.Size = minimum; settings.SetUiScale(PetSettings.MaxUiScale); await Settle();
+		foreach (var tab in new[] { "%DogsTab", "%ItemsTab", "%ShopTab", "%SettingsTab" })
+		{
+			menu.GetNode<Button>(tab).EmitSignal(BaseButton.SignalName.Pressed); await Settle();
+			Require(menu.GetVisibleRect().Grow(1).Encloses(menu.GetNode<Control>("Background").GetGlobalRect())
+				&& menu.Size == minimum && menu.MinSize == minimum && menu.Position == position,
+				$"The {tab} page fits the minimum window at both 150% fonts and 175% menu size.");
+			if (tab == "%ShopTab")
+			{
+				var shopScroll = menu.GetNode<ScrollContainer>("%ShopScroll");
+				shopScroll.EnsureControlVisible(menu.GetNode<Button>("%RefreshInventory")); await Settle();
+				await Capture(menu, "large-fonts-shop-minimum");
+				Require(shopScroll.GetGlobalRect().Grow(1).Encloses(menu.GetNode<Button>("%RefreshInventory").GetGlobalRect()),
+					$"Shop actions remain reachable by scrolling when both text and menu scale are maximized. Viewport {shopScroll.GetGlobalRect()}, button {menu.GetNode<Button>("%RefreshInventory").GetGlobalRect()}.");
+			}
+		}
+		scroll.ScrollVertical = int.MaxValue; await Settle();
+		Require(scroll.GetGlobalRect().Grow(1).Encloses(menu.GetNode<Button>("%QuitPetDaDog").GetGlobalRect()),
+			"The bottom of Settings remains reachable when font size and menu size are both maximized.");
+		await Capture(menu, "large-fonts-settings-minimum");
+		settings.SetUiScale(1); menu.Size = size; await Settle();
+		scroll.EnsureControlVisible(slider); await Settle();
+		var visible = slider.GetGlobalRect().Intersection(scroll.GetGlobalRect());
+		PushMouseButton(menu, visible.GetCenter(), MouseButton.WheelDown, true); await Settle();
+		Require(Mathf.IsEqualApprox(settings.FontScale, PetSettings.MaxFontScale) && Mathf.IsEqualApprox(settings.UiScale, 1),
+			"Wheeling over the font slider scrolls the page without changing either saved scale.");
+		scroll.EnsureControlVisible(slider); await Settle();
+		var click = slider.GetGlobalRect().Position + slider.Size * new Vector2(0.62f, 0.5f);
+		PushMouseButton(menu, click, MouseButton.Left, true); PushMouseButton(menu, click, MouseButton.Left, false); await Settle();
+		Require(settings.FontScale > 1 && settings.FontScale < 1.4f && Mathf.IsEqualApprox(settings.UiScale, 1)
+			&& menu.Size == size && menu.Position == position, "Clicking the font slider changes text without changing menu scale or native geometry.");
+		settings.SetFontScale(1.25f); settings.SetUiScale(0.85f); await Settle();
+		var reloaded = new PetSettings(); AddFixture(reloaded);
+		Require(Mathf.IsEqualApprox(reloaded.FontScale, 1.25f) && Mathf.IsEqualApprox(reloaded.UiScale, 0.85f),
+			"Font size and menu size reload as independent preferences.");
+		var wardrobe = new AccessoryWardrobe { StoragePath = $"{OutputDirectory}/font-scale-outfit.cfg", PresetStoragePath = $"{OutputDirectory}/font-scale-presets-{Guid.NewGuid():N}.cfg" };
+		AddFixture(wardrobe); Require(wardrobe.SavePreset("Readable outfit"), "Font smoke creates a local preset fixture.");
+		var browser = LoadScene<DogPresetsWindow>("res://DogPresetsWindow.tscn"); browser.Visible = false; AddFixture(browser); browser.Configure(wardrobe);
+		var presetSize = browser.Size; var presetMin = browser.MinSize;
+		var presetBase = browser.GetNode<LineEdit>("%PresetName").GetThemeFontSize("font_size");
+		browser.ShowPresets(menu); await Settle();
+		Require(browser.GetNode<LineEdit>("%PresetName").GetThemeFontSize("font_size") == Mathf.RoundToInt(presetBase * 1.25f)
+			&& browser.Size == presetSize && browser.MinSize == presetMin && Mathf.IsEqualApprox(browser.ContentScaleFactor, 0.85f),
+			"Preset windows apply independent font and menu scales while preserving native dimensions.");
+		Require(wardrobe.SavePreset("Another readable outfit"), "A preset can be added after opening the scaled browser."); await Settle();
+		Require(browser.GetNode<GridContainer>("%PresetGrid").GetChildren().All(card => card.GetNode<Label>("%PresetDetails").GetThemeFontSize("font_size") == 14),
+			"New preset cards get 125% text exactly once.");
+		browser.Hide(); settings.SetUiScale(1); settings.SetFontScale(1); await Settle();
+		Require(authoredText.GetThemeFontSize("font_size") == 21 && value.GetThemeFontSize("font_size") == 13
+			&& inherited.HasThemeFontSizeOverride("font_size") == inheritedOverride && dynamicLabel.GetThemeFontSize("font_size") == 17,
+			"Returning to 100% restores authored overrides and inherited theme fonts exactly.");
+		settings.SetFontScale(float.NaN); Require(settings.FontScale == 1, "An invalid font value cannot corrupt the saved preference.");
+		settings.SetFontScale(10); Require(settings.FontScale == PetSettings.MaxFontScale, "Font size clamps to its supported maximum.");
+		settings.SetFontScale(0); Require(settings.FontScale == PetSettings.MinFontScale, "Font size clamps to its supported minimum.");
+		settings.SetFontScale(1); await Settle(); menu.Hide(); menu.SetProcess(false);
 	}
 
 	private static void PushMouseButton(Window window, Vector2 position, MouseButton button, bool pressed)
