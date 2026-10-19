@@ -87,6 +87,7 @@ public partial class UiAuthoringSmokeTest : Node
 			await VerifySavedSceneOverrides(settings);
 			await VerifyMenuScaleAndScrolling(settings);
 			await VerifyMovementSettings(settings, route);
+			await VerifyCounterAndMenuSettings(settings);
 			await VerifyAccessoryTemplateOverrides(wardrobe);
 			VerifyDesktopAppearanceOverrides();
 			await VerifyFloatingTemplates(wardrobe, route);
@@ -481,6 +482,96 @@ public partial class UiAuthoringSmokeTest : Node
 			if (route.IsEditing) route.CancelEdit();
 			route.ClearRoute(); route.SetTraversalMode(PatrolTraversalMode.Loop);
 			settings.SetStationary(originalStationary); settings.SetBounceEnabled(originalBounce); settings.SetFlipHorizontally(originalFlip);
+		}
+	}
+
+	private async Task VerifyCounterAndMenuSettings(PetSettings settings)
+	{
+		var originalCounter = settings.ShowPetCounter; var originalPosition = settings.PetCounterPosition;
+		var originalRightClick = settings.OpenMenuOnRightClick;
+		var originalKey = settings.MenuHotkeyVirtualKey; var originalModifiers = settings.MenuHotkeyModifiers;
+		StatusWindow? menu = null;
+		try
+		{
+			using (var legacy = new ConfigFile())
+			{
+				Require(legacy.Load("user://pet_settings.cfg") == Error.Ok, "The isolated counter/menu legacy settings fixture loads.");
+				foreach (var key in new[] { "show_pet_counter", "pet_counter_position", "open_menu_on_right_click", "menu_hotkey_virtual_key", "menu_hotkey_modifiers" })
+					if (legacy.HasSectionKey("dog", key)) legacy.EraseSectionKey("dog", key);
+				Require(legacy.Save("user://pet_settings.cfg") == Error.Ok, "Legacy preferences without counter or menu-shortcut keys save.");
+			}
+			var legacySettings = new PetSettings(); AddFixture(legacySettings);
+			Require(!legacySettings.ShowPetCounter && legacySettings.PetCounterPosition == PetCounterPlacement.DogFeet
+				&& legacySettings.OpenMenuOnRightClick && legacySettings.MenuHotkeyVirtualKey == 0x44 && legacySettings.MenuHotkeyModifiers == 3,
+				"Legacy preferences retain right-click menus, hide the optional counter and default the global menu shortcut to Ctrl+Alt+D.");
+			settings.SetShowPetCounter(false); settings.SetPetCounterPosition(PetCounterPlacement.DogFeet);
+			settings.SetOpenMenuOnRightClick(true); settings.SetMenuHotkey(0x44, 3);
+			menu = LoadScene<StatusWindow>("res://StatusWindow.tscn"); menu.Visible = false; menu.InitialTab = 3;
+			AddFixture(menu); menu.Configure(settings); menu.ShowStatusWindow(); await Settle();
+			var show = menu.GetNode<CheckBox>("%ShowPetCounter");
+			var position = menu.GetNode<OptionButton>("%PetCounterPosition");
+			var rightClick = menu.GetNode<CheckBox>("%OpenMenuOnRightClick");
+			var record = menu.GetNode<Button>("%RecordMenuHotkey"); var reset = menu.GetNode<Button>("%ResetMenuHotkey");
+			Require(!show.ButtonPressed && position.GetSelectedId() == 0 && rightClick.ButtonPressed && position.ItemCount == 5,
+				"Settings initially shows the optional counter disabled, its five available placements and enabled right-click menu.");
+			show.ButtonPressed = true;
+			var corner = position.GetItemIndex((int)PetCounterPlacement.BottomRight);
+			position.Select(corner); position.EmitSignal(OptionButton.SignalName.ItemSelected, corner);
+			rightClick.ButtonPressed = false;
+			Require(settings.ShowPetCounter && settings.PetCounterPosition == PetCounterPlacement.BottomRight && !settings.OpenMenuOnRightClick,
+				"Counter visibility, corner placement and dog right-click preferences update through the authored controls.");
+			var loaded = new PetSettings(); AddFixture(loaded);
+			Require(loaded.ShowPetCounter && loaded.PetCounterPosition == PetCounterPlacement.BottomRight && !loaded.OpenMenuOnRightClick,
+				"Counter and right-click menu preferences survive a new settings load.");
+			record.EmitSignal(BaseButton.SignalName.Pressed);
+			Require(GetField<bool>(menu, "_recordingMenuHotkey"), "The global menu shortcut button starts recording its next key combination.");
+			menu._Input(new InputEventKey { Pressed = true, Echo = true, Keycode = Key.M, CtrlPressed = true });
+			menu._Input(new InputEventKey { Pressed = false, Keycode = Key.M, CtrlPressed = true });
+			Require(GetField<bool>(menu, "_recordingMenuHotkey") && settings.MenuHotkeyVirtualKey == 0x44,
+				"Held-key repeats and key releases cannot become a newly recorded global shortcut.");
+			menu._Input(new InputEventKey { Pressed = true, Keycode = Key.Ctrl, CtrlPressed = true });
+			menu._Input(new InputEventKey { Pressed = true, Keycode = Key.Q });
+			Require(GetField<bool>(menu, "_recordingMenuHotkey") && settings.MenuHotkeyVirtualKey == 0x44 && settings.MenuHotkeyModifiers == 3,
+				"Modifier-only and unmodified typing cannot replace the global menu shortcut while recording.");
+			menu._Input(new InputEventKey { Pressed = true, Keycode = Key.Escape });
+			Require(!GetField<bool>(menu, "_recordingMenuHotkey") && settings.MenuHotkeyVirtualKey == 0x44 && settings.MenuHotkeyModifiers == 3,
+				"Escape cancels shortcut recording and retains the previous saved combination.");
+			record.EmitSignal(BaseButton.SignalName.Pressed);
+			menu._Input(new InputEventKey { Pressed = true, Keycode = Key.M, CtrlPressed = true, ShiftPressed = true });
+			Require(!GetField<bool>(menu, "_recordingMenuHotkey") && settings.MenuHotkeyVirtualKey == 0x4D
+				&& settings.MenuHotkeyModifiers == (MenuShortcut.Control | MenuShortcut.Shift),
+				"A valid modified key combination finishes recording and saves the global menu shortcut.");
+			loaded = new PetSettings(); AddFixture(loaded);
+			Require(loaded.MenuHotkeyVirtualKey == 0x4D && loaded.MenuHotkeyModifiers == (MenuShortcut.Control | MenuShortcut.Shift),
+				"The recorded global shortcut survives a new settings load.");
+			settings.SetMenuHotkey(0xC0, MenuShortcut.Alt);
+			Require(settings.MenuHotkeyVirtualKey == 0x4D && settings.MenuHotkeyModifiers == (MenuShortcut.Control | MenuShortcut.Shift),
+				"The reserved click-through shortcut cannot replace the independent menu shortcut.");
+			var bridge = GetNode<NativeWindowBridge>("/root/NativeWindowBridge");
+			var statusField = typeof(NativeWindowBridge).GetField("_menuHotkeyStatus", PrivateInstance)!;
+			var originalStatus = statusField.GetValue(bridge);
+			try
+			{
+				statusField.SetValue(bridge, "Fixture shortcut conflict: another application is using this combination.");
+				menu._Process(0);
+				Require(menu.GetNode<Label>("%MenuHotkeyStatus").Text.Contains("Fixture shortcut conflict", StringComparison.Ordinal)
+					&& settings.MenuHotkeyVirtualKey == 0x4D && settings.MenuHotkeyModifiers == (MenuShortcut.Control | MenuShortcut.Shift),
+					"A native shortcut conflict is visible in Settings while retaining the requested combination for correction or reset.");
+			}
+			finally { statusField.SetValue(bridge, originalStatus); }
+			reset.EmitSignal(BaseButton.SignalName.Pressed);
+			Require(settings.MenuHotkeyVirtualKey == 0x44 && settings.MenuHotkeyModifiers == 3,
+				"Reset restores the default Ctrl+Alt+D global menu shortcut.");
+			record.EmitSignal(BaseButton.SignalName.Pressed); menu.Hide(); menu._Process(0);
+			Require(!GetField<bool>(menu, "_recordingMenuHotkey"), "Hiding Settings cancels shortcut recording instead of capturing later background typing.");
+			settings.SetPetCounterPosition((PetCounterPlacement)99);
+			Require(settings.PetCounterPosition == PetCounterPlacement.BottomRight, "Invalid counter placement IDs cannot overwrite a valid saved corner.");
+		}
+		finally
+		{
+			menu?.Hide(); menu?.SetProcess(false);
+			settings.SetShowPetCounter(originalCounter); settings.SetPetCounterPosition(originalPosition);
+			settings.SetOpenMenuOnRightClick(originalRightClick); settings.SetMenuHotkey(originalKey, originalModifiers);
 		}
 	}
 

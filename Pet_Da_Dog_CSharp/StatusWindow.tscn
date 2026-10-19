@@ -537,6 +537,42 @@ text = "When enabled, you cannot interact with or right-click the dog. Mouse cli
 Press Alt + backtick to toggle this, or reopen the menu from the tray icon."
 autowrap_mode = 3
 
+[node name="ShowPetCounter" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Show your confirmed Pets beside your dog or in a corner of the screen."
+text = "Show Pets counter"
+
+[node name="PetCounterPositionCaption" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+text = "Counter position"
+
+[node name="PetCounterPosition" type="OptionButton" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+item_count = 5
+selected = 0
+popup/item_0/text = "By the dog's feet"
+popup/item_0/id = 0
+popup/item_1/text = "Top left"
+popup/item_1/id = 1
+popup/item_2/text = "Top right"
+popup/item_2/id = 2
+popup/item_3/text = "Bottom left"
+popup/item_3/id = 3
+popup/item_4/text = "Bottom right"
+popup/item_4/id = 4
+
+[node name="PetCounterHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+text = "Shows confirmed Pets; waiting for sync is shown until Steam responds."
+autowrap_mode = 3
+
 [node name="DogTransparencySetting" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=1270737948]
 layout_mode = 2
 
@@ -639,6 +675,91 @@ min_value = 0.75
 max_value = 1.75
 step = 0.01
 value = 1.0
+
+[node name="MenuSettings" type="PanelContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"WoodlandHeading"
+text = "Menu controls"
+
+[node name="OpenMenuOnRightClick" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+tooltip_text = "Your shortcut and tray icon can still open the menu when this is turned off."
+text = "Open menu on right-click"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="MenuAccessHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+text = "Use your shortcut or the tray icon to open the menu when right-clicking is turned off."
+autowrap_mode = 3
+
+[node name="MenuHotkeyCaption" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content"]
+layout_mode = 2
+text = "Open menu shortcut"
+
+[node name="MenuHotkeyActions" type="HFlowContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+
+[node name="RecordMenuHotkey" type="Button" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content/MenuHotkeyActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(164, 34)
+layout_mode = 2
+tooltip_text = "Click to choose a new menu shortcut. Click again or press Escape to cancel."
+text = "Ctrl + Alt + D"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="ResetMenuHotkey" type="Button" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content/MenuHotkeyActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+disabled = true
+theme_type_variation = &"SecondaryButton"
+text = "Reset shortcut"
+
+[node name="MenuHotkeyHelp" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+text = "Click the shortcut, then hold Ctrl, Alt or Shift and press another key. Escape cancels."
+autowrap_mode = 3
+
+[node name="MenuHotkeyStatus" type="Label" parent="Background/Margin/Layout/Pages/SettingsPage/Content/MenuSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_font_sizes/font_size = 13
+text = "Ctrl + Alt + D opens this menu."
+autowrap_mode = 3
 
 [node name="ConnectionSettings" type="PanelContainer" parent="Background/Margin/Layout/Pages/SettingsPage/Content" unique_id=2078635951]
 layout_mode = 2

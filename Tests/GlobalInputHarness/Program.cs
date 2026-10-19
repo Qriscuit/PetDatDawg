@@ -10,36 +10,47 @@ void Check(bool condition, string name)
 }
 
 var edges = new GlobalInputEdgeTracker();
-Check(edges.ObserveKeyboard(0x100, 0x41, 0), "First physical key press counts");
-for (var repeat = 0; repeat < 10; repeat++)
-	Check(!edges.ObserveKeyboard(0x100, 0x41, 0), "Keyboard auto-repeat does not count");
-Check(!edges.ObserveKeyboard(0x101, 0x41, 0x10), "Injected key release does not count");
-Check(!edges.ObserveKeyboard(0x100, 0x41, 0), "Injected release does not rearm held physical key");
-Check(!edges.ObserveKeyboard(0x101, 0x41, 0), "Physical key release does not count");
-Check(edges.ObserveKeyboard(0x100, 0x41, 0), "A new physical press counts after release");
-Check(!edges.ObserveKeyboard(0x100, 0x42, 0x10), "Injected key press is ignored");
-Check(!edges.ObserveKeyboard(0x100, 0x42, 0x02), "Lower-integrity injected key press is ignored");
-Check(edges.ObserveKeyboard(0x100, 0x42, 0), "Injected key press does not suppress a later physical press");
-Check(edges.ObserveKeyboard(0x104, 0xA4, 0x20), "System/Alt key press counts");
-Check(!edges.ObserveKeyboard(0x104, 0xA4, 0x20), "System/Alt auto-repeat is ignored");
-Check(!edges.ObserveKeyboard(0x105, 0xA4, 0xA0), "System key release does not count");
-Check(edges.ObserveKeyboard(0x104, 0xA4, 0x20), "System key is rearmed after release");
-Check(edges.ObserveKeyboard(0x100, 0x0D, 0), "Main Enter press counts");
-Check(edges.ObserveKeyboard(0x100, 0x0D, 1), "Keypad Enter can count while main Enter is held");
+var keyboardSources = new uint[] { 0, 0x10, 0x02, 0x12 };
+foreach (var flags in keyboardSources)
+{
+	edges.Reset();
+	Check(edges.ObserveKeyboard(0x100, 0x41, flags), "Physical, injected and lower-integrity injected key press edges all count");
+	foreach (var repeatedFlags in keyboardSources)
+		Check(!edges.ObserveKeyboard(0x100, 0x41, repeatedFlags), "Changing injection flags on a held key cannot award another press");
+	Check(!edges.ObserveKeyboard(0x101, 0x41, flags ^ 0x12), "A release never counts regardless of its injection flags");
+	Check(edges.ObserveKeyboard(0x100, 0x41, flags ^ 0x02), "A release from another input source rearms the key for its next press");
+	for (var repeat = 0; repeat < 5; repeat++)
+		Check(!edges.ObserveKeyboard(0x100, 0x41, flags), "Keyboard auto-repeat never counts after a mixed-source press");
+}
+edges.Reset();
+Check(edges.ObserveKeyboard(0x104, 0xA4, 0x30), "Injected system/Alt key press counts");
+Check(!edges.ObserveKeyboard(0x104, 0xA4, 0x20), "Physical system/Alt repeat cannot duplicate an injected press");
+Check(!edges.ObserveKeyboard(0x105, 0xA4, 0xA2), "Injected system key release does not count");
+Check(edges.ObserveKeyboard(0x104, 0xA4, 0x20), "System key is rearmed after an injected release");
+Check(edges.ObserveKeyboard(0x100, 0x0D, 0x10), "Injected main Enter press counts");
+Check(edges.ObserveKeyboard(0x100, 0x0D, 0x03), "Injected keypad Enter can count while main Enter is held");
 Check(!edges.ObserveKeyboard(0x101, 0x0D, 1), "Keypad Enter release does not count");
 Check(!edges.ObserveKeyboard(0x100, 0x0D, 0), "Keypad release does not rearm main Enter");
+Check(edges.ObserveKeyboard(0x100, 0x0D, 0x11), "Keypad Enter counts another injected press after its own release");
+Check(!edges.ObserveKeyboard(0x101, 0x0D, 0x02), "Main Enter release from another source does not count");
+Check(edges.ObserveKeyboard(0x100, 0x0D, 0), "Main Enter counts after its injected release");
+Check(!edges.ObserveKeyboard(0x100, 0x0D, 0x11), "Releasing main Enter cannot rearm the still-held injected keypad Enter");
 Check(!edges.ObserveKeyboard(0x102, 0x43, 0), "Character messages are ignored");
+Check(!edges.ObserveKeyboard(0x102, 0x43, 0x12), "Injected character messages are ignored too");
 Check(!edges.ObserveKeyboard(0x100, 0, 0), "Zero virtual key is ignored");
 Check(!edges.ObserveKeyboard(0x100, 255, 0), "Reserved virtual key is ignored");
 Check(!edges.ObserveKeyboard(0x100, uint.MaxValue, 0), "Out-of-range virtual key is ignored");
 
 edges.Reset();
 edges.SeedHeldKeyboardKey(0x41);
-Check(!edges.ObserveKeyboard(0x100, 0x41, 0), "Key held at startup does not count auto-repeat");
-Check(!edges.ObserveKeyboard(0x100, 0x41, 1), "Startup key state suppresses extended repeat too");
-Check(!edges.ObserveKeyboard(0x101, 0x41, 0), "Startup held key release is ignored");
-Check(edges.ObserveKeyboard(0x100, 0x41, 0), "Startup held key counts its next physical press");
-Check(edges.ObserveKeyboard(0x100, 0x41, 1), "Startup release clears alternative key identity");
+foreach (var flags in keyboardSources)
+{
+	Check(!edges.ObserveKeyboard(0x100, 0x41, flags), "A key held at startup suppresses repeats from every input source");
+	Check(!edges.ObserveKeyboard(0x100, 0x41, flags | 1), "Startup key state also suppresses injected extended repeats");
+}
+Check(!edges.ObserveKeyboard(0x101, 0x41, 0x10), "An injected startup-held key release rearms without counting");
+Check(edges.ObserveKeyboard(0x100, 0x41, 0x02), "Startup held key counts its next injected press after release");
+Check(edges.ObserveKeyboard(0x100, 0x41, 0x11), "Startup release clears the alternative extended key identity too");
 
 var buttons = new (uint Down, uint Up, uint Data, int VirtualKey)[]
 {
@@ -51,29 +62,32 @@ var buttons = new (uint Down, uint Up, uint Data, int VirtualKey)[]
 };
 foreach (var button in buttons)
 {
-	edges.Reset();
-	Check(edges.ObserveMouse(button.Down, button.Data, 0) == 1, "Each physical mouse button counts");
-	Check(edges.ObserveMouse(button.Down, button.Data, 0) == 0, "Duplicate held-button down is ignored");
-	Check(edges.ObserveMouse(button.Up, button.Data, 1) == 0, "Injected mouse release is ignored");
-	Check(edges.ObserveMouse(button.Down, button.Data, 0) == 0, "Injected release does not rearm a mouse button");
-	Check(edges.ObserveMouse(button.Up, button.Data, 0) == 0, "Physical mouse release does not count");
-	Check(edges.ObserveMouse(button.Down, button.Data, 1) == 0, "Injected mouse press does not count");
-	Check(edges.ObserveMouse(button.Down, button.Data, 2) == 0, "Lower-integrity injected mouse press does not count");
-	Check(edges.ObserveMouse(button.Down, button.Data, 0) == 1, "Mouse button counts its next physical press");
-	edges.Reset();
-	edges.SeedHeldMouseButton(button.VirtualKey);
-	Check(edges.ObserveMouse(button.Down, button.Data, 0) == 0, "Button held at startup is ignored");
-	Check(edges.ObserveMouse(button.Up, button.Data, 0) == 0, "Startup mouse release is ignored");
-	Check(edges.ObserveMouse(button.Down, button.Data, 0) == 1, "Startup button counts its next physical press");
+	foreach (var flags in new uint[] { 0, 1, 2, 3 })
+	{
+		edges.Reset();
+		Check(edges.ObserveMouse(button.Down, button.Data, flags) == 1, "Every mouse button counts physical and injected press edges");
+		foreach (var repeatedFlags in new uint[] { 0, 1, 2, 3 })
+			Check(edges.ObserveMouse(button.Down, button.Data, repeatedFlags) == 0, "Changing injection flags cannot duplicate a held mouse button");
+		Check(edges.ObserveMouse(button.Up, button.Data, flags ^ 3) == 0, "A mixed-source mouse release never counts");
+		Check(edges.ObserveMouse(button.Down, button.Data, flags ^ 2) == 1, "A mixed-source release rearms every mouse button for its next press");
+		edges.Reset();
+		edges.SeedHeldMouseButton(button.VirtualKey);
+		Check(edges.ObserveMouse(button.Down, button.Data, flags) == 0, "A mouse button held at startup suppresses injected and physical repeats");
+		Check(edges.ObserveMouse(button.Up, button.Data, flags ^ 3) == 0, "A startup-held button release does not count across input sources");
+		Check(edges.ObserveMouse(button.Down, button.Data, flags) == 1, "A startup-held button counts its next press from any source after release");
+	}
 }
 edges.Reset();
-Check(edges.ObserveMouse(0x20B, 3u << 16, 0) == 2, "Combined X-button flags count both new buttons");
+Check(edges.ObserveMouse(0x20B, 3u << 16, 1) == 2, "An injected combined X-button press counts both new buttons");
 Check(edges.ObserveMouse(0x20C, 1u << 16, 0) == 0, "One X-button can release independently");
-Check(edges.ObserveMouse(0x20B, 2u << 16, 0) == 0, "Other X-button remains held");
-Check(edges.ObserveMouse(0x20B, 1u << 16, 0) == 1, "Released X-button can count again");
-Check(edges.ObserveMouse(0x200, 0, 0) == 0, "Mouse movement is ignored");
-Check(edges.ObserveMouse(0x20A, 120u << 16, 0) == 0, "Mouse wheel is ignored");
-Check(edges.ObserveMouse(0x20E, 120u << 16, 0) == 0, "Horizontal mouse wheel is ignored");
+Check(edges.ObserveMouse(0x20B, 2u << 16, 2) == 0, "Other injected X-button remains held");
+Check(edges.ObserveMouse(0x20B, 1u << 16, 0) == 1, "Released X-button can count again from a physical press");
+foreach (var flags in new uint[] { 0, 1, 2, 3 })
+{
+	Check(edges.ObserveMouse(0x200, 0, flags) == 0, "Physical and injected mouse movement is ignored");
+	Check(edges.ObserveMouse(0x20A, 120u << 16, flags) == 0, "Physical and injected mouse wheel is ignored");
+	Check(edges.ObserveMouse(0x20E, 120u << 16, flags) == 0, "Physical and injected horizontal wheel is ignored");
+}
 Check(edges.ObserveMouse(0x20B, 0, 0) == 0, "Unknown X-button data is ignored");
 
 Check(Marshal.SizeOf<GlobalInputMonitor.NativeMethods.KeyboardInput>() == (IntPtr.Size == 8 ? 24 : 20), "Keyboard hook uses pointer-sized extra info");

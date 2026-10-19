@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://UI/PetTextAccessory.tscn" id="4_text"]
 [ext_resource type="PackedScene" path="res://StatusWindow.tscn" id="5_status"]
 [ext_resource type="Texture2D" path="res://Sprites/Doggo.png" id="6_dog"]
+[ext_resource type="PackedScene" path="res://UI/PetCounterDisplay.tscn" id="7_counter"]
 
 [node name="DesktopPet" type="Node2D" unique_id=608897258]
 script = ExtResource("1_gxfhs")
@@ -27,6 +28,8 @@ ShowEditorPreview = false
 
 [node name="PatrolEditor" parent="." instance=ExtResource("3_patrol")]
 ShowEditorPreview = false
+
+[node name="PetCounter" parent="." instance=ExtResource("7_counter")]
 
 [editable path="AccessoryControls"]
 [editable path="PatrolEditor"]

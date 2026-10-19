@@ -40,6 +40,7 @@ public partial class DesktopPet : Node2D
 	private IReadOnlyList<SteamInventoryItem>? _lastInventoryItems;
 	private Texture2D? _heartTexture;
 	private Sprite2D? _pettingHand;
+	private PetCounterDisplay? _petCounter;
 	private Vector2 _pettingHandStart;
 	private float _pettingHandAge;
 
@@ -84,6 +85,8 @@ public partial class DesktopPet : Node2D
 	private bool _authStarted;
 	private bool _lastAlwaysOnTop = PetSettings.DefaultAlwaysOnTop;
 	private float _lastDogScale = PetSettings.DefaultDogScale;
+	private bool _lastShowPetCounter;
+	private PetCounterPlacement _lastPetCounterPosition;
 	private readonly List<FloatingHeart> _floatingHearts = new();
 	private bool _validatePets;
 	private string? _lastValidationStatus;
@@ -111,6 +114,7 @@ public partial class DesktopPet : Node2D
 		_footAnchor = GetNode<Node2D>("FootAnchor");
 		_visualRoot = GetNode<Node2D>("FootAnchor/VisualRoot");
 		_dogSprite = GetNode<Sprite2D>("FootAnchor/VisualRoot/PetSprite");
+		_petCounter = GetNodeOrNull<PetCounterDisplay>("PetCounter");
 		_settings = GetNodeOrNull<PetSettings>("/root/PetSettings");
 		_wardrobe = GetNodeOrNull<AccessoryWardrobe>("/root/AccessoryWardrobe");
 		_nativeWindowBridge = GetNodeOrNull<NativeWindowBridge>("/root/NativeWindowBridge");
@@ -120,6 +124,8 @@ public partial class DesktopPet : Node2D
 		_patrolRoute = GetNodeOrNull<PatrolRoute>("/root/PatrolRoute");
 		_lastAlwaysOnTop = _settings?.AlwaysOnTop ?? PetSettings.DefaultAlwaysOnTop;
 		_lastDogScale = _settings?.DogScale ?? PetSettings.DefaultDogScale;
+		_lastShowPetCounter = _settings?.ShowPetCounter ?? false;
+		_lastPetCounterPosition = _settings?.PetCounterPosition ?? PetCounterPlacement.DogFeet;
 
 		if (_settings != null)
 		{
@@ -255,14 +261,15 @@ public partial class DesktopPet : Node2D
 
 		if (mouseButton.ButtonIndex == MouseButton.Left)
 		{
-			// Global input counts this same physical click. Local dog input only adds feedback.
+			// Global input counts this same local or remote click. Dog input only adds feedback.
 			SpawnFloatingHeart();
 			ShowPettingHand(mouseButton.Position);
 		}
-		else
+		else if (_settings?.OpenMenuOnRightClick ?? PetSettings.DefaultOpenMenuOnRightClick)
 		{
 			OpenStatusWindow();
 		}
+		else return;
 
 		GetViewport().SetInputAsHandled();
 	}
@@ -546,6 +553,17 @@ public partial class DesktopPet : Node2D
 
 	private (float Top, float Bottom, float HalfWidth) GetAppearanceExtents()
 	{
+		var outfit = GetOutfitExtents();
+		if (!CounterAtFeet) return outfit;
+		var size = _petCounter?.Size ?? new Vector2(90, 26);
+		return (outfit.Top, outfit.Bottom + size.Y + PetCounterDisplay.FootGap, Mathf.Max(outfit.HalfWidth, size.X * 0.5f));
+	}
+
+	private bool CounterAtFeet => _settings?.ShowPetCounter == true && _settings.PetCounterPosition == PetCounterPlacement.DogFeet;
+	private bool FixedPetCounter => _settings?.ShowPetCounter == true && _settings.PetCounterPosition != PetCounterPlacement.DogFeet;
+
+	private (float Top, float Bottom, float HalfWidth) GetOutfitExtents()
+	{
 		if (_accessorySprites.Count == 0 && _textAccessories.Count == 0)
 		{
 			return (_visibleDogSize.Y, 0.0f, _visibleDogSize.X * 0.5f);
@@ -562,7 +580,7 @@ public partial class DesktopPet : Node2D
 
 	private void MoveOverlayToBottom(bool force)
 	{
-		if (_patrolRunning || _patrolEditing)
+		if (_patrolRunning || _patrolEditing || FixedPetCounter)
 		{
 			EnsurePatrolOverlay(force);
 			return;
@@ -908,6 +926,7 @@ public partial class DesktopPet : Node2D
 
 	private void UpdateDogMouseRegion()
 	{
+		UpdatePetCounter();
 		if (Engine.IsEmbeddedInEditor())
 		{
 			return;
@@ -921,6 +940,8 @@ public partial class DesktopPet : Node2D
 			globalBounds = globalBounds.Merge(AccessoryGeometry.BoundsFromCorners(heart.Sprite, heart.Sprite.GetRect()));
 		if (_pettingHand?.Visible == true)
 			globalBounds = globalBounds.Merge(AccessoryGeometry.BoundsFromCorners(_pettingHand, _pettingHand.GetRect()));
+		if (_petCounter?.GetRenderBounds() is Rect2 counterBounds)
+			globalBounds = globalBounds.Merge(counterBounds);
 		if (_accessoryEditing && _accessoryControls?.GetRenderBounds() is Rect2 controlsBounds)
 			globalBounds = globalBounds.Merge(controlsBounds);
 		if (_patrolEditing) globalBounds = new Rect2(Vector2.Zero, _windowSize);
@@ -999,11 +1020,27 @@ public partial class DesktopPet : Node2D
 		var alwaysOnTopChanged = alwaysOnTop != _lastAlwaysOnTop;
 		var dogScale = _settings?.DogScale ?? PetSettings.DefaultDogScale;
 		var dogScaleChanged = !Mathf.IsEqualApprox(dogScale, _lastDogScale);
+		var showCounter = _settings?.ShowPetCounter ?? false;
+		var counterPosition = _settings?.PetCounterPosition ?? PetCounterPlacement.DogFeet;
+		var counterLayoutChanged = showCounter != _lastShowPetCounter || counterPosition != _lastPetCounterPosition;
 
 		_lastAlwaysOnTop = alwaysOnTop;
 		_lastDogScale = dogScale;
+		_lastShowPetCounter = showCounter;
+		_lastPetCounterPosition = counterPosition;
 
-		ApplyDogSettings(refreshLayout: dogScaleChanged, forceNativeZOrder: alwaysOnTopChanged);
+		UpdatePetCounter();
+		ApplyDogSettings(refreshLayout: dogScaleChanged || counterLayoutChanged, forceNativeZOrder: alwaysOnTopChanged);
+	}
+
+	private void UpdatePetCounter()
+	{
+		if (_petCounter == null) return;
+		_petCounter.Visible = _settings?.ShowPetCounter == true;
+		if (!_petCounter.Visible) return;
+		_petCounter.SetConfirmedPets(_backend.ConfirmedPets);
+		_petCounter.Place(_windowSize, _footAnchor.Position, GetOutfitExtents().Bottom,
+			_settings?.PetCounterPosition ?? PetCounterPlacement.DogFeet);
 	}
 
 	private (float MinX, float MaxX) GetWalkBounds()

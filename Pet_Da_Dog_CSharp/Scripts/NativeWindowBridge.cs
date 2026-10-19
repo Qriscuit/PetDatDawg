@@ -53,6 +53,10 @@ public partial class NativeWindowBridge : Node
 	private const uint TpmRightButton = 0x0002;
 	private const uint TpmReturnCommand = 0x0100;
 	private const int HotkeyToggleClickThrough = 1;
+	private const int HotkeyOpenMenu = 2;
+	private const int HotkeyOpenMenuReplacement = 3;
+	private const uint WmRefreshMenuHotkey = 0x8002;
+	private const uint ModNoRepeat = 0x4000;
 	private const uint ModAlt = 0x0001;
 	private const uint VkOem3 = 0xC0;
 
@@ -73,9 +77,21 @@ public partial class NativeWindowBridge : Node
 	private double _refreshTimer;
 	private bool _pointerPassthrough;
 	private bool _accessoryEditing;
+	private PetSettings? _settings;
+	private sealed record MenuHotkeyRequest(int VirtualKey, int Modifiers);
+	private MenuHotkeyRequest _requestedMenuHotkey = new(MenuShortcut.DefaultVirtualKey, MenuShortcut.DefaultModifiers);
+	private MenuHotkeyRequest? _lastWorkingMenuHotkey;
+	private int _activeMenuHotkeyId;
+	private int _menuHotkeyCaptureActive, _menuHotkeyRequested, _menuHotkeyRegistered, _trayStopRequested;
+	private string _menuHotkeyStatus = "Menu shortcut is starting.";
+	public string MenuHotkeyStatus => Volatile.Read(ref _menuHotkeyStatus);
+	public bool MenuHotkeyRegistered => Volatile.Read(ref _menuHotkeyRegistered) != 0;
 
 	public override void _Ready()
 	{
+		_settings = GetNodeOrNull<PetSettings>("/root/PetSettings");
+		if (_settings != null) _settings.SettingsChanged += RefreshMenuHotkey;
+		RefreshMenuHotkey();
 		SetProcess(true);
 		CallDeferred(MethodName.ApplyDesktopPetWindowStylesAndRaise);
 		CallDeferred(MethodName.InstallTrayMenu);
@@ -83,9 +99,11 @@ public partial class NativeWindowBridge : Node
 
 	public override void _Process(double delta)
 	{
-		if (_statusRequested)
+		var openMenu = _statusRequested;
+		_statusRequested = false;
+		if (Interlocked.Exchange(ref _menuHotkeyRequested, 0) != 0 && Volatile.Read(ref _menuHotkeyCaptureActive) == 0) openMenu = true;
+		if (openMenu)
 		{
-			_statusRequested = false;
 			EmitSignal(SignalName.StatusRequested);
 		}
 
@@ -114,7 +132,25 @@ public partial class NativeWindowBridge : Node
 
 	public override void _ExitTree()
 	{
+		if (_settings != null) _settings.SettingsChanged -= RefreshMenuHotkey;
 		RemoveTrayMenu();
+	}
+
+	public void SetMenuHotkeyCaptureActive(bool active)
+	{
+		Volatile.Write(ref _menuHotkeyCaptureActive, active ? 1 : 0);
+		Interlocked.Exchange(ref _menuHotkeyRequested, 0);
+		RefreshMenuHotkey();
+	}
+
+	private void RefreshMenuHotkey()
+	{
+		Volatile.Write(ref _requestedMenuHotkey, new MenuHotkeyRequest(
+			_settings?.MenuHotkeyVirtualKey ?? MenuShortcut.DefaultVirtualKey,
+			_settings?.MenuHotkeyModifiers ?? MenuShortcut.DefaultModifiers));
+		var window = Interlocked.CompareExchange(ref _trayWindow, IntPtr.Zero, IntPtr.Zero);
+		if (window != IntPtr.Zero && !PostMessage(window, WmRefreshMenuHotkey, IntPtr.Zero, IntPtr.Zero))
+			Volatile.Write(ref _menuHotkeyStatus, "The menu shortcut could not be updated. Use the tray icon or restart Pet Da Dog.");
 	}
 
 	public void ApplyDesktopPetWindowStyles()
@@ -179,36 +215,49 @@ public partial class NativeWindowBridge : Node
 			|| _trayThread != null
 			|| System.Environment.GetEnvironmentVariable("PDD_DISABLE_TRAY") == "1")
 		{
+			if (_trayThread == null)
+				Volatile.Write(ref _menuHotkeyStatus, System.Environment.GetEnvironmentVariable("PDD_DISABLE_TRAY") == "1"
+					? "Global menu shortcut is disabled for this run." : "Global menu shortcuts are available in the Windows desktop game.");
 			return;
 		}
 
+		Volatile.Write(ref _trayStopRequested, 0);
 		_trayWindowProc = TrayWindowProc;
 		_trayThread = new Thread(TrayThreadMain)
 		{
 			IsBackground = true,
 			Name = "Pet Da Dog Tray",
 		};
-		_trayThread.Start();
+		try { _trayThread.Start(); }
+		catch (Exception)
+		{
+			_trayThread = null;
+			_trayWindowProc = null;
+			Volatile.Write(ref _menuHotkeyStatus, "The menu shortcut could not start. Right-click the dog to open the menu.");
+		}
 	}
 
 	private void RemoveTrayMenu()
 	{
+		Volatile.Write(ref _trayStopRequested, 1);
 		var trayWindow = _trayWindow;
 		if (trayWindow != IntPtr.Zero)
 		{
-			UnregisterHotKey(trayWindow, HotkeyToggleClickThrough);
-			RemoveTrayIcon(trayWindow);
 			PostMessage(trayWindow, WmClose, IntPtr.Zero, IntPtr.Zero);
 		}
-
-		if (_trayThreadId != 0)
+		else if (_trayThreadId != 0)
 		{
 			PostThreadMessage(_trayThreadId, WmQuit, IntPtr.Zero, IntPtr.Zero);
 		}
 
 		if (_trayThread != null && _trayThread.IsAlive && _trayThread.ManagedThreadId != System.Environment.CurrentManagedThreadId)
 		{
-			_trayThread.Join(1000);
+			if (!_trayThread.Join(1000))
+			{
+				// A still-running native window must retain its managed callback delegate.
+				Volatile.Write(ref _menuHotkeyStatus, "Menu shortcut is stopping.");
+				return;
+			}
 		}
 
 		_trayThread = null;
@@ -217,60 +266,129 @@ public partial class NativeWindowBridge : Node
 		_trayIcon = IntPtr.Zero;
 		_trayThreadId = 0;
 		_trayInstalled = false;
+		Volatile.Write(ref _menuHotkeyRegistered, 0);
 	}
 
 	private void TrayThreadMain()
 	{
-		_trayThreadId = GetCurrentThreadId();
 		var instance = GetModuleHandle(null);
-		var windowClass = new WindowClassEx
+		var trayWindow = IntPtr.Zero;
+		var classRegistered = false;
+		try
 		{
-			CbSize = (uint)Marshal.SizeOf<WindowClassEx>(),
-			LpfnWndProc = Marshal.GetFunctionPointerForDelegate(_trayWindowProc!),
-			HInstance = instance,
-			LpszClassName = _trayWindowClassName,
-		};
+			// Publish the thread ID only after creating its message queue.
+			PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
+			Volatile.Write(ref _trayThreadId, GetCurrentThreadId());
+			if (Volatile.Read(ref _trayStopRequested) != 0) return;
+			var windowClass = new WindowClassEx
+			{
+				CbSize = (uint)Marshal.SizeOf<WindowClassEx>(),
+				LpfnWndProc = Marshal.GetFunctionPointerForDelegate(_trayWindowProc!),
+				HInstance = instance,
+				LpszClassName = _trayWindowClassName,
+			};
+			classRegistered = RegisterClassEx(ref windowClass) != 0;
+			if (!classRegistered) throw new InvalidOperationException();
+			trayWindow = CreateWindowEx(0, _trayWindowClassName, "Pet Da Dog Tray", 0,
+				0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, instance, IntPtr.Zero);
+			if (trayWindow == IntPtr.Zero) throw new InvalidOperationException();
+			Interlocked.Exchange(ref _trayWindow, trayWindow);
+			if (Volatile.Read(ref _trayStopRequested) != 0) return;
+			RegisterHotKey(trayWindow, HotkeyToggleClickThrough, ModAlt, VkOem3);
+			ApplyMenuHotkey(trayWindow);
+			InstallTrayIcon(trayWindow);
+			while (GetMessage(out var message, IntPtr.Zero, 0, 0) > 0)
+			{
+				TranslateMessage(ref message);
+				DispatchMessage(ref message);
+			}
+		}
+		catch (Exception)
+		{
+			Volatile.Write(ref _menuHotkeyStatus, "The global menu shortcut is unavailable. Right-click the dog or use the tray icon.");
+		}
+		finally
+		{
+			// Registration and cleanup belong to the native window's owning thread.
+			var remainingWindow = Interlocked.Exchange(ref _trayWindow, IntPtr.Zero);
+			if (remainingWindow != IntPtr.Zero)
+			{
+				UnregisterHotKey(remainingWindow, HotkeyToggleClickThrough);
+				UnregisterMenuHotkeys(remainingWindow);
+				RemoveTrayIcon(remainingWindow);
+				DestroyWindow(remainingWindow);
+			}
+			if (classRegistered) UnregisterClass(_trayWindowClassName, instance);
+			Interlocked.Exchange(ref _trayWindow, IntPtr.Zero);
+			Volatile.Write(ref _trayThreadId, 0);
+			Volatile.Write(ref _menuHotkeyRegistered, 0);
+		}
+	}
 
-		if (RegisterClassEx(ref windowClass) == 0)
+	private void UnregisterMenuHotkeys(IntPtr window)
+	{
+		UnregisterHotKey(window, HotkeyOpenMenu);
+		UnregisterHotKey(window, HotkeyOpenMenuReplacement);
+		_activeMenuHotkeyId = 0;
+		Volatile.Write(ref _menuHotkeyRegistered, 0);
+	}
+
+	private void ApplyMenuHotkey(IntPtr window)
+	{
+		var requested = Volatile.Read(ref _requestedMenuHotkey);
+		if (Volatile.Read(ref _menuHotkeyCaptureActive) != 0)
 		{
+			UnregisterMenuHotkeys(window);
+			Volatile.Write(ref _menuHotkeyStatus, "Press your new shortcut. The menu shortcut is paused while recording.");
 			return;
 		}
-
-		var trayWindow = CreateWindowEx(
-			0,
-			_trayWindowClassName,
-			"Pet Da Dog Tray",
-			0,
-			0,
-			0,
-			0,
-			0,
-			IntPtr.Zero,
-			IntPtr.Zero,
-			instance,
-			IntPtr.Zero
-		);
-
-		if (trayWindow == IntPtr.Zero)
+		if (!MenuShortcut.IsValid(requested.VirtualKey, requested.Modifiers))
 		{
+			Volatile.Write(ref _menuHotkeyRegistered, 0);
+			Volatile.Write(ref _menuHotkeyStatus, "Choose a shortcut with Ctrl, Alt or Shift and another key.");
 			return;
 		}
-
-		_trayWindow = trayWindow;
-		RegisterHotKey(trayWindow, HotkeyToggleClickThrough, ModAlt, VkOem3);
-		InstallTrayIcon(trayWindow);
-
-		while (GetMessage(out var message, IntPtr.Zero, 0, 0) > 0)
+		if (_activeMenuHotkeyId != 0 && requested == _lastWorkingMenuHotkey)
 		{
-			TranslateMessage(ref message);
-			DispatchMessage(ref message);
+			Volatile.Write(ref _menuHotkeyRegistered, 1);
+			Volatile.Write(ref _menuHotkeyStatus, MenuShortcut.Format(requested.VirtualKey, requested.Modifiers) + " opens the menu.");
+			return;
 		}
-
-		_trayWindow = IntPtr.Zero;
+		// Stage on a second ID so a conflicting replacement cannot discard a working shortcut.
+		var replacement = _activeMenuHotkeyId == HotkeyOpenMenu ? HotkeyOpenMenuReplacement : HotkeyOpenMenu;
+		if (RegisterHotKey(window, replacement, (uint)requested.Modifiers | ModNoRepeat, (uint)requested.VirtualKey))
+		{
+			if (_activeMenuHotkeyId != 0) UnregisterHotKey(window, _activeMenuHotkeyId);
+			_activeMenuHotkeyId = replacement;
+			_lastWorkingMenuHotkey = requested;
+			Volatile.Write(ref _menuHotkeyRegistered, 1);
+			Volatile.Write(ref _menuHotkeyStatus, MenuShortcut.Format(requested.VirtualKey, requested.Modifiers) + " opens the menu.");
+			return;
+		}
+		var error = Marshal.GetLastWin32Error();
+		if (_activeMenuHotkeyId == 0 && _lastWorkingMenuHotkey is { } previous
+			&& previous != requested && RegisterHotKey(window, HotkeyOpenMenu,
+				(uint)previous.Modifiers | ModNoRepeat, (uint)previous.VirtualKey)) _activeMenuHotkeyId = HotkeyOpenMenu;
+		Volatile.Write(ref _menuHotkeyRegistered, 0);
+		var message = error == 1409 ? " is already in use." : " could not be enabled.";
+		message = MenuShortcut.Format(requested.VirtualKey, requested.Modifiers) + message;
+		if (_activeMenuHotkeyId != 0 && _lastWorkingMenuHotkey is { } working)
+			message += " " + MenuShortcut.Format(working.VirtualKey, working.Modifiers) + " still opens the menu.";
+		Volatile.Write(ref _menuHotkeyStatus, message + " Choose another shortcut, right-click the dog, or use the tray icon.");
 	}
 
 	private IntPtr TrayWindowProc(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam)
 	{
+		if (message == WmRefreshMenuHotkey)
+		{
+			ApplyMenuHotkey(hwnd);
+			return IntPtr.Zero;
+		}
+		if (message == WmHotkey && wParam.ToInt32() == _activeMenuHotkeyId && _activeMenuHotkeyId != 0)
+		{
+			if (Volatile.Read(ref _menuHotkeyCaptureActive) == 0) Interlocked.Exchange(ref _menuHotkeyRequested, 1);
+			return IntPtr.Zero;
+		}
 		if (message == WmHotkey && wParam.ToInt32() == HotkeyToggleClickThrough)
 		{
 			_dogClickThroughToggleRequested = true;
@@ -290,6 +408,7 @@ public partial class NativeWindowBridge : Node
 		if (message == WmClose)
 		{
 			UnregisterHotKey(hwnd, HotkeyToggleClickThrough);
+			UnregisterMenuHotkeys(hwnd);
 			RemoveTrayIcon(hwnd);
 			DestroyWindow(hwnd);
 			return IntPtr.Zero;
@@ -297,6 +416,7 @@ public partial class NativeWindowBridge : Node
 
 		if (message == WmDestroy)
 		{
+			Interlocked.CompareExchange(ref _trayWindow, IntPtr.Zero, hwnd);
 			PostQuitMessage(0);
 			return IntPtr.Zero;
 		}
@@ -508,6 +628,7 @@ public partial class NativeWindowBridge : Node
 		public IntPtr LParam;
 		public uint Time;
 		public Point Point;
+		public uint Private;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -525,6 +646,10 @@ public partial class NativeWindowBridge : Node
 
 	[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 	private static extern ushort RegisterClassEx(ref WindowClassEx windowClass);
+
+	[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static extern bool UnregisterClass(string className, IntPtr instance);
 
 	[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 	private static extern IntPtr CreateWindowEx(
@@ -559,6 +684,10 @@ public partial class NativeWindowBridge : Node
 
 	[DllImport("user32.dll", SetLastError = true)]
 	private static extern int GetMessage(out Message message, IntPtr hwnd, uint messageFilterMin, uint messageFilterMax);
+
+	[DllImport("user32.dll", EntryPoint = "PeekMessageW")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static extern bool PeekMessage(out Message message, IntPtr hwnd, uint messageFilterMin, uint messageFilterMax, uint remove);
 
 	[DllImport("user32.dll", SetLastError = true)]
 	private static extern bool TranslateMessage(ref Message message);

@@ -44,6 +44,7 @@ public partial class StatusWindow : Window
 	private const string LayoutPath = "user://menu_layout.cfg";
 	private enum StatusTab { Dogs, Items, Shop, Settings }
 	private PetSettings? _settings;
+	private NativeWindowBridge? _nativeWindowBridge;
 	private AccessoryEditingSession? _editingSession;
 	private PatrolRoute? _patrolRoute;
 	private bool _syncingPatrol, _returnFromPatrolEdit;
@@ -59,6 +60,12 @@ public partial class StatusWindow : Window
 	private Control? _dogsPage, _accessoriesPage, _shopPage, _settingsPage, _welcomePanel;
 	private AccessoryEditor? _accessoryEditor;
 	private CheckBox? _alwaysOnTopCheck, _dogClickThroughCheck, _stationaryCheck, _bounceEnabledCheck, _flipHorizontallyCheck;
+	private CheckBox? _showPetCounterCheck, _openMenuOnRightClickCheck;
+	private OptionButton? _petCounterPosition;
+	private Button? _recordMenuHotkeyButton, _resetMenuHotkeyButton;
+	private Label? _menuHotkeyHelp, _menuHotkeyStatus;
+	private string _menuHotkeyIdleHelp = string.Empty;
+	private bool _recordingMenuHotkey;
 	private HSlider? _dogTransparencySlider, _dogScaleSlider, _uiScaleSlider;
 	private Label? _dogTransparencyValueLabel, _dogScaleValueLabel, _uiScaleValueLabel;
 
@@ -72,11 +79,12 @@ public partial class StatusWindow : Window
 		_baseMinimumWindowSize = MinSize;
 		_baseContentScaleFactor = ContentScaleFactor;
 		BindScene(); ConnectControls();
+		_nativeWindowBridge = GetNodeOrNull<NativeWindowBridge>("/root/NativeWindowBridge");
 		BindInventoryControls();
 		BindPresetControls();
 		_editingSession = GetNodeOrNull<AccessoryEditingSession>("/root/AccessoryEditingSession");
 		_patrolRoute = GetNodeOrNull<PatrolRoute>("/root/PatrolRoute");
-		CloseRequested += () => { _editingSession?.SetActive(false); SaveLayout(); Hide(); };
+		CloseRequested += () => { CancelMenuHotkeyCapture(); _editingSession?.SetActive(false); SaveLayout(); Hide(); };
 		VisibilityChanged += SyncEditingState;
 		SetActiveTab((StatusTab)_initialTab);
 		ApplyUiScale();
@@ -89,8 +97,12 @@ public partial class StatusWindow : Window
 	}
 	public override void _Process(double delta)
 	{
-		if (!Engine.IsEditorHint()) SyncEditingState();
-		if (!Engine.IsEditorHint()) UpdateInventoryControls();
+		if (Engine.IsEditorHint()) return;
+		SyncEditingState();
+		UpdateInventoryControls();
+		if (_recordingMenuHotkey && (!Visible || Mode == ModeEnum.Minimized || !HasFocus() || _activeTab != StatusTab.Settings))
+			CancelMenuHotkeyCapture();
+		RefreshMenuHotkeyStatus();
 	}
 	private void PreviewTab()
 	{
@@ -123,6 +135,14 @@ public partial class StatusWindow : Window
 		_stationaryCheck = GetNode<CheckBox>("%Stationary");
 		_bounceEnabledCheck = GetNode<CheckBox>("%BounceEnabled");
 		_flipHorizontallyCheck = GetNode<CheckBox>("%FlipHorizontally");
+		_showPetCounterCheck = GetNode<CheckBox>("%ShowPetCounter");
+		_petCounterPosition = GetNode<OptionButton>("%PetCounterPosition");
+		_openMenuOnRightClickCheck = GetNode<CheckBox>("%OpenMenuOnRightClick");
+		_recordMenuHotkeyButton = GetNode<Button>("%RecordMenuHotkey");
+		_resetMenuHotkeyButton = GetNode<Button>("%ResetMenuHotkey");
+		_menuHotkeyHelp = GetNode<Label>("%MenuHotkeyHelp");
+		_menuHotkeyStatus = GetNode<Label>("%MenuHotkeyStatus");
+		_menuHotkeyIdleHelp = _menuHotkeyHelp.Text;
 		_dogTransparencySlider = GetNode<HSlider>("%DogTransparency");
 		_dogScaleSlider = GetNode<HSlider>("%DogScale");
 		_uiScaleSlider = GetNode<HSlider>("%UiScale");
@@ -158,6 +178,22 @@ public partial class StatusWindow : Window
 		_stationaryCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetStationary(value); };
 		_bounceEnabledCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetBounceEnabled(value); };
 		_flipHorizontallyCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetFlipHorizontally(value); };
+		_showPetCounterCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetShowPetCounter(value); };
+		_petCounterPosition!.ItemSelected += index =>
+		{
+			if (!_refreshingControls) _settings?.SetPetCounterPosition((PetCounterPlacement)_petCounterPosition.GetItemId((int)index));
+		};
+		_openMenuOnRightClickCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetOpenMenuOnRightClick(value); };
+		_recordMenuHotkeyButton!.Pressed += () =>
+		{
+			if (_recordingMenuHotkey) CancelMenuHotkeyCapture();
+			else BeginMenuHotkeyCapture();
+		};
+		_resetMenuHotkeyButton!.Pressed += () =>
+		{
+			CancelMenuHotkeyCapture();
+			_settings?.SetMenuHotkey(PetSettings.DefaultMenuHotkeyVirtualKey, PetSettings.DefaultMenuHotkeyModifiers);
+		};
 		_dogTransparencySlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetDogTransparency((float)value); };
 		_dogScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetDogScale((float)value); };
 		_uiScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetUiScale((float)value); };
@@ -174,6 +210,7 @@ public partial class StatusWindow : Window
 	public override void _ExitTree()
 	{
 		if (Engine.IsEditorHint()) return;
+		CancelMenuHotkeyCapture();
 		_editingSession?.SetActive(false);
 		SaveLayout();
 		ReleasePresetControls();
@@ -265,6 +302,7 @@ public partial class StatusWindow : Window
 	}
 	private void SetActiveTab(StatusTab tab)
 	{
+		if (tab != StatusTab.Settings) CancelMenuHotkeyCapture();
 		if (tab != StatusTab.Items) _editingSession?.SetActive(false);
 		_activeTab = tab; _dogsTabButton?.SetPressedNoSignal(tab == StatusTab.Dogs); _itemsTabButton?.SetPressedNoSignal(tab == StatusTab.Items);
 		_shopTabButton?.SetPressedNoSignal(tab == StatusTab.Shop); _settingsTabButton?.SetPressedNoSignal(tab == StatusTab.Settings);
@@ -281,9 +319,75 @@ public partial class StatusWindow : Window
 		_alwaysOnTopCheck!.SetPressedNoSignal(_settings.AlwaysOnTop); _dogClickThroughCheck!.SetPressedNoSignal(_settings.DogClickThrough);
 		_stationaryCheck!.SetPressedNoSignal(_settings.Stationary); _bounceEnabledCheck!.SetPressedNoSignal(_settings.BounceEnabled);
 		_flipHorizontallyCheck!.SetPressedNoSignal(_settings.FlipHorizontally);
+		_showPetCounterCheck!.SetPressedNoSignal(_settings.ShowPetCounter);
+		_petCounterPosition!.Select(_petCounterPosition.GetItemIndex((int)_settings.PetCounterPosition));
+		_petCounterPosition.Disabled = !_settings.ShowPetCounter;
+		_openMenuOnRightClickCheck!.SetPressedNoSignal(_settings.OpenMenuOnRightClick);
+		RefreshMenuShortcutControls();
 		SetValue(_dogTransparencySlider, _dogTransparencyValueLabel, _settings.DogTransparency);
 		SetValue(_dogScaleSlider, _dogScaleValueLabel, _settings.DogScale); SetValue(_uiScaleSlider, _uiScaleValueLabel, _settings.UiScale);
 		_welcomePanel!.Visible = !_settings.HasSeenWelcome; _refreshingControls = false;
+	}
+
+	private void BeginMenuHotkeyCapture()
+	{
+		if (_settings == null || _recordingMenuHotkey) return;
+		_recordingMenuHotkey = true;
+		_nativeWindowBridge?.SetMenuHotkeyCaptureActive(true);
+		_menuHotkeyHelp!.Text = "Hold Ctrl, Alt or Shift and press another key. Escape cancels.";
+		RefreshMenuShortcutControls();
+	}
+
+	private void CancelMenuHotkeyCapture()
+	{
+		if (!_recordingMenuHotkey) return;
+		_recordingMenuHotkey = false;
+		_nativeWindowBridge?.SetMenuHotkeyCaptureActive(false);
+		_menuHotkeyHelp!.Text = _menuHotkeyIdleHelp;
+		_recordMenuHotkeyButton?.ReleaseFocus();
+		RefreshMenuShortcutControls();
+	}
+
+	public override void _Input(InputEvent @event)
+	{
+		if (!_recordingMenuHotkey || @event is not InputEventKey key) return;
+		GetViewport().SetInputAsHandled();
+		if (!key.Pressed || key.Echo) return;
+		if (key.Keycode == Key.Escape || key.PhysicalKeycode == Key.Escape)
+		{
+			CancelMenuHotkeyCapture();
+			return;
+		}
+		if (!MenuShortcut.TryFromGodotKey(key, out var virtualKey, out var modifiers))
+		{
+			_menuHotkeyHelp!.Text = "Choose Ctrl, Alt or Shift with another key. If that shortcut is unavailable, try a different key. Escape cancels.";
+			return;
+		}
+		_settings?.SetMenuHotkey(virtualKey, modifiers);
+		CancelMenuHotkeyCapture();
+	}
+
+	private void RefreshMenuShortcutControls()
+	{
+		if (_recordMenuHotkeyButton == null) return;
+		_recordMenuHotkeyButton.Disabled = _settings == null;
+		_recordMenuHotkeyButton.Text = _recordingMenuHotkey ? "Press shortcut…"
+			: MenuShortcut.Format(_settings?.MenuHotkeyVirtualKey ?? PetSettings.DefaultMenuHotkeyVirtualKey,
+				_settings?.MenuHotkeyModifiers ?? PetSettings.DefaultMenuHotkeyModifiers);
+		_recordMenuHotkeyButton.TooltipText = _recordMenuHotkeyButton.Text
+			+ "\nClick to choose a new menu shortcut. Click again or press Escape to cancel.";
+		_resetMenuHotkeyButton!.Disabled = _settings == null || (!_recordingMenuHotkey
+			&& _settings.MenuHotkeyVirtualKey == PetSettings.DefaultMenuHotkeyVirtualKey
+			&& _settings.MenuHotkeyModifiers == PetSettings.DefaultMenuHotkeyModifiers);
+		RefreshMenuHotkeyStatus();
+	}
+
+	private void RefreshMenuHotkeyStatus()
+	{
+		if (_menuHotkeyStatus == null) return;
+		var status = _recordingMenuHotkey ? "Waiting for your new shortcut…" : _nativeWindowBridge?.MenuHotkeyStatus;
+		if (string.IsNullOrWhiteSpace(status)) status = "Choose a shortcut to open this menu.";
+		if (_menuHotkeyStatus.Text != status) _menuHotkeyStatus.Text = status;
 	}
 	private static void SetValue(HSlider? slider, Label? label, float value)
 	{

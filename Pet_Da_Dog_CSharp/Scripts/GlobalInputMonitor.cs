@@ -4,7 +4,7 @@ using System.Threading;
 using Godot;
 
 /// <summary>
-/// Observes physical input on the current Windows desktop without consuming it.
+/// Observes local and remote input on the current Windows desktop without consuming it.
 /// Only aggregate activity counts leave the native hook thread.
 /// </summary>
 public partial class GlobalInputMonitor : Node
@@ -122,7 +122,7 @@ public partial class GlobalInputMonitor : Node
 				Volatile.Write(ref _status, $"Mouse input monitoring is unavailable (Windows error {Marshal.GetLastWin32Error()}).");
 				return;
 			}
-			Volatile.Write(ref _status, "Observing physical keyboard and mouse-button presses.");
+			Volatile.Write(ref _status, "Observing local and remote keyboard and mouse-button presses.");
 			Volatile.Write(ref _available, 1);
 			while (Volatile.Read(ref _stopRequested) == 0)
 			{
@@ -296,8 +296,9 @@ internal sealed class GlobalInputEdgeTracker
 
 	public bool ObserveKeyboard(uint message, uint virtualKey, uint flags)
 	{
-		// Ignore injected down AND up events, so they cannot rearm a held key.
-		if ((flags & 0x12) != 0 || virtualKey is 0 or >= 255) return false;
+		// Remote desktop software may mark real user input as injected. Count all
+		// sources through the same press-edge state so a held key still counts once.
+		if (virtualKey is 0 or >= 255) return false;
 		var index = (int)(virtualKey * 2 + (flags & 1));
 		if (message is 0x0101 or 0x0105)
 		{
@@ -317,7 +318,8 @@ internal sealed class GlobalInputEdgeTracker
 
 	public int ObserveMouse(uint message, uint mouseData, uint flags)
 	{
-		if ((flags & 3) != 0) return 0;
+		// Injection flags do not exclude remote clicks from earning. Button state
+		// still rejects duplicate downs, releases, movement and wheel messages.
 		var buttons = message switch
 		{
 			0x0201 or 0x0202 => 1,

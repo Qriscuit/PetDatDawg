@@ -238,10 +238,11 @@ The client uses these routes automatically:
 | `POST /v1/boxes/buy` | Exchange Pets for an unopened Dog or Accessories Box |
 | `POST /v1/boxes/open` | Consume a specific box and return its random reward |
 
-One physical mouse-button click or keyboard press anywhere on the Windows
-desktop creates one GUID in the client's current-run pending queue. The app
-observes counts without consuming input or recording typed text. Key repeats,
-releases, pointer motion, wheel scrolling, and injected input do not count.
+One mouse-button click or keyboard press observed anywhere on the Windows
+desktop creates one GUID in the client's current-run pending queue, whether
+physical, remote, or injected. The app observes counts without consuming input
+or recording typed text. Key repeats, releases, pointer motion, and wheel
+scrolling do not count. Direct Godot input events do not enqueue grants.
 Dog clicks still show heart feedback, but local dog events cannot duplicate a
 background grant. The Worker validates the player's Steam ticket for identity
 `petdadog-backend`, issues a signed session, and grants one Pets unit through
@@ -263,9 +264,9 @@ in the Items shelf. The default dog and existing starter accessories remain
 available. Duplicate cosmetic drops increase their Steam inventory quantity.
 
 The Worker limits accepted grants to **300 per player per minute** by default.
-Steam authentication proves the player's identity, while a desktop client
-cannot prove a human physically clicked. This limit controls accepted request
-volume; it is not a physical-click detector.
+Steam authentication proves the player's identity; the Worker cannot
+independently verify client-reported input events. This limit controls accepted
+request volume regardless of input origin.
 
 If Steam's response to an exchange is uncertain, the API reports a pending
 operation rather than automatically submitting another purchase or opening.
@@ -286,11 +287,16 @@ by the trusted Worker and reports `nativeVerified=false`:
 
 ```powershell
 .\Pet_Da_Dog_CSharp\Tests\Run-LiveSteamSmoke.ps1 -AllowLiveSteam
-# Exercise the dog's visible-pixel click handler and earn exactly three real Pets:
+# Exercise dog feedback and queue three explicit test activity counts for real grants:
 .\Pet_Da_Dog_CSharp\Tests\Run-LiveSteamSmoke.ps1 -AllowLiveSteam -GrantCount 3 -UseDogInput
 # Check the Worker path separately when the independent native API is unavailable:
 .\Pet_Da_Dog_CSharp\Tests\Run-LiveSteamSmoke.ps1 -AllowLiveSteam -WorkerOnly -GrantCount 0 -UseDogInput
 ```
+
+`-UseDogInput` verifies that direct Godot clicks add no duplicate grants. For
+requested grants, the runner supplies activity counts at the monitor-to-client
+handoff explicitly; this does not verify Windows input capture. Global input
+monitoring remains disabled in these tests.
 
 Close other pet clients while checking exact increments. Logs are written under
 the client's `.godot` directory; credentials are not printed. A timeout after
@@ -298,7 +304,7 @@ sending a click can mean Steam accepted it, so read inventory before rerunning.
 For interactive checks, launch the client with `-- --status --validate-pets` to
 log confirmed totals and pending clicks separately.
 
-Live validation on October 10, 2026 confirmed Steam client initialization for
+Historical live validation on October 10, 2026 confirmed Steam client initialization for
 AppID 4817200 and Worker health. The replacement publisher key was deployed at
 9:09 PM EDT, but Steam sign-in still returned **HTTP 403 from
 ISteamUserAuth/AuthenticateUserTicket**. A temporary remote preview then tested
@@ -421,7 +427,9 @@ check. Inspect both the game display and Steam Inventory.
 1. Launch the game with Steam running. Confirm it signs in and reads inventory.
 2. Click once outside the dog or press and release a key while another app has
    focus. Pending inputs should clear and Pets increase by exactly one. Holding
-   a key must not add repeated grants. A dog click earns once and shows a heart.
+   a key must not add repeated grants. Physical, remote, and injected Windows
+   presses follow the same rule. Releases, movement, and scrolling add no grants;
+   direct Godot events add none. A dog click earns once and shows a heart.
 3. Earn enough Pets and buy a Dog Box. Pets should decrease by one and the
    owned Dog Box count increase by one.
 4. After uploading the prepared schema and redeploying the Worker, open that

@@ -88,6 +88,7 @@ public partial class SteamInventorySmokeTest : Node
 				Require(image.SavePng("res://.godot/steam-shop-smoke.png") == Error.Ok, "Shop layout captures for visual review.");
 				menu.Hide();
 			}
+			await VerifyDesktopCounterAndMenuAccess(pet);
 			GD.Print($"STEAM_INVENTORY_SMOKE_PASS: {_assertions} assertions");
 		}
 		catch (Exception exception) { exitCode = 1; GD.PushError($"STEAM_INVENTORY_SMOKE_FAIL: {exception}"); }
@@ -354,5 +355,110 @@ public partial class SteamInventorySmokeTest : Node
 		Require(!hand.Visible && backend.PendingGrantCount == 5, "Entering accessory editing hides the hand without duplicating input grants.");
 		GetNode<AccessoryEditingSession>("/root/AccessoryEditingSession").SetActive(false);
 	}
+	private async Task VerifyDesktopCounterAndMenuAccess(DesktopPet pet)
+	{
+		const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+		var settings = GetNode<PetSettings>("/root/PetSettings");
+		var backend = (BackendPetClient)typeof(DesktopPet).GetField("_backend", flags)!.GetValue(pet)!;
+		var counter = pet.GetNode<PetCounterDisplay>("PetCounter");
+		var bridge = GetNode<NativeWindowBridge>("/root/NativeWindowBridge");
+		var originalCounter = settings.ShowPetCounter; var originalPosition = settings.PetCounterPosition;
+		var originalRightClick = settings.OpenMenuOnRightClick; var originalClickThrough = settings.DogClickThrough;
+		var originalTransparency = settings.DogTransparency; var originalTotal = backend.ConfirmedPets;
+		var originalInventory = backend.InventoryItems; var processing = pet.IsProcessing();
+		var pending = backend.PendingGrantCount;
+		void UpdateCounter() => typeof(DesktopPet).GetMethod("UpdatePetCounter", flags)!.Invoke(pet, null);
+		StatusWindow? PetMenu() => (StatusWindow?)typeof(DesktopPet).GetField("_statusWindow", flags)!.GetValue(pet);
+		void Confirm(long value) => typeof(BackendPetClient).GetMethod("ApplyInventory", flags)!.Invoke(backend,
+			new object[] { value, new[] { new SteamInventoryItem("fixture-confirmed-pets", 100, value) } });
+		pet.SetProcess(false);
+		try
+		{
+			PetMenu()?.Hide(); GetNode<AccessoryEditingSession>("/root/AccessoryEditingSession").SetActive(false);
+			settings.SetShowPetCounter(false); UpdateCounter();
+			Require(!counter.Visible && counter.GetRenderBounds() == null, "The optional desktop Pets counter begins hidden and contributes no render bounds.");
+			settings.SetShowPetCounter(true); UpdateCounter();
+			Require(counter.CounterText == "Pets: —" && backend.ConfirmedPets == null,
+				"An enabled counter with no confirmed Steam balance shows an unknown value instead of inventing zero or displaying queued input.");
+			pet.RecordInputActivity(1); UpdateCounter();
+			Require(counter.CounterText == "Pets: —" && backend.PendingGrantCount == pending + 1,
+				"Another offline input remains internal and cannot increment the desktop counter before Steam confirms a balance.");
+			Confirm(1234); UpdateCounter();
+			Require(counter.CounterText == "Pets: 1,234", "The desktop counter displays the backend-confirmed Steam inventory total.");
+			Confirm(1235); UpdateCounter();
+			Require(counter.CounterText == "Pets: 1,235" && backend.PendingGrantCount == pending + 1,
+				"A new confirmed snapshot updates the counter without adding or subtracting pending input.");
+			Require(counter.MouseFilter == Control.MouseFilterEnum.Ignore && counter.GetNode<Label>("Value").MouseFilter == Control.MouseFilterEnum.Ignore,
+				"The counter panel and its label are decorative and do not capture desktop input.");
+			settings.SetDogClickThrough(false); settings.SetDogTransparency(1); settings.SetOpenMenuOnRightClick(true);
+			foreach (var placement in Enum.GetValues<PetCounterPlacement>())
+			{
+				settings.SetPetCounterPosition(placement); UpdateCounter();
+				var bounds = counter.GetRenderBounds()!.Value;
+				Require(pet.GetViewportRect().Grow(1).Encloses(bounds), $"The {placement} desktop counter fits fully inside its actual overlay viewport.");
+				var center = bounds.GetCenter();
+				Require(!(bool)typeof(DesktopPet).GetMethod("IsVisibleDogPixel", flags)!.Invoke(pet, new object[] { center })!,
+					$"The {placement} counter does not enlarge the dog's opaque-pixel click target.");
+				pet._Input(new InputEventMouseButton { ButtonIndex = MouseButton.Right, Pressed = true, Position = center });
+				Require(PetMenu()?.Visible != true && backend.PendingGrantCount == pending + 1,
+					"Right-clicking a decorative counter cannot open the dog menu or create a duplicate pet grant.");
+				typeof(DesktopPet).GetMethod("UpdateDogMouseRegion", flags)!.Invoke(pet, null);
+				var region = (Rect2I?)typeof(DesktopPet).GetField("_lastMouseRegion", flags)!.GetValue(pet);
+				Require(region.HasValue && new Rect2(region.Value.Position, region.Value.Size).Grow(1).Encloses(bounds),
+					"The native overlay render clip includes the visible counter while its dog hit geometry stays separate.");
+				if (DisplayServer.GetName() != "headless" && placement is PetCounterPlacement.DogFeet or PetCounterPlacement.TopRight)
+				{
+					await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+					using var rendered = pet.GetViewport().GetTexture().GetImage();
+					var start = new Vector2I(Mathf.FloorToInt(bounds.Position.X), Mathf.FloorToInt(bounds.Position.Y));
+					var end = new Vector2I(Mathf.CeilToInt(bounds.End.X), Mathf.CeilToInt(bounds.End.Y));
+					var crop = new Rect2I(start, end - start).Intersection(new Rect2I(Vector2I.Zero, rendered.GetSize()));
+					Require(crop.HasArea(), "The visible desktop counter occupies a nonempty region of the rendered native viewport.");
+					using var badge = rendered.GetRegion(crop);
+					var backgroundPixels = 0; var glyphPixels = 0;
+					for (var y = 0; y < badge.GetHeight(); y++) for (var x = 0; x < badge.GetWidth(); x++)
+					{
+						var color = badge.GetPixel(x, y);
+						if (color.A <= 0.5f) continue;
+						if (color.R > 0.75f && color.G > 0.7f && color.B > 0.5f) backgroundPixels++;
+						if ((color.R + color.G + color.B) / 3 < 0.45f) glyphPixels++;
+					}
+					Require(backgroundPixels > 20 && glyphPixels > 5,
+						"The native counter renders both its light badge background and contrasting Pets total glyphs.");
+					var capturePath = placement == PetCounterPlacement.DogFeet ? "res://.godot/pet-counter-feet.png" : "res://.godot/pet-counter-corner.png";
+					Require(badge.SavePng(capturePath) == Error.Ok, "The rendered counter crop saves for feet and corner visual review.");
+				}
+			}
+			var sprite = pet.GetNode<Sprite2D>("FootAnchor/VisualRoot/PetSprite");
+			using var image = sprite.Texture.GetImage(); var opaque = Vector2.Zero; var found = false;
+			for (var y = 0; y < image.GetHeight() && !found; y++) for (var x = 0; x < image.GetWidth() && !found; x++)
+				if (image.GetPixel(x, y).A > 0.5f)
+				{
+					opaque = sprite.ToGlobal(new Vector2(x + 0.5f, y + 0.5f) - sprite.Texture.GetSize() * 0.5f); found = true;
+				}
+			Require(found, "The right-click preference fixture uses an opaque dog pixel.");
+			settings.SetOpenMenuOnRightClick(false);
+			pet._Input(new InputEventMouseButton { ButtonIndex = MouseButton.Right, Pressed = true, Position = opaque });
+			Require(PetMenu()?.Visible != true, "Disabling dog right-click menus ignores an otherwise valid opaque dog press.");
+			settings.SetOpenMenuOnRightClick(true);
+			pet._Input(new InputEventMouseButton { ButtonIndex = MouseButton.Right, Pressed = true, Position = opaque });
+			Require(PetMenu()?.Visible == true, "Re-enabling dog right-click menus restores normal menu access.");
+			PetMenu()!.Hide();
+			settings.SetOpenMenuOnRightClick(false); settings.SetDogClickThrough(true); settings.SetDogTransparency(0);
+			typeof(NativeWindowBridge).GetField("_statusRequested", flags)!.SetValue(bridge, true); bridge._Process(0);
+			Require(PetMenu()?.Visible == true && backend.PendingGrantCount == pending + 1 && counter.CounterText == "Pets: 1,235",
+				"The native global menu request opens Settings even with dog right-click disabled, click-through enabled and an invisible dog, without granting Pets.");
+		}
+		finally
+		{
+			PetMenu()?.Hide();
+			typeof(BackendPetClient).GetProperty(nameof(BackendPetClient.ConfirmedPets))!.SetValue(backend, originalTotal);
+			typeof(BackendPetClient).GetProperty(nameof(BackendPetClient.InventoryItems))!.SetValue(backend, originalInventory);
+			settings.SetOpenMenuOnRightClick(originalRightClick); settings.SetDogClickThrough(originalClickThrough);
+			settings.SetDogTransparency(originalTransparency); settings.SetPetCounterPosition(originalPosition); settings.SetShowPetCounter(originalCounter);
+			UpdateCounter(); pet.SetProcess(processing);
+		}
+	}
+
 	private void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); _assertions++; }
 }
