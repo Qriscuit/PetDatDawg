@@ -358,6 +358,44 @@ public partial class PatrolSmokeTest : Node
 		stationary.ButtonPressed = false; bounce.ButtonPressed = true;
 		pet._Process(0.05);
 		Require(!settings.Stationary && settings.BounceEnabled && pet.PatrolPosition.DistanceTo(position) > 1 && pet.PatrolTargetIndex == target && GetField<int>(pet, "_patrolStepDirection") == stepDirection, "Resuming movement continues the existing return segment rather than restarting the route.");
+		VerifyMirrorPreservesPatrol(status, settings);
+	}
+
+	private void VerifyMirrorPreservesPatrol(StatusWindow status, PetSettings settings)
+	{
+		var pet = _pet!; var flip = status.GetNode<CheckBox>("%FlipHorizontally");
+		var stationary = status.GetNode<CheckBox>("%Stationary"); var visual = GetField<Node2D>(pet, "_visualRoot");
+		var originalFlip = settings.FlipHorizontally; var originalStationary = settings.Stationary;
+		var stops = _route.Points.ToArray();
+		try
+		{
+			stationary.ButtonPressed = true;
+			var position = pet.PatrolPosition; var target = pet.PatrolTargetIndex;
+			var stepDirection = GetField<int>(pet, "_patrolStepDirection"); var phase = GetField<float>(pet, "_stepPhase");
+			var direction = GetField<float>(pet, "_direction"); var walk = GetField<float>(pet, "_walkX"); var scaleX = visual.Scale.X;
+			flip.ButtonPressed = !originalFlip;
+			Require(Mathf.IsEqualApprox(visual.Scale.X, -scaleX) && pet.PatrolPosition == position && pet.PatrolTargetIndex == target
+				&& GetField<int>(pet, "_patrolStepDirection") == stepDirection && GetField<float>(pet, "_direction") == direction
+				&& GetField<float>(pet, "_stepPhase") == phase && _route.Points.SequenceEqual(stops),
+				"Mirroring a stationary dog on its return route changes its facing while preserving the route, current position, target and return direction.");
+			CallPrivate(pet, "StepPatrol", 0.1f);
+			Require(pet.PatrolPosition == position && pet.PatrolTargetIndex == target && GetField<float>(pet, "_stepPhase") == phase,
+				"A mirrored stationary dog remains paused on the same route segment.");
+			stationary.ButtonPressed = false;
+			CallPrivate(pet, "StepPatrol", 0.01f);
+			var mirroredPosition = pet.PatrolPosition; var mirroredTarget = pet.PatrolTargetIndex;
+			var mirroredStep = GetField<int>(pet, "_patrolStepDirection"); var mirroredDirection = GetField<float>(pet, "_direction");
+			SetField(pet, "_patrolPosition", position); SetField(pet, "_patrolTargetIndex", target);
+			SetField(pet, "_patrolStepDirection", stepDirection); SetField(pet, "_stepPhase", phase);
+			SetField(pet, "_direction", direction); SetField(pet, "_walkX", walk);
+			flip.ButtonPressed = originalFlip;
+			CallPrivate(pet, "StepPatrol", 0.01f); CallPrivate(pet, "AnimateDog");
+			Require(pet.PatrolPosition.IsEqualApprox(mirroredPosition) && pet.PatrolTargetIndex == mirroredTarget
+				&& GetField<int>(pet, "_patrolStepDirection") == mirroredStep && GetField<float>(pet, "_direction") == mirroredDirection
+				&& _route.Points.SequenceEqual(stops),
+				"From the same return segment, mirrored and ordinary patrol advance to the same point and target with the same movement direction.");
+		}
+		finally { flip.ButtonPressed = originalFlip; stationary.ButtonPressed = originalStationary; }
 	}
 
 	private void VerifyTraversalSequence(Vector2[] stops, int[] expectedTargets)

@@ -12,7 +12,6 @@ public partial class DogPresetsWindow : Window
 	private PackedScene _cardScene = null!;
 	private readonly List<(DogPreset Preset, Button Apply, Label Availability)> _cards = new();
 	private bool _positioned;
-	private float _uiScale = 1;
 	public event Action? BeforeSave;
 	public event Action<string>? ApplyRequested;
 
@@ -43,14 +42,7 @@ public partial class DogPresetsWindow : Window
 
 	public void ShowPresets(Window owner)
 	{
-		var scale = owner.ContentScaleFactor;
-		if (!Mathf.IsEqualApprox(scale, _uiScale))
-		{
-			Size = new Vector2I(Mathf.RoundToInt(Size.X / _uiScale * scale), Mathf.RoundToInt(Size.Y / _uiScale * scale));
-			MinSize = new Vector2I(Mathf.RoundToInt(520 * scale), Mathf.RoundToInt(400 * scale));
-			_uiScale = scale;
-		}
-		ContentScaleFactor = scale;
+		ContentScaleFactor = owner.ContentScaleFactor;
 		if (Mode == ModeEnum.Minimized) Mode = ModeEnum.Windowed;
 		if (DisplayServer.GetName() != "headless")
 		{

@@ -25,6 +25,10 @@ public partial class DesktopAppearance : Resource
 	[Export] public Vector2 DogResizeOffset { get; set; } = new(17, 17);
 	[Export] public float AccessoryResizeOffset { get; set; } = 13;
 	[Export] public float RotationHandleOffset { get; set; } = 29;
+	[Export] public float DeleteHandleOffset { get; set; } = 13;
+	[Export] public Color DeleteFillColor { get; set; } = Color.FromHtml("a45031");
+	[Export] public Color DeleteHoverColor { get; set; } = Color.FromHtml("c05d3b");
+	[Export] public Color DeleteGlyphColor { get; set; } = Color.FromHtml("fff1d0");
 	[ExportGroup("Move dog control")]
 	[Export] public StyleBox? MoveDogStyle { get; set; }
 	[Export] public Font? ControlFont { get; set; }

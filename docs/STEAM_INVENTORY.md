@@ -115,6 +115,15 @@ of eligible variants divided by 73: Corgi has four variants (4/73), Labrador
 has three (3/73), and the other breed groups have two variants each (2/73).
 
 Duplicates are possible and stack as quantities of the same cosmetic item.
+The client keeps the confirmed quantities and allows one independently positioned
+accessory placement per owned copy. Click a catalog card and then the dog, or
+drag a card onto the dog, to place an unused copy. Each copy keeps its own
+transform and layer; select it on the dog to edit it or use its outline delete
+button to remove it from the outfit. **Add another** also remains in the inspector.
+Starter image accessories can be repeated freely. The editable Text Box remains
+a single message. Saved outfits retain placement preferences across ownership
+changes, but only copies covered by fresh Steam ownership are displayed, and
+presets require enough owned copies. Local saves never supply item quantities.
 Cosmetics and boxes have trading and marketplace sales disabled. Each box is an
 individual inventory instance (`auto_stack: false`), so an opening operation
 can identify one specific box instance.

@@ -42,6 +42,7 @@ public partial class DogPresetSmokeTest : Node
 			VerifyMalformedPresets(_wardrobe, preset);
 			VerifyAtomicOwnershipRejection(_wardrobe, preset, dog, accessory);
 			VerifyHiddenCosmeticCapture(_wardrobe, preset, dog, accessory);
+			VerifyCopyPresetQuantities(_wardrobe, preset, dog, accessory);
 			await VerifyMenu(_wardrobe, preset, dog, accessory);
 			await VerifyDeletion(_wardrobe, preset);
 			Require(_backend?.ConfirmedPets == null && _backend?.PendingGrantCount == 0,
@@ -206,6 +207,43 @@ public partial class DogPresetSmokeTest : Node
 		wardrobe.SetSteamOwnership(new[] { dog.ItemDefId, accessory.ItemDefId });
 	}
 
+	private void VerifyCopyPresetQuantities(AccessoryWardrobe wardrobe, DogPreset originalPreset, SteamCosmeticDefinition dog,
+		SteamCosmeticDefinition accessory)
+	{
+		ConfigureFullOutfit(wardrobe, dog, accessory);
+		wardrobe.SetSteamInventory(new[] { new SteamInventoryItem("dog", dog.ItemDefId, 1), new SteamInventoryItem("stack", accessory.ItemDefId, 2) });
+		var copy = wardrobe.CreatePlacementId(accessory.AccessoryId);
+		Require(copy != null && copy != accessory.AccessoryId, "An owned second copy receives its own identity for a saved outfit.");
+		wardrobe.Equip(copy!, new Vector2(0.31f, 0.45f)); wardrobe.SetTransform(copy!, 1.3f, -30);
+		wardrobe.MoveLayer(copy!, -1); wardrobe.ClearHistory();
+		var expected = Capture(wardrobe);
+		Require(wardrobe.SavePreset("Double accessories"), "An outfit with two copies of one Steam accessory saves.");
+		var preset = wardrobe.Presets[^1];
+		Require(preset.Accessories.SequenceEqual(expected.Accessories) && preset.LayerOrder.SequenceEqual(expected.Layers)
+			&& wardrobe.CanApplyPreset(preset), "A duplicate-copy preset retains distinct transforms, identities and drawing layers.");
+		var restored = LoadFixture(); var restoredPreset = restored.Presets.Single(item => item.Id == preset.Id);
+		Require(restoredPreset.Accessories.SequenceEqual(preset.Accessories) && restoredPreset.LayerOrder.SequenceEqual(preset.LayerOrder)
+			&& !restored.CanApplyPreset(restoredPreset), "Reload retains the duplicate snapshot while awaiting fresh Steam ownership.");
+		restored.SetSteamInventory(new[] { new SteamInventoryItem("dog", dog.ItemDefId, 1), new SteamInventoryItem("stack", accessory.ItemDefId, 1) });
+		Require(!restored.CanApplyPreset(restoredPreset), "One confirmed accessory cannot enable a preset requiring two copies.");
+		restored.SetSteamInventory(new[] { new SteamInventoryItem("dog", dog.ItemDefId, 1), new SteamInventoryItem("stack", accessory.ItemDefId, 2) });
+		Require(restored.CanApplyPreset(restoredPreset), "A fresh two-copy stack enables the complete restored preset.");
+		wardrobe.SetSteamInventory(new[] { new SteamInventoryItem("dog", dog.ItemDefId, 1), new SteamInventoryItem("stack", accessory.ItemDefId, 1) });
+		ConfigureDifferentOutfit(wardrobe); var before = Capture(wardrobe);
+		Require(!wardrobe.CanApplyPreset(preset) && !wardrobe.ApplyPreset(preset.Id), "A quantity loss rejects the entire duplicate preset.");
+		RequireMatches(wardrobe, before, "Quantity rejection preserves the previous outfit, preferences and undo history.", includeHistory: true);
+		wardrobe.SetSteamInventory(new[] { new SteamInventoryItem("dog", dog.ItemDefId, 1), new SteamInventoryItem("first", accessory.ItemDefId, 1), new SteamInventoryItem("second", accessory.ItemDefId, 1) });
+		Require(wardrobe.CanApplyPreset(preset) && wardrobe.ApplyPreset(preset.Id), "Regaining copies in separate Steam rows permits the saved outfit again.");
+		RequireMatches(wardrobe, expected, "Applying the enabled duplicate preset restores both independent placements and layers.");
+		Require(wardrobe.Undo(), "A duplicate-copy preset applies as one undoable outfit change.");
+		RequireMatches(wardrobe, before, "One undo restores the complete outfit from before the duplicate preset.");
+		VerifyPreferenceOnlyStorage();
+		Require(wardrobe.DeletePreset(preset.Id), "The temporary duplicate preset deletes without altering the retained fixture.");
+		wardrobe.SetSteamOwnership(new[] { dog.ItemDefId, accessory.ItemDefId });
+		Require(wardrobe.ApplyPreset(originalPreset.Id), "The original single-copy preset is restored for menu verification.");
+		wardrobe.ClearHistory();
+	}
+
 	private async Task VerifyMenu(AccessoryWardrobe wardrobe, DogPreset preset, SteamCosmeticDefinition dog,
 		SteamCosmeticDefinition accessory)
 	{
@@ -239,6 +277,18 @@ public partial class DogPresetSmokeTest : Node
 		var browser = _menu.FindChild("DogPresetsWindow", true, false) as Window
 			?? GetTree().Root.FindChild("DogPresetsWindow", true, false) as Window;
 		Require(browser != null && browser.Visible, "The Items preset browser opens as an independent window.");
+		var menuSettings = GetNode<PetSettings>("/root/PetSettings");
+		var previousScale = menuSettings.UiScale; var browserSize = browser!.Size; var browserMinimum = browser.MinSize;
+		try
+		{
+			menuSettings.SetUiScale(1.25f); browser.Hide();
+			editor.GetNode<Button>("%OpenPresets").EmitSignal(BaseButton.SignalName.Pressed);
+			await Settle();
+			Require(browser.Visible && browser.Size == browserSize && browser.MinSize == browserMinimum
+				&& Mathf.IsEqualApprox(browser.ContentScaleFactor, 1.25f),
+				"Opening presets after changing Menu size scales its contents while preserving its outer size and minimum.");
+		}
+		finally { menuSettings.SetUiScale(previousScale); await Settle(); }
 		var grid = browser!.GetNode<GridContainer>("%PresetGrid");
 		Require(grid.GetChildCount() == wardrobe.Presets.Count && !browser.GetNode<Label>("%EmptyPresets").Visible,
 			"The browser displays one card for every saved outfit and hides the empty-state message.");

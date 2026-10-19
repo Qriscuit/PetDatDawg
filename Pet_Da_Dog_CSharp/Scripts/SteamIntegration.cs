@@ -11,15 +11,31 @@ public sealed class SteamIntegration : IDisposable
 	public const string BackendIdentity = "petdadog-backend";
 
 	private const double AuthTicketTimeoutSeconds = 15.0;
+	private const double InitializationRetrySeconds = 5.0;
 
 	private Callback<GetTicketForWebApiResponse_t>? _webApiTicketCallback;
 	private TaskCompletionSource<string>? _ticketCompletion;
 	private HAuthTicket? _activeTicket;
 	private bool _initialized;
+	private double _initializationRetryDelay;
 
 	public bool IsInitialized => _initialized;
 	public string Status { get; private set; } = "Steam is not initialized.";
 	public ulong SteamId { get; private set; }
+
+	// A game launched before Steam is ready must reconnect without a restart.
+	// Keep initialization retries separate from backend ticket/session retries.
+	public bool TryInitialize(double delta)
+	{
+		if (System.Environment.GetEnvironmentVariable("PDD_DISABLE_STEAM") == "1")
+		{
+			Status = "Steam is disabled by PDD_DISABLE_STEAM.";
+			return false;
+		}
+		if (_initialized) return true;
+		_initializationRetryDelay = Math.Max(0, _initializationRetryDelay - Math.Max(0, delta));
+		return _initializationRetryDelay <= 0 && Initialize();
+	}
 
 	public bool Initialize()
 	{
@@ -33,6 +49,7 @@ public sealed class SteamIntegration : IDisposable
 		{
 			return true;
 		}
+		_initializationRetryDelay = InitializationRetrySeconds;
 
 		try
 		{
@@ -52,6 +69,7 @@ public sealed class SteamIntegration : IDisposable
 			SteamId = (ulong)SteamUser.GetSteamID().m_SteamID;
 			Status = $"Steam initialized as {SteamId}.";
 			_webApiTicketCallback = Callback<GetTicketForWebApiResponse_t>.Create(OnWebApiTicket);
+			_initializationRetryDelay = 0;
 			return true;
 		}
 		catch (Exception exception)

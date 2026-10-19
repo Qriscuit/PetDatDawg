@@ -41,6 +41,7 @@ public partial class AccessorySmokeTest : Node
 				VerifyTransformAndUndo();
 				VerifyLayerMutationsAndPersistence();
 				VerifyTextPersistence();
+				VerifyIndependentCopies();
 				VerifyPersistence();
 				await VerifyOverlay();
 			}
@@ -277,6 +278,51 @@ public partial class AccessorySmokeTest : Node
 		Require(config.Save(_storagePath) == Error.Ok, "Invalid layer type fixture saves."); restored = LoadIsolatedWardrobe();
 		Require(restored.LayerOrder.SequenceEqual(new[] { dog, a, b }), "An invalid saved layer type uses legacy dog-first ordering."); restored.Free();
 		wardrobe.Clear(); wardrobe.SetTint(a, Colors.White); wardrobe.SetTransform(a, 1, 0); wardrobe.SetText(AccessoryWardrobe.DefaultText); wardrobe.SetTextBackgroundVisible(true); wardrobe.ClearHistory();
+	}
+
+	private void VerifyIndependentCopies()
+	{
+		var wardrobe = _wardrobe!; const string id = "FairyWing.jpg";
+		wardrobe.Clear(); wardrobe.ClearHistory();
+		wardrobe.Equip(id, new Vector2(0.2f, 0.3f));
+		var copy = wardrobe.CreatePlacementId(id);
+		Require(copy != null && copy != id && wardrobe.Find(copy) == wardrobe.Find(id),
+			"A starter image can create another independent instance using the same catalog artwork.");
+		wardrobe.Equip(copy!, new Vector2(0.8f, 0.3f));
+		wardrobe.SetTint(id, Colors.CornflowerBlue); wardrobe.SetTint(copy!, Colors.Gold);
+		wardrobe.SetTransform(id, 0.8f, -25); wardrobe.SetTransform(copy!, 1.5f, 40);
+		var first = wardrobe.GetPlacement(id)!; var second = wardrobe.GetPlacement(copy!)!;
+		Require(wardrobe.GetEquippedCount(id) == 2 && wardrobe.CanAddCopy(id)
+			&& first.Tint == Colors.CornflowerBlue && second.Tint == Colors.Gold
+			&& first.Scale == 0.8f && second.Scale == 1.5f && first.RotationDegrees == -25 && second.RotationDegrees == 40,
+			"Copies keep independent tint, size and rotation while starter images allow further copies.");
+		wardrobe.ClearHistory(); wardrobe.BeginEdit("move second copy");
+		wardrobe.Move(copy!, new Vector2(0.7f, 0.5f)); wardrobe.CommitEdit();
+		Require(wardrobe.GetPlacement(id) == first && wardrobe.GetPlacement(copy!)?.Position == new Vector2(0.7f, 0.5f),
+			"Dragging another copy changes only that placement.");
+		Require(wardrobe.Undo() && wardrobe.GetPlacement(id) == first && wardrobe.GetPlacement(copy!) == second && !wardrobe.CanUndo,
+			"One undo restores the moved copy without changing its sibling.");
+		var order = wardrobe.LayerOrder.ToArray();
+		Require(wardrobe.MoveLayer(copy!, -1) && wardrobe.LayerOrder.SequenceEqual(new[] { AccessoryWardrobe.DogLayerId, copy!, id }),
+			"Copies occupy separate drawing layers and can cross one another.");
+		Require(wardrobe.Undo() && wardrobe.LayerOrder.SequenceEqual(order), "Undo restores the copy's individual drawing layer.");
+		wardrobe.Remove(copy!);
+		Require(wardrobe.GetPlacement(id) == first && wardrobe.GetPlacement(copy!) == null && wardrobe.GetEquippedCount(id) == 1,
+			"Removing one copy preserves the other copy and its properties.");
+		Require(wardrobe.Undo() && wardrobe.GetPlacement(copy!) == second && wardrobe.LayerOrder.SequenceEqual(order),
+			"Undo restores the removed copy's stable ID, transform, tint and drawing layer.");
+		Require(wardrobe.Save(), "An outfit with repeated starter accessories saves.");
+		var restored = LoadIsolatedWardrobe();
+		Require(restored.Equipped.SequenceEqual(wardrobe.Equipped) && restored.LayerOrder.SequenceEqual(order),
+			"Restart preserves duplicate accessory IDs and each independent preference and layer.");
+		restored.Free();
+		wardrobe.Equip(AccessoryWardrobe.TextAccessoryId, Vector2.Zero);
+		Require(!wardrobe.CanAddCopy(AccessoryWardrobe.TextAccessoryId) && wardrobe.CreatePlacementId(AccessoryWardrobe.TextAccessoryId) == null
+			&& wardrobe.Find($"{AccessoryWardrobe.TextAccessoryId}::{Guid.NewGuid():N}") == null,
+			"Text Box remains a single editable message and rejects duplicate aliases.");
+		Require(wardrobe.Find($"{id}::not-a-guid") == null && wardrobe.Find($"{id}::{Guid.Empty:N}") == null,
+			"Malformed or empty instance identities cannot become accessory placements.");
+		wardrobe.Clear(); wardrobe.SetTint(id, Colors.White); wardrobe.SetTransform(id, 1, 0); wardrobe.ClearHistory();
 	}
 
 	private void VerifyPersistence()
@@ -614,6 +660,8 @@ public partial class AccessorySmokeTest : Node
 		VerifyUiTransformsAndUndo(window);
 		await VerifyTextEditor(window);
 		await VerifyCategoryRows(window);
+		await VerifyCopyPlacementControls(window);
+		VerifyHorizontalMirror(window);
 		await VerifyWoodlandPresentation(window);
 		await CaptureDesktopWorkspace(window);
 		if (OS.GetCmdlineUserArgs().Contains("--hold-preview"))
@@ -957,7 +1005,7 @@ public partial class AccessorySmokeTest : Node
 			Require(wardrobe.LayerOrder.SequenceEqual(new[] { dog, charm }) && charmNode.ZIndex > 0, "Moving the dog below an item reveals that item immediately.");
 			DesktopKey(Key.Z, true); Require(wardrobe.LayerOrder.SequenceEqual(new[] { charm, dog }), "Desktop undo restores the dog's previous layer.");
 			DesktopKey(Key.Z, true); Require(wardrobe.LayerOrder.SequenceEqual(new[] { dog, charm }) && !wardrobe.CanUndo, "Another undo restores the accessory's previous layer without retaining synthetic drag history.");
-			wardrobe.MoveLayer(charm, -1); cards[charm].EmitSignal(BaseButton.SignalName.Pressed);
+			wardrobe.MoveLayer(charm, -1); Session.SelectAccessory(charm);
 			Require(GetField<Label>(editor, "_layerLabel").Text.Contains("Behind dog") && !up.Disabled && down.Disabled,
 				"The inspector selects a dog-occluded item and shows its available layer action.");
 			up.EmitSignal(BaseButton.SignalName.Pressed);
@@ -1218,6 +1266,255 @@ public partial class AccessorySmokeTest : Node
 		}
 	}
 
+	private async Task VerifyCopyPlacementControls(StatusWindow window)
+	{
+		VerifyCatalogDragRecognition();
+		var wardrobe = _wardrobe!; var editor = FindDescendant<AccessoryEditor>(window)!;
+		var cards = GetField<Dictionary<string, Button>>(editor, "_cards");
+		var addCopy = editor.GetNode<Button>("%AddAccessoryCopy");
+		var original = wardrobe.Equipped.ToArray(); var originalLayers = wardrobe.LayerOrder.ToArray();
+		var ownership = wardrobe.Catalog.Where(item => item.SteamItemDefId > 0 && wardrobe.GetOwnedQuantity(item.Id) > 0)
+			.Select(item => new SteamInventoryItem($"original-{item.SteamItemDefId}", item.SteamItemDefId, wardrobe.GetOwnedQuantity(item.Id)))
+			.Concat(SteamCosmeticCatalog.All.Where(item => item.Kind == "dog" && wardrobe.OwnsSteamItem(item.ItemDefId))
+				.Select(item => new SteamInventoryItem($"original-dog-{item.ItemDefId}", item.ItemDefId, 1))).ToArray();
+		var grants = GetField<BackendPetClient>(_pet!, "_backend").PendingGrantCount;
+		var copies = new List<string>();
+		void ConfirmCopies(int changedItemDefId = 0, long quantity = 2) => wardrobe.SetSteamInventory(ownership.Concat(new[]
+		{
+			new SteamInventoryItem("bows", 2004, changedItemDefId == 2004 ? quantity : 2),
+			new SteamInventoryItem("eyes", 2014, changedItemDefId == 2014 ? quantity : 2)
+		}));
+		try
+		{
+			ConfirmCopies();
+			await SettleFrames();
+			foreach (var itemDefId in new[] { 2004, 2014 })
+			{
+				var definition = SteamCosmeticCatalog.Find(itemDefId)!; var id = definition.AccessoryId;
+				Require(wardrobe.GetEquippedCount(id) == 0, "The duplicate bow/eye fixture starts with no matching placements.");
+				cards[id].EmitSignal(BaseButton.SignalName.Pressed);
+				Require(Session.IsPlacing && Session.SelectedId == id, "Selecting a newly owned bow or eye arms its first copy.");
+				Require(Session.PlaceAt(new Vector2(0.25f, itemDefId == 2004 ? 0.2f : 0.5f)), "The shared desktop session places the first copy.");
+				copies.Add(id);
+				Require(!addCopy.Disabled, "The inspector offers another copy while Steam confirms one unused item.");
+				cards[id].EmitSignal(BaseButton.SignalName.Pressed);
+				var extra = Session.SelectedId;
+				Require(Session.IsPlacing && extra != null && extra != id && wardrobe.Find(extra)?.Id == id,
+					"Clicking a catalog card with an unused owned copy arms a new instance without moving the first bow or eye.");
+				ConfirmCopies(itemDefId, 1);
+				Require(!Session.IsPlacing && Session.SelectedId == null && !Session.PlaceAt(Vector2.One)
+					&& wardrobe.GetEquippedCount(id) == 1,
+					"Losing the unused owned copy cancels an armed extra placement without creating another item.");
+				ConfirmCopies(); Session.SelectAccessory(id);
+				addCopy.EmitSignal(BaseButton.SignalName.Pressed); extra = Session.SelectedId;
+				Require(Session.IsPlacing && extra != null && extra != id,
+					"A fresh ownership snapshot allows Add copy again after an armed placement was canceled.");
+				Session.CancelInteraction(); wardrobe.ClearHistory();
+				var firstBeforeCatalogDrag = wardrobe.GetPlacement(id)!;
+				var catalogCard = (AccessoryCard)cards[id];
+				catalogCard._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true });
+				CallPrivate(catalogCard, "RecognizeCatalogDrag", GetField<Vector2>(catalogCard, "_pressScreenPosition") + new Vector2(9, 0));
+				catalogCard._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false });
+				Require(Session.IsCatalogDragging && Session.IsPlacing
+					&& Session.SelectedId != id && wardrobe.GetPlacement(id) == firstBeforeCatalogDrag,
+					"Dragging an owned catalog card arms an unused copy through its real editor event without grabbing the existing bow or eye.");
+				Mouse(Vector2.Zero, false);
+				Require(!Session.IsCatalogDragging && !Session.IsPlacing && Session.SelectedId == null
+					&& wardrobe.GetEquippedCount(id) == 1 && wardrobe.GetPlacement(id) == firstBeforeCatalogDrag && !wardrobe.CanUndo,
+					"Releasing a catalog drag outside the dog cancels the new copy without moving its sibling or creating undo history.");
+				catalogCard._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true });
+				catalogCard._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false });
+				Require(Session.BeginCatalogDrag(id), "An unused confirmed copy can start another catalog drag after cancellation.");
+				ConfirmCopies(itemDefId, 1);
+				Mouse(At(Vector2.One * 0.5f), false);
+				Require(!Session.IsCatalogDragging && !Session.IsPlacing && wardrobe.GetEquippedCount(id) == 1
+					&& wardrobe.GetPlacement(id) == firstBeforeCatalogDrag && !wardrobe.CanUndo,
+					"Losing ownership during a catalog drag cancels the pending copy before its desktop release can place it.");
+				ConfirmCopies();
+				Require(Session.BeginCatalogDrag(id), "Restoring a second confirmed item permits a fresh catalog drag.");
+				extra = Session.SelectedId;
+				var secondAnchor = new Vector2(0.75f, itemDefId == 2004 ? 0.2f : 0.5f);
+				Mouse(At(secondAnchor), false);
+				Require(!Session.IsCatalogDragging && !Session.IsPlacing && wardrobe.GetPlacement(extra!)?.Position.IsEqualApprox(secondAnchor) == true
+					&& wardrobe.GetPlacement(id) == firstBeforeCatalogDrag && wardrobe.CanUndo,
+					"Releasing a catalog drag over the dog places exactly one independent copy at the pointer without moving its sibling.");
+				copies.Add(extra!);
+				await SettleFrames();
+				Require(wardrobe.GetEquippedCount(id) == 2 && addCopy.Disabled
+					&& Dog.GetChildren().OfType<Sprite2D>().Count(sprite => sprite.Texture == wardrobe.Find(id)!.Texture) == 2,
+					"Two owned copies render as separate desktop sprites and exhaust the Add copy action.");
+				Require(!Session.BeginCatalogDrag(id) && !Session.IsCatalogDragging && wardrobe.GetEquippedCount(id) == 2,
+					"A catalog drag cannot create a third placement when both confirmed copies are already equipped.");
+				var first = wardrobe.GetPlacement(id)!; var secondNode = AccessoryNode(extra!);
+				wardrobe.SetTransform(extra!, 1.35f, 22); wardrobe.Move(extra!, new Vector2(0.65f, 0.4f));
+				Require(wardrobe.GetPlacement(id) == first && AccessoryNode(extra!) == secondNode && AccessoryNode(id) != secondNode,
+					"Editing the extra bow or eye keeps its sibling unchanged and reuses its own render node.");
+				var beforeDrag = wardrobe.GetPlacement(extra!)!;
+				Session.SelectAccessory(extra!);
+				Require(Session.BeginGesture("drag extra copy"), "The selected extra copy starts an independent desktop editing gesture.");
+				wardrobe.Move(extra!, new Vector2(0.9f, 0.65f)); ConfirmCopies(itemDefId, 1);
+				Require(!Session.IsDragging && Session.SelectedId == null && wardrobe.GetPlacement(extra!) == null
+					&& wardrobe.GetPlacement(id) == first,
+					"Losing the dragged copy cancels its gesture and hides only the excess item without changing its sibling.");
+				ConfirmCopies();
+				Require(wardrobe.GetPlacement(extra!) == beforeDrag,
+					"Regaining the dragged copy restores its saved pre-gesture position and transform.");
+				cards[id].EmitSignal(BaseButton.SignalName.Pressed);
+				Require(Session.SelectedId == id && !Session.IsPlacing && wardrobe.GetEquippedCount(id) == 2,
+					"Selecting the catalog card again selects the existing first copy instead of adding or moving a copy.");
+				Session.ChooseAdditionalCopy(id);
+				Require(Session.SelectedId == id && !Session.IsPlacing, "Even a direct Add copy callback respects the confirmed quantity limit.");
+				Session.SelectAccessory(extra!); wardrobe.ClearHistory();
+				var second = wardrobe.GetPlacement(extra!)!; var order = wardrobe.LayerOrder.ToArray();
+				var delete = Controls.GetAccessoryDeleteHandle();
+				Require(Controls.IsInteractiveAt(delete) && Controls.GetRenderBounds() is Rect2 bounds && bounds.HasPoint(delete),
+					"A selected accessory has an interactive delete button inside the transparent overlay's render region.");
+				if (DisplayServer.GetName() != "headless")
+					Require((await RenderedOverlayPixel(delete)).A > 0.1f, "The selected accessory's delete button draws visible pixels at its interactive center.");
+				Mouse(delete, true); Mouse(delete, false);
+				Require(wardrobe.GetPlacement(extra!) == null && wardrobe.GetPlacement(id) == first
+					&& Session.SelectedId == null && !Session.IsDragging && wardrobe.GetEquippedCount(id) == 1,
+					"The outline delete button removes only the selected bow or eye instance without moving or deleting its sibling.");
+				var restored = LoadIsolatedWardrobe(); restored.SetSteamInventory(new[] { new SteamInventoryItem("confirmed", itemDefId, 2) });
+				Require(restored.GetPlacement(extra!) == null && restored.GetPlacement(id) == first,
+					"The outline delete button immediately persists its selected-instance removal."); restored.Free();
+				DesktopKey(Key.Z, true);
+				Require(wardrobe.GetPlacement(extra!) == second && wardrobe.GetPlacement(id) == first
+					&& wardrobe.LayerOrder.SequenceEqual(order) && !wardrobe.CanUndo,
+					"One desktop undo restores the deleted copy's ID, independent fit and layer without changing its sibling.");
+				Session.SelectAccessory(extra!); delete = Controls.GetAccessoryDeleteHandle();
+				GetField<Button>(window, "_dogsTabButton").EmitSignal(BaseButton.SignalName.Pressed);
+				Require(!Controls.IsInteractiveAt(delete) && !Controls.HandlePointer(delete, true)
+					&& wardrobe.GetPlacement(extra!) == second && Controls.GetRenderBounds() == null,
+					"The accessory outline delete button cannot render, intercept or remove an item outside Items editing.");
+				GetField<Button>(window, "_itemsTabButton").EmitSignal(BaseButton.SignalName.Pressed);
+			}
+		}
+		finally
+		{
+			Session.ClearSelection();
+			foreach (var copy in copies) wardrobe.Remove(copy);
+			wardrobe.SetSteamInventory(ownership); wardrobe.ClearHistory(); await SettleFrames();
+		}
+		Require(wardrobe.Equipped.SequenceEqual(original) && wardrobe.LayerOrder.SequenceEqual(originalLayers)
+			&& GetField<BackendPetClient>(_pet!, "_backend").PendingGrantCount == grants,
+			"Copy-placement controls restore the original outfit and never create pet grants.");
+	}
+
+	private void VerifyCatalogDragRecognition()
+	{
+		var card = ResourceLoader.Load<PackedScene>("res://UI/AccessoryCard.tscn").Instantiate<AccessoryCard>();
+		card.Visible = false; AddChild(card); card.SetProcess(false);
+		var clicks = 0; var drags = 0;
+		card.CatalogChosen += () => clicks++;
+		card.CatalogDragStarted += () => { drags++; return true; };
+		try
+		{
+			card._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true });
+			var press = GetField<Vector2>(card, "_pressScreenPosition");
+			CallPrivate(card, "RecognizeCatalogDrag", press + new Vector2(7, 0));
+			Require(drags == 0, "Small pointer motion within an accessory card retains click placement instead of starting a drag.");
+			CallPrivate(card, "RecognizeCatalogDrag", press + new Vector2(9, 0));
+			CallPrivate(card, "RecognizeCatalogDrag", press + new Vector2(20, 0));
+			Require(drags == 1, "Crossing the catalog drag threshold starts exactly one drag even when further native-window pointer samples arrive.");
+			card.EmitSignal(BaseButton.SignalName.Pressed);
+			Require(clicks == 0, "A button release delivered after a catalog drag cannot arm another unintended copy.");
+			card._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true });
+			card.EmitSignal(BaseButton.SignalName.Pressed);
+			Require(clicks == 1 && drags == 1, "The next ordinary catalog click still selects the item after drag-click suppression.");
+			card._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true });
+			press = GetField<Vector2>(card, "_pressScreenPosition");
+			CallPrivate(card, "PollCatalogPointer", press + new Vector2(9, 0), false);
+			Require(drags == 2 && !GetField<bool>(card, "_trackingPointer"),
+				"The final native pointer sample recognizes a quick cross-window drag even when the mouse button was already released between frames.");
+			card.EmitSignal(BaseButton.SignalName.Pressed);
+			Require(clicks == 1, "A fast cross-window drag also suppresses a delayed catalog click after physical release.");
+			card._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true });
+			press = GetField<Vector2>(card, "_pressScreenPosition");
+			CallPrivate(card, "PollCatalogPointer", press + new Vector2(7, 0), false);
+			card.EmitSignal(BaseButton.SignalName.Pressed);
+			Require(clicks == 2 && drags == 2 && !GetField<bool>(card, "_trackingPointer"),
+				"A release sample below the drag threshold remains an ordinary click and ends native pointer tracking.");
+			card.Disabled = true;
+			card._GuiInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true });
+			card._Process(0);
+			CallPrivate(card, "RecognizeCatalogDrag", GetField<Vector2>(card, "_pressScreenPosition") + new Vector2(20, 0));
+			Require(drags == 2, "A disabled accessory card cannot begin another catalog drag.");
+		}
+		finally { card.Free(); }
+	}
+
+	private void VerifyHorizontalMirror(StatusWindow window)
+	{
+		var pet = _pet!; var wardrobe = _wardrobe!; var settings = GetField<PetSettings>(pet, "_settings");
+		var visual = GetField<Node2D>(pet, "_visualRoot"); var foot = GetField<Node2D>(pet, "_footAnchor");
+		const string id = "SFlower1.png"; var originalPlacement = wardrobe.GetPlacement(id)!;
+		var originalTextScale = wardrobe.GetScale(AccessoryWardrobe.TextAccessoryId);
+		var originalTextRotation = wardrobe.GetRotationDegrees(AccessoryWardrobe.TextAccessoryId);
+		var originalFlip = settings.FlipHorizontally; var originalStationary = settings.Stationary;
+		var originalDirection = GetField<float>(pet, "_direction"); var originalPhase = GetField<float>(pet, "_stepPhase");
+		var grants = GetField<BackendPetClient>(pet, "_backend").PendingGrantCount;
+		try
+		{
+			Session.ClearSelection(); wardrobe.Move(id, new Vector2(0.18f, 0.25f));
+			wardrobe.Equip(AccessoryWardrobe.TextAccessoryId, new Vector2(0.8f, -0.2f));
+			wardrobe.SetTransform(AccessoryWardrobe.TextAccessoryId, 1, 30);
+			window.Hide(); FinishFall();
+			foreach (var stationary in new[] { false, true }) foreach (var direction in new[] { -1f, 1f })
+			{
+				settings.SetStationary(stationary); settings.SetFlipHorizontally(false);
+				SetField(pet, "_direction", direction); SetField(pet, "_stepPhase", 0.7f);
+				CallPrivate(pet, "ApplyDogSettings", false, false);
+				var scale = visual.Scale; var offset = AccessoryNode(id).GlobalPosition - foot.GlobalPosition;
+				var textOffset = AccessoryNode(AccessoryWardrobe.TextAccessoryId).GlobalPosition - foot.GlobalPosition;
+				var placement = wardrobe.GetPlacement(id); var walk = GetField<float>(pet, "_walkX");
+				var target = pet.PatrolTargetIndex; var patrolPosition = pet.PatrolPosition;
+				var stepDirection = GetField<int>(pet, "_patrolStepDirection");
+				settings.SetFlipHorizontally(true); CallPrivate(pet, "ApplyDogSettings", false, false);
+				var mirrored = AccessoryNode(id).GlobalPosition - foot.GlobalPosition;
+				Require(Mathf.IsEqualApprox(visual.Scale.X, -scale.X) && Mathf.IsEqualApprox(visual.Scale.Y, scale.Y)
+					&& mirrored.IsEqualApprox(new Vector2(-offset.X, offset.Y)),
+					"The mirror preference flips dog artwork and its accessory anchor in either movement direction, while walking or stationary.");
+				var text = AccessoryNode(AccessoryWardrobe.TextAccessoryId);
+				Require((text.ToGlobal(Vector2.Right) - text.GlobalPosition).X > 0 && text.GlobalTransform.Determinant() > 0
+					&& (text.GlobalPosition - foot.GlobalPosition).IsEqualApprox(new Vector2(-textOffset.X, textOffset.Y)),
+					"A rotated text bubble follows the mirrored anchor while its glyphs stay readable without reflected handedness.");
+				Require(wardrobe.GetPlacement(id) == placement && GetField<float>(pet, "_direction") == direction
+					&& GetField<float>(pet, "_walkX") == walk && pet.PatrolTargetIndex == target && pet.PatrolPosition == patrolPosition
+					&& GetField<int>(pet, "_patrolStepDirection") == stepDirection && GetField<float>(pet, "_stepPhase") == 0.7f,
+					"Mirroring changes presentation without rewriting accessory preferences, walking direction, route target or animation progress.");
+			}
+			window.ShowStatusWindow(); GetField<Button>(window, "_itemsTabButton").EmitSignal(BaseButton.SignalName.Pressed);
+			MoveDogTo(new Vector2(GetField<Vector2I>(pet, "_windowSize").X * 0.5f, 360));
+			foreach (var direction in new[] { -1f, 1f })
+			{
+				SetField(pet, "_direction", direction); CallPrivate(pet, "AnimateDog"); Session.SelectAccessory(id);
+				var pixel = AccessoryPixel(id);
+				Require(Controls.IsInteractiveAt(pixel) && Controls.IsInteractiveAt(Controls.GetAccessoryResizeHandle())
+					&& Controls.IsInteractiveAt(Controls.GetAccessoryRotationHandle()) && Controls.IsInteractiveAt(Controls.GetAccessoryDeleteHandle()),
+					"Mirrored accessory artwork and its size, rotation and delete controls retain their interactive geometry in both directions.");
+				Mouse(pixel, true); Require(Session.SelectedId == id && Session.IsDragging, "An opaque mirrored accessory pixel still selects its own placement for dragging.");
+				DesktopKey(Key.Escape);
+				var placement = wardrobe.GetPlacement(id)!; var center = AccessoryNode(id).GlobalPosition;
+				var handle = Controls.GetAccessoryRotationHandle(); var rotated = center + (handle - center).Rotated(Mathf.DegToRad(30));
+				Mouse(handle, true); Controls.UpdatePointer(rotated); Mouse(rotated, false);
+				Require(Mathf.IsEqualApprox(wardrobe.GetRotationDegrees(id), placement.RotationDegrees - direction * 30),
+					"Rotation dragging follows the mirrored artwork's handedness instead of reversing the user's gesture.");
+				DesktopKey(Key.Z, true); Require(wardrobe.GetPlacement(id) == placement, "A mirrored rotation gesture remains independently undoable.");
+			}
+			Require(GetField<BackendPetClient>(pet, "_backend").PendingGrantCount == grants,
+				"Mirror settings and mirrored accessory editing never enqueue duplicate pet grants.");
+		}
+		finally
+		{
+			Session.ClearSelection(); wardrobe.Remove(AccessoryWardrobe.TextAccessoryId); wardrobe.Move(id, originalPlacement.Position);
+			wardrobe.SetTransform(AccessoryWardrobe.TextAccessoryId, originalTextScale, originalTextRotation);
+			settings.SetFlipHorizontally(originalFlip); settings.SetStationary(originalStationary);
+			SetField(pet, "_direction", originalDirection); SetField(pet, "_stepPhase", originalPhase);
+			CallPrivate(pet, "ApplyDogSettings", false, false); wardrobe.ClearHistory(); wardrobe.Save();
+		}
+	}
+
 	private async Task VerifyWoodlandPresentation(StatusWindow window)
 	{
 		var editor = FindDescendant<AccessoryEditor>(window)!;
@@ -1256,9 +1553,13 @@ public partial class AccessorySmokeTest : Node
 		{
 			foreach (var scale in new[] { 1f, 0.75f, 1.35f })
 			{
+				var sizeBeforeScale = window.Size; var minimumBeforeScale = window.MinSize; var positionBeforeScale = window.Position;
 				SetField(testSettings, "_uiScale", scale);
 				window.Configure(testSettings);
 				await Settle();
+				Require(window.Size == sizeBeforeScale && window.MinSize == minimumBeforeScale && window.Position == positionBeforeScale
+					&& Mathf.IsEqualApprox(window.ContentScaleFactor, scale),
+					"Menu size changes scale only the contents while preserving native dimensions, minimum and position.");
 				Require(window.Theme.GetStylebox("pressed", "TabButton") is StyleBoxTexture { Texture: not null },
 					"Refreshing UI scale keeps the themed tab artwork.");
 				HeaderFits();
@@ -1268,10 +1569,13 @@ public partial class AccessorySmokeTest : Node
 				Require(GetField<Control>(editor, "_inspector").Size.X > 100 && GetField<ScrollContainer>(editor, "_catalogScroll").Size.X > 120,
 					"The portrait browser keeps both accessory inspector and category shelves usable at each UI scale.");
 			}
+			var sizeBeforeReset = window.Size; var minimumBeforeReset = window.MinSize; var positionBeforeReset = window.Position;
 			SetField(testSettings, "_uiScale", 1f);
 			window.Configure(testSettings);
 			await Settle();
-			Require(window.Size == new Vector2I(640, 780), "Reducing UI scale restores the portrait browser size instead of retaining its old larger minimum.");
+			Require(window.Size == sizeBeforeReset && window.MinSize == minimumBeforeReset && window.Position == positionBeforeReset
+				&& Mathf.IsEqualApprox(window.ContentScaleFactor, 1f),
+				"Resetting Menu size keeps the user-resized native window and restores only the content scale.");
 			tabs[0].EmitSignal(BaseButton.SignalName.Pressed);
 			await Settle();
 			var dogsPage = GetField<Control>(window, "_dogsPage");
@@ -1444,9 +1748,9 @@ public partial class AccessorySmokeTest : Node
 		var wardrobe = _wardrobe!;
 		const string id = "SFlower1.png";
 		var original = wardrobe.GetPlacement(id)!;
-		GetField<Dictionary<string, Button>>(editor, "_cards")[id].EmitSignal(BaseButton.SignalName.Pressed);
+		session.SelectAccessory(id);
 		Require(!session.IsPlacing && GetField<VBoxContainer>(editor, "_transformControls").Visible,
-			"Selecting an equipped card exposes size and rotation without placing again.");
+			"Selecting an equipped desktop item exposes size and rotation without placing again.");
 		wardrobe.ClearHistory();
 		var size = GetField<Slider>(editor, "_sizeSlider");
 		var rotation = GetField<Slider>(editor, "_rotationSlider");
@@ -1470,7 +1774,7 @@ public partial class AccessorySmokeTest : Node
 		Require(wardrobe.GetRotationDegrees(id) == 0 && wardrobe.GetScale(id) == 1.85f, "Undo button restores the previous rotation.");
 		CallPrivate(editor, "HandleShortcut", new InputEventKey { Keycode = Key.Z, CtrlPressed = true, Pressed = true });
 		Require(wardrobe.GetPlacement(id) == original && !wardrobe.CanUndo, "Ctrl + Z reverses the entire size-slider drag in one step.");
-		session.ChooseAccessory(id);
+		session.SelectAccessory(id);
 		GetField<Button>(editor, "_removeButton").EmitSignal(BaseButton.SignalName.Pressed);
 		Require(wardrobe.GetPlacement(id) == null, "Remove takes off the selected accessory.");
 		GetField<Button>(editor, "_undoButton").EmitSignal(BaseButton.SignalName.Pressed);

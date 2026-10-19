@@ -6,7 +6,7 @@ using Godot;
 [Tool]
 public partial class StatusWindow : Window
 {
-	private Vector2I _baseWindowSize, _baseMinimumWindowSize;
+	private Vector2I _baseMinimumWindowSize;
 	private float _baseContentScaleFactor = 1;
 	private int _initialTab = 1;
 	/// <summary>The page shown at startup and in the Godot editor preview.</summary>
@@ -58,7 +58,7 @@ public partial class StatusWindow : Window
 	private Button? _dogsTabButton, _itemsTabButton, _shopTabButton, _settingsTabButton;
 	private Control? _dogsPage, _accessoriesPage, _shopPage, _settingsPage, _welcomePanel;
 	private AccessoryEditor? _accessoryEditor;
-	private CheckBox? _alwaysOnTopCheck, _dogClickThroughCheck, _stationaryCheck, _bounceEnabledCheck;
+	private CheckBox? _alwaysOnTopCheck, _dogClickThroughCheck, _stationaryCheck, _bounceEnabledCheck, _flipHorizontallyCheck;
 	private HSlider? _dogTransparencySlider, _dogScaleSlider, _uiScaleSlider;
 	private Label? _dogTransparencyValueLabel, _dogScaleValueLabel, _uiScaleValueLabel;
 
@@ -69,7 +69,7 @@ public partial class StatusWindow : Window
 			PreviewTab(); SetProcess(false); return;
 		}
 		Visible = false;
-		_baseWindowSize = Size; _baseMinimumWindowSize = MinSize;
+		_baseMinimumWindowSize = MinSize;
 		_baseContentScaleFactor = ContentScaleFactor;
 		BindScene(); ConnectControls();
 		BindInventoryControls();
@@ -122,6 +122,7 @@ public partial class StatusWindow : Window
 		_dogClickThroughCheck = GetNode<CheckBox>("%DogClickThrough");
 		_stationaryCheck = GetNode<CheckBox>("%Stationary");
 		_bounceEnabledCheck = GetNode<CheckBox>("%BounceEnabled");
+		_flipHorizontallyCheck = GetNode<CheckBox>("%FlipHorizontally");
 		_dogTransparencySlider = GetNode<HSlider>("%DogTransparency");
 		_dogScaleSlider = GetNode<HSlider>("%DogScale");
 		_uiScaleSlider = GetNode<HSlider>("%UiScale");
@@ -156,6 +157,7 @@ public partial class StatusWindow : Window
 		_dogClickThroughCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetDogClickThrough(value); };
 		_stationaryCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetStationary(value); };
 		_bounceEnabledCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetBounceEnabled(value); };
+		_flipHorizontallyCheck!.Toggled += value => { if (!_refreshingControls) _settings?.SetFlipHorizontally(value); };
 		_dogTransparencySlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetDogTransparency((float)value); };
 		_dogScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetDogScale((float)value); };
 		_uiScaleSlider!.ValueChanged += value => { if (!_refreshingControls) _settings?.SetUiScale((float)value); };
@@ -201,7 +203,7 @@ public partial class StatusWindow : Window
 		SyncEditingState();
 	}
 	public void UpdateStatus(long? confirmedPets, string backendStatus, string steamStatus,
-		bool steamReady = false, bool backendReady = false)
+		bool steamReady = false, bool backendReady = false, bool inputReady = true, string? inputStatus = null)
 	{
 		if (Engine.IsEditorHint() || _petsValueLabel == null) return;
 		var retrying = backendStatus.Contains("retry", StringComparison.OrdinalIgnoreCase)
@@ -211,8 +213,10 @@ public partial class StatusWindow : Window
 			: steamReady ? PetsAwaitingText : PetsUnavailableText;
 		_backendStatusLabel!.Text = ServiceStatusFormat.Replace("{status}", NormalizeStatus(backendStatus));
 		_steamStatusLabel!.Text = SteamStatusFormat.Replace("{status}", NormalizeStatus(steamStatus));
+		if (!string.IsNullOrWhiteSpace(inputStatus)) _steamStatusLabel.Text += "\nDesktop input: " + inputStatus;
 		_connectionSummary!.Text = !steamReady ? steamStatus.StartsWith("Steam is disabled", StringComparison.OrdinalIgnoreCase)
 			? SteamDisabledText : SteamUnavailableText
+			: !inputReady ? "Desktop input is unavailable. Check technical details before earning Pets."
 			: retrying ? SyncInterruptedText : !backendReady ? ConnectingText : ConnectedText;
 	}
 	private void BeginPatrolEdit()
@@ -276,6 +280,7 @@ public partial class StatusWindow : Window
 		if (_settings == null) return; _refreshingControls = true;
 		_alwaysOnTopCheck!.SetPressedNoSignal(_settings.AlwaysOnTop); _dogClickThroughCheck!.SetPressedNoSignal(_settings.DogClickThrough);
 		_stationaryCheck!.SetPressedNoSignal(_settings.Stationary); _bounceEnabledCheck!.SetPressedNoSignal(_settings.BounceEnabled);
+		_flipHorizontallyCheck!.SetPressedNoSignal(_settings.FlipHorizontally);
 		SetValue(_dogTransparencySlider, _dogTransparencyValueLabel, _settings.DogTransparency);
 		SetValue(_dogScaleSlider, _dogScaleValueLabel, _settings.DogScale); SetValue(_uiScaleSlider, _uiScaleValueLabel, _settings.UiScale);
 		_welcomePanel!.Visible = !_settings.HasSeenWelcome; _refreshingControls = false;
@@ -289,15 +294,8 @@ public partial class StatusWindow : Window
 		var scale = _settings?.UiScale ?? PetSettings.DefaultUiScale;
 		if (Mathf.IsEqualApprox(scale, _appliedUiScale)) return;
 		_appliedUiScale = scale;
+		// ContentScaleFactor changes the UI canvas, independently of the player's window geometry.
 		ContentScaleFactor = _baseContentScaleFactor * scale;
-		var size = new Vector2I(Mathf.RoundToInt(_baseWindowSize.X * scale), Mathf.RoundToInt(_baseWindowSize.Y * scale));
-		var minimum = new Vector2I(Mathf.RoundToInt(_baseMinimumWindowSize.X * scale), Mathf.RoundToInt(_baseMinimumWindowSize.Y * scale));
-		if (!Engine.IsEmbeddedInEditor())
-		{
-			var usable = DisplayServer.ScreenGetUsableRect(CurrentScreen);
-			size = new Vector2I(Mathf.Min(size.X, usable.Size.X - 48), Mathf.Min(size.Y, usable.Size.Y - 80));
-		}
-		MinSize = new Vector2I(Mathf.Min(minimum.X, size.X), Mathf.Min(minimum.Y, size.Y)); Size = size;
 	}
 	private void OnSettingsChanged() { RefreshControls(); ApplyUiScale(); }
 	private void LoadLayout()
@@ -307,8 +305,7 @@ public partial class StatusWindow : Window
 		{
 			var position = config.GetValue("menu", "position"); var size = config.GetValue("menu", "size");
 			if (position.VariantType == Variant.Type.Vector2I) Position = position.AsVector2I();
-			if (size.VariantType == Variant.Type.Vector2I && config.GetValue("menu", "layout_version", 0).AsInt32() >= 2
-				&& Mathf.IsEqualApprox(config.GetValue("menu", "scale", 1f).AsSingle(), _appliedUiScale))
+			if (size.VariantType == Variant.Type.Vector2I && config.GetValue("menu", "layout_version", 0).AsInt32() >= 2)
 			{
 				var stored = size.AsVector2I(); if (stored.X > 0 && stored.Y > 0) Size = stored.Max(MinSize);
 			}
@@ -320,7 +317,7 @@ public partial class StatusWindow : Window
 	{
 		if (!_placed || Mode != ModeEnum.Windowed) return;
 		var config = new ConfigFile(); config.SetValue("menu", "position", Position); config.SetValue("menu", "size", Size);
-		config.SetValue("menu", "scale", _appliedUiScale); config.SetValue("menu", "layout_version", 2); config.Save(LayoutPath);
+		config.SetValue("menu", "layout_version", 3); config.Save(LayoutPath);
 	}
 	private void KeepWindowReachable()
 	{
@@ -330,7 +327,7 @@ public partial class StatusWindow : Window
 			var usable = DisplayServer.ScreenGetUsableRect(screen);
 			if (!usable.HasPoint(Position + new Vector2I(32, 16))) continue;
 			var maximum = new Vector2I(Mathf.Max(1, usable.Size.X - 24), Mathf.Max(1, usable.Size.Y - 56));
-			MinSize = new Vector2I(Mathf.RoundToInt(_baseMinimumWindowSize.X * _appliedUiScale), Mathf.RoundToInt(_baseMinimumWindowSize.Y * _appliedUiScale)).Min(maximum);
+			MinSize = _baseMinimumWindowSize.Min(maximum);
 			Size = Size.Min(maximum).Max(MinSize);
 			Position = new Vector2I(Mathf.Clamp(Position.X, usable.Position.X + 12, Mathf.Max(usable.Position.X + 12, usable.End.X - Size.X - 12)),
 				Mathf.Clamp(Position.Y, usable.Position.Y + 40, Mathf.Max(usable.Position.Y + 40, usable.End.Y - Size.Y - 16))); return;

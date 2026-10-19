@@ -36,7 +36,20 @@ public partial class AccessoryWardrobe
 
 	public bool CanApplyPreset(DogPreset preset) => IsValidPreset(preset)
 		&& (preset.DogItemDefId == 0 || OwnsSteamItem(preset.DogItemDefId))
-		&& preset.Accessories.All(item => CanEquip(item.Id));
+		&& HasRequiredCopies(preset.Accessories);
+
+	private bool HasRequiredCopies(IEnumerable<AccessoryPlacement> placements)
+	{
+		var required = new Dictionary<string, int>(StringComparer.Ordinal);
+		foreach (var placement in placements)
+		{
+			if (Find(placement.Id) is not { } definition) return false;
+			var count = required.GetValueOrDefault(definition.Id) + 1;
+			if (count > GetOwnedQuantity(placement.Id)) return false;
+			required[definition.Id] = count;
+		}
+		return true;
+	}
 
 	public bool ApplyPreset(string id)
 	{
@@ -100,7 +113,7 @@ public partial class AccessoryWardrobe
 		if (preset == null || !Guid.TryParseExact(preset.Id, "N", out _) || string.IsNullOrWhiteSpace(preset.Name)
 			|| preset.Name.Any(char.IsControl) || StringInfo.ParseCombiningCharacters(preset.Name).Length > MaxPresetNameLength
 			|| preset.DogItemDefId < 0 || (preset.DogItemDefId != 0 && SteamCosmeticCatalog.Find(preset.DogItemDefId)?.Kind != "dog")
-			|| preset.Accessories == null || preset.LayerOrder == null || preset.Accessories.Count > _catalog.Count) return false;
+			|| preset.Accessories == null || preset.LayerOrder == null || preset.Accessories.Count > MaxPlacements) return false;
 		var requiredLayers = new HashSet<string>(StringComparer.Ordinal) { DogLayerId };
 		foreach (var placement in preset.Accessories)
 		{
@@ -174,7 +187,7 @@ public partial class AccessoryWardrobe
 				if (item.VariantType != Variant.Type.Dictionary || !TryReadPresetPlacement(item.AsGodotDictionary(), out var placement))
 				{ valid = false; break; }
 				placements.Add(placement!);
-				if (placements.Count > _catalog.Count) { valid = false; break; }
+				if (placements.Count > MaxPlacements) { valid = false; break; }
 			}
 			if (!valid) continue;
 			var preset = new DogPreset(id, name.AsString(), dog.AsInt32(), placements, layers.AsStringArray());

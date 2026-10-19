@@ -85,6 +85,7 @@ public partial class UiAuthoringSmokeTest : Node
 			var settings = GetNode<PetSettings>("/root/PetSettings"); settings.SetUiScale(1);
 			settings.SetStationary(false); settings.SetBounceEnabled(true);
 			await VerifySavedSceneOverrides(settings);
+			await VerifyMenuScaleAndScrolling(settings);
 			await VerifyMovementSettings(settings, route);
 			await VerifyAccessoryTemplateOverrides(wardrobe);
 			VerifyDesktopAppearanceOverrides();
@@ -145,6 +146,7 @@ public partial class UiAuthoringSmokeTest : Node
 		authored.StationaryPatrolText = "My dog is resting";
 		authored.GetNode<CheckBox>("%Stationary").Text = "My resting preference";
 		authored.GetNode<CheckBox>("%BounceEnabled").Text = "My bounce preference";
+		authored.GetNode<CheckBox>("%FlipHorizontally").Text = "My mirror preference";
 		var authoredTraversal = authored.GetNode<OptionButton>("%PatrolTraversalMode");
 		authoredTraversal.SetItemText(authoredTraversal.GetItemIndex((int)PatrolTraversalMode.Loop), "My loop");
 		authoredTraversal.SetItemText(authoredTraversal.GetItemIndex((int)PatrolTraversalMode.BackAndForth), "My return walk");
@@ -195,6 +197,15 @@ public partial class UiAuthoringSmokeTest : Node
 			&& reloaded.GetNode<Label>("%ConnectionSummary").Text == "Everything connected"
 			&& reloaded.GetNode<Label>("%PatrolRouteSummary").Text == "Ready to draw a route",
 			"Saved live-copy formats substitute data while preserving Inspector-authored presentation.");
+		reloaded.UpdateStatus(1234, "Ready", "Ready", true, true, inputReady: false, inputStatus: "Keyboard monitor unavailable");
+		Require(reloaded.GetNode<Label>("%PetsValue").Text == "Confirmed: 1,234"
+			&& reloaded.GetNode<Label>("%ConnectionSummary").Text.Contains("Desktop input is unavailable", StringComparison.Ordinal)
+			&& reloaded.GetNode<Label>("%SteamStatus").Text.Contains("Keyboard monitor unavailable", StringComparison.Ordinal),
+			"Unavailable desktop input surfaces a connection warning and technical detail while preserving the confirmed Pets balance.");
+		reloaded.UpdateStatus(1234, "Ready", "Ready", true, true);
+		Require(reloaded.GetNode<Label>("%ConnectionSummary").Text == "Everything connected"
+			&& !reloaded.GetNode<Label>("%SteamStatus").Text.Contains("Keyboard monitor unavailable", StringComparison.Ordinal),
+			"Callers using the original status defaults retain their authored connected caption and clear stale input warnings.");
 		var detailsToggle = reloaded.GetNode<Button>("%ConnectionDetailsToggle");
 		detailsToggle.ButtonPressed = true;
 		Require(detailsToggle.Text == "Close details", "Expanded connection details use their Inspector-exported caption.");
@@ -207,11 +218,12 @@ public partial class UiAuthoringSmokeTest : Node
 		Require(reloaded.Size == new Vector2I(688, 730), "Dog preferences do not overwrite authored menu geometry.");
 		settings.SetUiScale(0.75f); await Settle();
 		AssertStatusOverrides(reloaded, "after menu scaling");
-		Require(Mathf.IsEqualApprox(reloaded.ContentScaleFactor, 0.825f) && reloaded.Size == new Vector2I(516, 548),
-			"Menu size scales the authored dimensions and content without rebuilding their theme.");
+		Require(Mathf.IsEqualApprox(reloaded.ContentScaleFactor, 0.825f) && reloaded.Size == new Vector2I(688, 730)
+			&& reloaded.MinSize == new Vector2I(400, 500),
+			"Menu size scales authored content while preserving native dimensions, minimum size and theme.");
 		settings.SetUiScale(1); settings.SetDogTransparency(originalVisibility); await Settle();
 		Require(reloaded.Size == new Vector2I(688, 730) && Mathf.IsEqualApprox(reloaded.ContentScaleFactor, 1.1f),
-			"Returning menu scale to 100% restores the authored base size and content factor.");
+			"Returning menu scale to 100% restores the content factor and preserves native size.");
 		reloaded.GetNode<Button>("%DogsTab").EmitSignal(BaseButton.SignalName.Pressed);
 		Require(reloaded.GetNode<Control>("%DogsPage").Visible, "The reparented unique-name tab still runs its bound action.");
 		VerifyDogCollectionStructure(reloaded);
@@ -221,6 +233,147 @@ public partial class UiAuthoringSmokeTest : Node
 		reloaded.GetNode<Button>("%ItemsTab").EmitSignal(BaseButton.SignalName.Pressed);
 		await Capture(reloaded, "authored-items");
 		reloaded.Hide(); reloaded.SetProcess(false);
+	}
+
+	private async Task VerifyMenuScaleAndScrolling(PetSettings settings)
+	{
+		System.IO.File.Delete(ProjectSettings.GlobalizePath("user://menu_layout.cfg"));
+		settings.SetUiScale(1); settings.DismissWelcome();
+		var menu = LoadScene<StatusWindow>("res://StatusWindow.tscn");
+		menu.Visible = false; menu.InitialTab = 3;
+		AddFixture(menu); menu.Configure(settings); menu.ShowStatusWindow();
+		await Settle();
+		var size = menu.Size; var minimum = menu.MinSize; var position = menu.Position;
+		var scroll = menu.GetNode<ScrollContainer>("%SettingsPage");
+		var sliders = new[] { menu.GetNode<HSlider>("%DogTransparency"), menu.GetNode<HSlider>("%DogScale"), menu.GetNode<HSlider>("%UiScale") };
+		foreach (var scale in new[] { PetSettings.MinUiScale, 1f, PetSettings.MaxUiScale })
+		{
+			settings.SetUiScale(scale); await Settle();
+			Require(Mathf.IsEqualApprox(menu.ContentScaleFactor, scale)
+				&& menu.Size == size && menu.MinSize == minimum && menu.Position == position,
+				$"At {scale:P0}, menu scaling changes content without moving or resizing the native window.");
+			Require(menu.GetVisibleRect().Grow(1).Encloses(menu.GetNode<Control>("Background").GetGlobalRect()),
+				$"The menu layout fits the fixed window at {scale:P0}.");
+			foreach (var slider in sliders)
+			{
+				Require(!slider.Scrollable, $"{slider.Name} keeps mouse-wheel input reserved for scrolling the options.");
+				scroll.EnsureControlVisible(slider); await Settle();
+				var visible = slider.GetGlobalRect().Intersection(scroll.GetGlobalRect());
+				Require(visible.HasArea(), $"The {slider.Name} control remains reachable at {scale:P0}.");
+				var before = scroll.ScrollVertical; var bar = scroll.GetVScrollBar();
+				var direction = before < bar.MaxValue - bar.Page - 1 ? MouseButton.WheelDown : MouseButton.WheelUp;
+				var transparency = settings.DogTransparency; var dogScale = settings.DogScale;
+				PushMouseButton(menu, visible.GetCenter(), direction, true); await Settle();
+				Require(Mathf.IsEqualApprox(settings.UiScale, scale) && Mathf.IsEqualApprox(settings.DogScale, dogScale)
+					&& Mathf.IsEqualApprox(settings.DogTransparency, transparency) && menu.Size == size && menu.Position == position,
+					$"Wheeling over {slider.Name} scrolls without changing any scale, visibility or window geometry.");
+				if (bar.MaxValue > bar.Page + 1)
+					Require(direction == MouseButton.WheelDown ? scroll.ScrollVertical > before : scroll.ScrollVertical < before,
+						$"Mouse-wheel input over {slider.Name} reaches the options scroll container.");
+			}
+			scroll.ScrollVertical = int.MaxValue; await Settle();
+			var atBottom = scroll.ScrollVertical;
+			for (var i = 0; i < 6; i++) PushMouseButton(menu, scroll.GetGlobalRect().GetCenter(), MouseButton.WheelDown, true);
+			await Settle();
+			Require(scroll.ScrollVertical == atBottom && Mathf.IsEqualApprox(settings.UiScale, scale)
+				&& menu.Size == size && menu.MinSize == minimum && menu.Position == position,
+				$"Continuing to scroll at the end of options stays stable at {scale:P0}.");
+		}
+		menu.Size = minimum; await Settle();
+		Require(menu.Size == minimum && menu.GetVisibleRect().Grow(1).Encloses(menu.GetNode<Control>("Background").GetGlobalRect())
+			&& new[] { "%DogsTab", "%ItemsTab", "%ShopTab", "%SettingsTab" }.All(path => menu.GetVisibleRect().Grow(1).Encloses(menu.GetNode<Control>(path).GetGlobalRect())),
+			"At maximum UI scale, the minimum native window still contains every tab and the options layout.");
+		menu.GetNode<Button>("%ItemsTab").EmitSignal(BaseButton.SignalName.Pressed); await Settle();
+		var itemsScroll = menu.GetNode<ScrollContainer>("%ItemsScroll");
+		var editor = menu.GetNode<AccessoryEditor>("%AccessoryEditor");
+		Require(Ancestor<ScrollContainer>(editor) == itemsScroll && itemsScroll.HorizontalScrollMode == ScrollContainer.ScrollMode.ShowNever
+			&& editor.GetNode<BoxContainer>("Workspace").Vertical && editor.GetGlobalRect().Position.X >= itemsScroll.GetGlobalRect().Position.X - 1
+			&& editor.GetGlobalRect().End.X <= itemsScroll.GetGlobalRect().End.X + 1,
+			"At maximum scale in the minimum window, Items uses a vertical workspace that fits the available width.");
+		itemsScroll.EnsureControlVisible(editor.GetNode<Control>("%AccessoryCatalogScroll")); await Settle();
+		Require(editor.GetNode<Control>("%AccessoryCatalogScroll").GetGlobalRect().Intersection(itemsScroll.GetGlobalRect()).HasArea()
+			&& menu.Size == minimum && menu.GetVisibleRect().Grow(1).Encloses(menu.GetNode<Control>("Background").GetGlobalRect()),
+			"The enlarged Items catalog remains reachable by scrolling without resizing the native window.");
+		await Capture(menu, "scaled-items-minimum");
+		menu.GetNode<Button>("%SettingsTab").EmitSignal(BaseButton.SignalName.Pressed); await Settle();
+		menu.Size = size; await Settle();
+		settings.SetUiScale(1); await Settle();
+		var uiScaleSlider = menu.GetNode<HSlider>("%UiScale");
+		scroll.EnsureControlVisible(uiScaleSlider); await Settle();
+		var click = uiScaleSlider.GetGlobalRect().Position + uiScaleSlider.Size * new Vector2(0.7f, 0.5f);
+		PushMouseButton(menu, click, MouseButton.Left, true);
+		PushMouseButton(menu, click, MouseButton.Left, false); await Settle();
+		Require(settings.UiScale > 1.3f && menu.Size == size && menu.Position == position,
+			"Clicking the menu-size slider still changes content scale without changing native geometry.");
+		settings.SetUiScale(1); await Settle();
+		// Resizing the native window remains independent from changing the saved content scale.
+		var manualSize = size + new Vector2I(64, 40);
+		if (DisplayServer.GetName() != "headless")
+		{
+			var usable = DisplayServer.ScreenGetUsableRect(menu.CurrentScreen);
+			position = usable.Position + new Vector2I(24, 56); menu.Position = position;
+			manualSize = manualSize.Min(usable.Size - new Vector2I(48, 96)).Max(minimum);
+		}
+		menu.Size = manualSize; await Settle();
+		var resized = menu.Size;
+		settings.SetUiScale(1.25f); await Settle();
+		Require(menu.Size == resized && menu.MinSize == minimum && menu.Position == position,
+			"Changing menu scale preserves a player-resized native window.");
+		menu.EmitSignal(Window.SignalName.CloseRequested); await Settle();
+		settings.SetUiScale(PetSettings.MinUiScale); await Settle();
+		menu.ShowStatusWindow(); await Settle();
+		Require(menu.Size == resized && menu.Position == position, "Reopening the menu preserves manual geometry after a scale change.");
+		menu.EmitSignal(Window.SignalName.CloseRequested); await Settle();
+		var saved = new ConfigFile();
+		Require(saved.Load("user://menu_layout.cfg") == Error.Ok && saved.GetValue("menu", "layout_version").AsInt32() == 3
+			&& saved.GetValue("menu", "size").AsVector2I() == resized, "Menu layout saves native dimensions independently from content scale.");
+		settings.SetUiScale(PetSettings.MaxUiScale);
+		var restored = LoadScene<StatusWindow>("res://StatusWindow.tscn"); restored.Visible = false; restored.InitialTab = 3;
+		AddFixture(restored); restored.Configure(settings); restored.ShowStatusWindow(); await Settle();
+		Require(restored.Size == resized && restored.Position == position && restored.MinSize == minimum
+			&& Mathf.IsEqualApprox(restored.ContentScaleFactor, PetSettings.MaxUiScale),
+			"A fresh menu restores saved manual geometry even with a different saved UI scale.");
+		await Capture(restored, "scaled-settings");
+		await VerifyPresetMenuScaling(settings, restored);
+		restored.Hide(); menu.Hide(); menu.SetProcess(false); restored.SetProcess(false); settings.SetUiScale(1);
+	}
+
+	private async Task VerifyPresetMenuScaling(PetSettings settings, Window owner)
+	{
+		var outfitPath = $"{OutputDirectory}/menu-scale-outfit.cfg";
+		var presetPath = $"{OutputDirectory}/menu-scale-presets.cfg";
+		System.IO.File.Delete(ProjectSettings.GlobalizePath(outfitPath));
+		System.IO.File.Delete(ProjectSettings.GlobalizePath(presetPath));
+		var wardrobe = new AccessoryWardrobe { StoragePath = outfitPath, PresetStoragePath = presetPath };
+		AddFixture(wardrobe);
+		Require(wardrobe.SavePreset("Scaled menu outfit"), "A local starter-dog preset is available for the scaled browser check.");
+		var browser = LoadScene<DogPresetsWindow>("res://DogPresetsWindow.tscn"); browser.Visible = false;
+		AddFixture(browser); browser.Configure(wardrobe);
+		var minimum = browser.MinSize; browser.Size = minimum; browser.ShowPresets(owner); await Settle();
+		var scroll = browser.GetNode<ScrollContainer>("%ContentScroll");
+		var grid = browser.GetNode<GridContainer>("%PresetGrid");
+		Require(browser.Size == minimum && browser.MinSize == minimum && Mathf.IsEqualApprox(browser.ContentScaleFactor, PetSettings.MaxUiScale)
+			&& browser.GetVisibleRect().Grow(1).Encloses(browser.GetNode<Control>("Background").GetGlobalRect())
+			&& grid.Columns == 1 && grid.GetGlobalRect().End.X <= scroll.GetGlobalRect().End.X + 1,
+			"The preset browser fits one column at 175% in its unchanged 520 by 400 native minimum.");
+		foreach (var control in new Control[] { browser.GetNode<LineEdit>("%PresetName"), browser.GetNode<Button>("%SavePreset"), grid.GetChild(0).GetNode<Button>("%DeletePreset") })
+		{
+			scroll.EnsureControlVisible(control); await Settle();
+			Require(scroll.GetGlobalRect().Grow(1).Encloses(control.GetGlobalRect()),
+				$"The preset browser's {control.Name} control remains reachable by scrolling at maximum scale.");
+		}
+		await Capture(browser, "scaled-presets-minimum");
+		browser.Size = minimum + new Vector2I(64, 40); await Settle();
+		var resized = browser.Size; browser.Hide(); settings.SetUiScale(PetSettings.MinUiScale); browser.ShowPresets(owner); await Settle();
+		Require(browser.Size == resized && browser.MinSize == minimum && Mathf.IsEqualApprox(browser.ContentScaleFactor, PetSettings.MinUiScale),
+			"Reopening presets with a different UI scale preserves manual size and authored minimum.");
+		browser.Hide();
+	}
+
+	private static void PushMouseButton(Window window, Vector2 position, MouseButton button, bool pressed)
+	{
+		using var input = new InputEventMouseButton { Position = position, GlobalPosition = position, ButtonIndex = button, Pressed = pressed, Factor = 1 };
+		window.PushInput(input, true);
 	}
 
 	private void AssertStatusOverrides(StatusWindow window, string stage)
@@ -237,6 +390,7 @@ public partial class UiAuthoringSmokeTest : Node
 		Require(button.GetParent().Name == "BrandRow", $"Authored hierarchy changes survive {stage}.");
 		Require(window.GetNode<CheckBox>("%Stationary").Text == "My resting preference"
 			&& window.GetNode<CheckBox>("%BounceEnabled").Text == "My bounce preference"
+			&& window.GetNode<CheckBox>("%FlipHorizontally").Text == "My mirror preference"
 			&& window.StationaryPatrolText == "My dog is resting", $"Authored movement captions survive {stage}.");
 		var traversal = window.GetNode<OptionButton>("%PatrolTraversalMode");
 		Require(traversal.GetItemText(traversal.GetItemIndex((int)PatrolTraversalMode.Loop)) == "My loop"
@@ -272,23 +426,36 @@ public partial class UiAuthoringSmokeTest : Node
 	{
 		var originalStationary = settings.Stationary;
 		var originalBounce = settings.BounceEnabled;
+		var originalFlip = settings.FlipHorizontally;
 		try
 		{
-			settings.SetStationary(false); settings.SetBounceEnabled(true);
+			settings.SetStationary(false); settings.SetBounceEnabled(true); settings.SetFlipHorizontally(false);
+			using (var legacy = new ConfigFile())
+			{
+				Require(legacy.Load("user://pet_settings.cfg") == Error.Ok, "The isolated settings fixture loads for legacy preference coverage.");
+				if (legacy.HasSectionKey("dog", "flip_horizontally")) legacy.EraseSectionKey("dog", "flip_horizontally");
+				Require(legacy.Save("user://pet_settings.cfg") == Error.Ok, "A legacy settings fixture without a mirror preference saves.");
+			}
+			var legacySettings = new PetSettings(); AddFixture(legacySettings);
+			Require(!legacySettings.FlipHorizontally, "Existing settings without a mirror preference preserve the original unflipped appearance.");
 			route.ClearRoute(); route.SetTraversalMode(PatrolTraversalMode.Loop);
 			var status = LoadScene<StatusWindow>("res://StatusWindow.tscn");
 			status.Visible = false; status.InitialTab = 3;
 			AddFixture(status); status.Configure(settings);
 			var stationary = status.GetNode<CheckBox>("%Stationary");
 			var bounce = status.GetNode<CheckBox>("%BounceEnabled");
+			var flip = status.GetNode<CheckBox>("%FlipHorizontally");
 			var traversal = status.GetNode<OptionButton>("%PatrolTraversalMode");
-			Require(!stationary.ButtonPressed && bounce.ButtonPressed, "Movement controls reflect the existing walk and bounce defaults.");
-			stationary.ButtonPressed = true; bounce.ButtonPressed = false;
-			Require(settings.Stationary && !settings.BounceEnabled, "Movement controls update independent saved preferences.");
+			Require(!stationary.ButtonPressed && bounce.ButtonPressed && !flip.ButtonPressed, "Movement controls reflect the existing walk, bounce and unflipped defaults.");
+			stationary.ButtonPressed = true; bounce.ButtonPressed = false; flip.ButtonPressed = true;
+			Require(settings.Stationary && !settings.BounceEnabled && settings.FlipHorizontally, "Movement and mirror controls update independent saved preferences.");
 			Require(status.GetNode<Label>("%PatrolRouteSummary").Text == status.StationaryPatrolText,
 				"Without a route the status explains that automatic walking is paused.");
 			var reloadedSettings = new PetSettings(); AddFixture(reloadedSettings);
-			Require(reloadedSettings.Stationary && !reloadedSettings.BounceEnabled, "Stationary and bounce preferences survive a settings reload.");
+			Require(reloadedSettings.Stationary && !reloadedSettings.BounceEnabled && reloadedSettings.FlipHorizontally, "Stationary, bounce and mirror preferences survive a settings reload.");
+			settings.SetFlipHorizontally(false);
+			Require(!flip.ButtonPressed && stationary.ButtonPressed && !bounce.ButtonPressed,
+				"Changing the mirror model refreshes its checkbox while preserving independent movement preferences.");
 			Require(route.BeginEdit(), "The movement smoke can start an isolated route edit.");
 			route.AddPoint(new Vector2(0.2f, 0.4f)); route.AddPoint(new Vector2(0.5f, 0.6f)); route.AddPoint(new Vector2(0.8f, 0.4f));
 			Require(route.FinishEdit(), "The movement smoke creates three distinct stops.");
@@ -313,7 +480,7 @@ public partial class UiAuthoringSmokeTest : Node
 		{
 			if (route.IsEditing) route.CancelEdit();
 			route.ClearRoute(); route.SetTraversalMode(PatrolTraversalMode.Loop);
-			settings.SetStationary(originalStationary); settings.SetBounceEnabled(originalBounce);
+			settings.SetStationary(originalStationary); settings.SetBounceEnabled(originalBounce); settings.SetFlipHorizontally(originalFlip);
 		}
 	}
 
@@ -329,6 +496,7 @@ public partial class UiAuthoringSmokeTest : Node
 		remove.Text = "Take this off"; remove.AddThemeFontSizeOverride("font_size", 18);
 		var card = editor.CardScene!.Instantiate<AccessoryCard>();
 		card.AvailableStatusText = "Choose my item"; card.EquippedStatusText = "Wearing my item";
+		card.AdditionalCopyStatusText = "Place another of my items";
 		card.ItemPlacementStatusText = "Place my item"; card.TextPlacementStatusText = "Place my words";
 		card.ChooseTooltipFormat = "Custom choice: {name} in {category}";
 		card.CustomMinimumSize = new Vector2(148, 126);
@@ -374,8 +542,8 @@ public partial class UiAuthoringSmokeTest : Node
 		Require(cards[AccessoryWardrobe.TextAccessoryId].GetNode<Label>("%CardStatus").Text == "Place my words",
 			"Placement state uses the authored text-card caption.");
 		wardrobe.Equip(wardrobe.Catalog[0].Id, new Vector2(0.5f, 0.5f)); session.SelectAccessory(wardrobe.Catalog[0].Id);
-		Require(cards[wardrobe.Catalog[0].Id].GetNode<Label>("%CardStatus").Text == "Wearing my item",
-			"Equipped state uses the authored card caption.");
+		Require(cards[wardrobe.Catalog[0].Id].GetNode<Label>("%CardStatus").Text == "Place another of my items",
+			"A repeatable equipped accessory uses the authored additional-copy caption.");
 		Require(remove.Text == "Take this off" && remove.GetThemeFontSize("font_size") == 18
 			&& editor.GetNode<VBoxContainer>("%AccessoryInspector").GetThemeConstant("separation") == 16,
 			"Model-driven inspector refresh preserves authored static text, font and spacing.");

@@ -20,6 +20,8 @@ Main client entrypoints:
 - `Pet_Da_Dog_CSharp/Scripts/BackendPetClient.cs` talks to the backend and keeps pending pet grants in memory.
 - `Pet_Da_Dog_CSharp/Scripts/SteamCosmeticCatalog.cs` maps the 136 Steam cosmetic itemdefs (73 dogs and 63 accessories) to local art; `StatusWindow.Inventory.cs` binds Shop and dog selection controls. Preserve existing IDs when adding cosmetics; accessory IDs currently end at 2062 and dog IDs at 3072. The latest eight dogs (3065–3072) are prepared locally; Steam schema upload and Worker redeployment remain pending.
 - The Dogs tab places the saved outfit preview grid before the owned dog selection grid. `UI/DogChoiceCard.tscn` and `UI/DogPresetCard.tscn` author their reusable cards. Items hides unowned Steam accessory cards and counts only usable accessories; starter cosmetics and Text Box remain available.
+- Accessory placements have independent instance IDs. The first copy keeps its catalog ID; extra copies append `::` and a GUID. Confirmed Steam quantities cap equipped copies and preset availability; quantities are never saved locally. Starter image accessories are repeatable, while Text Box is a single editable message. Catalog clicks or drags place an unused copy; equipped copies are selected directly on the dog, with a small outline delete button. The Items inspector's Add another button remains available.
+- Menu size changes scale window contents only. Saved window size and position remain independent of UI scale; options sliders ignore the mouse wheel so scrolling cannot change their values.
 
 Main backend entrypoint:
 
@@ -47,8 +49,10 @@ The earning path is:
 `DesktopPet` updates Godot's mouse passthrough polygon every frame so transparent desktop space remains usable. `_Input` checks dog texture alpha only for feedback/menu interaction. `GlobalInputMonitor` independently observes press edges, and `DesktopPet.RecordInputActivity` enqueues one GUID per observed press.
 
 Movement preferences are saved locally: Stationary pauses walking/patrol and movement animation, BounceEnabled controls hop/squash/rotation, and patrol traversal can Loop or go BackAndForth. Existing routes default to Loop. Stationary preserves the current patrol target and direction; ordinary post-edit falling still lands the dog.
+`FlipHorizontally` mirrors the dog and attached outfit relative to its current facing. It is a saved appearance preference, defaults to false, and leaves walking direction, patrol progress, and bounce timing unchanged. Text anchors mirror with the outfit while message text stays readable.
 
 `SteamIntegration` initializes Steam with `PDD_STEAM_APP_ID` or local `steam_appid.txt`, requests a Web API ticket for identity `petdadog-backend`, runs Steam callbacks each frame, and shuts Steam down on exit.
+Failed startup initialization retries every five seconds, so launching Steam after the game can resume the queued earning flow without restarting the pet. Technical details also expose input-monitor availability without recording keys or mouse coordinates.
 
 `BackendPetClient` authenticates with `/v1/auth/steam`, sends queued grants to `/v1/pets/grant`, and reads inventory from `/v1/inventory`. It is intentionally non-authoritative.
 

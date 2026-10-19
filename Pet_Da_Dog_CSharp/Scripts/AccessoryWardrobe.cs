@@ -39,6 +39,8 @@ public partial class AccessoryWardrobe : Node
 	public const float MaxScale = 2f;
 	public const float MinRotation = -180;
 	public const float MaxRotation = 180;
+	public const int MaxPlacements = 1024;
+	private const string InstanceSeparator = "::";
 	private const int HistoryLimit = 30;
 	private const float AccessorySize = 0.26f;
 	// Only neutral artwork explicitly prepared for tinting offers a color picker.
@@ -48,7 +50,7 @@ public partial class AccessoryWardrobe : Node
 	};
 	private readonly List<AccessoryDefinition> _catalog = new();
 	private readonly List<AccessoryPlacement> _equipped = new();
-	private HashSet<int> _ownedSteamItems = new();
+	private Dictionary<int, long> _ownedSteamItems = new();
 	private int _selectedDogItemDefId;
 	private readonly List<string> _layerOrder = new() { DogLayerId };
 	private readonly Dictionary<string, Color> _colors = new();
@@ -66,8 +68,8 @@ public partial class AccessoryWardrobe : Node
 
 	[Export] public string StoragePath { get; set; } = "user://accessories.cfg";
 	public IReadOnlyList<AccessoryDefinition> Catalog => _catalog.AsReadOnly();
-	public IReadOnlyList<AccessoryPlacement> Equipped => _equipped.FindAll(item => CanEquip(item.Id)).AsReadOnly();
-	public int SelectedDogItemDefId => _ownedSteamItems.Contains(_selectedDogItemDefId)
+	public IReadOnlyList<AccessoryPlacement> Equipped => VisiblePlacements().AsReadOnly();
+	public int SelectedDogItemDefId => OwnsSteamItem(_selectedDogItemDefId)
 		&& SteamCosmeticCatalog.Find(_selectedDogItemDefId)?.Kind == "dog" ? _selectedDogItemDefId : 0;
 	public string CurrentDogTexturePath => SteamCosmeticCatalog.Find(SelectedDogItemDefId)?.AssetPath ?? "res://Sprites/Doggo.png";
 	// Bottom-to-top drawing order. The dog is present even with an empty outfit.
@@ -100,13 +102,77 @@ public partial class AccessoryWardrobe : Node
 		}
 	}
 
-	public AccessoryDefinition? Find(string id) => _catalog.Find(item => item.Id == id);
-	public bool CanEquip(string id) => Find(id) is { } item && (item.SteamItemDefId == 0 || _ownedSteamItems.Contains(item.SteamItemDefId));
-	public bool OwnsSteamItem(int itemDefId) => _ownedSteamItems.Contains(itemDefId);
+	public AccessoryDefinition? Find(string id)
+	{
+		if (string.IsNullOrEmpty(id)) return null;
+		var separator = id.IndexOf(InstanceSeparator, StringComparison.Ordinal);
+		if (separator < 0) return _catalog.Find(item => item.Id == id);
+		var suffix = id[(separator + InstanceSeparator.Length)..];
+		if (suffix.Length != 32 || !Guid.TryParseExact(suffix, "N", out var instance)
+			|| instance == Guid.Empty || suffix != instance.ToString("N")) return null;
+		var definition = _catalog.Find(item => item.Id == id[..separator]);
+		return definition?.IsText == false ? definition : null;
+	}
+	public bool CanEquip(string id) => GetOwnedQuantity(id) > 0;
+	public bool OwnsSteamItem(int itemDefId) => _ownedSteamItems.TryGetValue(itemDefId, out var quantity) && quantity > 0;
+	public long GetOwnedQuantity(string id)
+	{
+		if (Find(id) is not { } definition) return 0;
+		if (definition.SteamItemDefId == 0) return definition.IsText ? 1 : long.MaxValue;
+		return _ownedSteamItems.GetValueOrDefault(definition.SteamItemDefId);
+	}
+	public int GetEquippedCount(string id)
+	{
+		if (Find(id) is not { } definition) return 0;
+		var count = _equipped.FindAll(item => Find(item.Id)?.Id == definition.Id).Count;
+		return (int)Math.Min(count, GetOwnedQuantity(id));
+	}
+	public bool CanAddCopy(string id) => Find(id) != null && _equipped.Count < MaxPlacements
+		&& GetEquippedCount(id) < GetOwnedQuantity(id);
+	public string? CreatePlacementId(string catalogOrInstanceId)
+	{
+		if (Find(catalogOrInstanceId) is not { } definition || !CanAddCopy(catalogOrInstanceId)) return null;
+		if (!_equipped.Exists(item => item.Id == definition.Id)) return definition.Id;
+		string id;
+		do { id = $"{definition.Id}{InstanceSeparator}{Guid.NewGuid():N}"; }
+		while (_equipped.Exists(item => item.Id == id));
+		return id;
+	}
+	private List<AccessoryPlacement> VisiblePlacements()
+	{
+		var visible = new List<AccessoryPlacement>();
+		var used = new Dictionary<string, int>(StringComparer.Ordinal);
+		foreach (var placement in _equipped)
+		{
+			if (Find(placement.Id) is not { } definition) continue;
+			var count = used.GetValueOrDefault(definition.Id);
+			if (count >= GetOwnedQuantity(placement.Id)) continue;
+			used[definition.Id] = count + 1;
+			visible.Add(placement);
+		}
+		return visible;
+	}
+	public void SetSteamInventory(IEnumerable<SteamInventoryItem> items)
+	{
+		var owned = new Dictionary<int, long>();
+		foreach (var item in items)
+		{
+			if (item.ItemDefId <= 0 || item.Quantity <= 0) continue;
+			var previous = owned.GetValueOrDefault(item.ItemDefId);
+			owned[item.ItemDefId] = previous > long.MaxValue - item.Quantity ? long.MaxValue : previous + item.Quantity;
+		}
+		SetConfirmedOwnership(owned);
+	}
 	public void SetSteamOwnership(IEnumerable<int> itemDefIds)
 	{
-		var owned = new HashSet<int>(itemDefIds);
-		if (_ownedSteamItems.SetEquals(owned)) return;
+		var owned = new Dictionary<int, long>();
+		foreach (var id in itemDefIds)
+			if (id > 0) owned[id] = owned.GetValueOrDefault(id) + 1;
+		SetConfirmedOwnership(owned);
+	}
+	private void SetConfirmedOwnership(Dictionary<int, long> owned)
+	{
+		if (SameDictionary(_ownedSteamItems, owned)) return;
 		_ownedSteamItems = owned;
 		// Ownership comes only from the current Steam response and is never saved as a preference.
 		Changed?.Invoke();
@@ -121,7 +187,7 @@ public partial class AccessoryWardrobe : Node
 	public Color GetTint(string id) => _colors.TryGetValue(id, out var tint) ? tint : Colors.White;
 	public float GetScale(string id) => _scales.TryGetValue(id, out var scale) ? scale : 1;
 	public float GetRotationDegrees(string id) => _rotations.TryGetValue(id, out var rotation) ? rotation : 0;
-	public AccessoryPlacement? GetPlacement(string id) => CanEquip(id) ? _equipped.Find(item => item.Id == id) : null;
+	public AccessoryPlacement? GetPlacement(string id) => VisiblePlacements().Find(item => item.Id == id);
 	public int GetLayerIndex(string id) => _layerOrder.IndexOf(id);
 	public bool CanMoveLayer(string id, int direction)
 	{
@@ -227,7 +293,7 @@ public partial class AccessoryWardrobe : Node
 		&& System.Linq.Enumerable.SequenceEqual(_layerOrder, state.LayerOrder)
 		&& SameDictionary(_colors, state.Colors) && SameDictionary(_scales, state.Scales) && SameDictionary(_rotations, state.Rotations)
 		&& _text == state.Text && _textBackgroundVisible == state.TextBackgroundVisible && _selectedDogItemDefId == state.DogItemDefId;
-	private static bool SameDictionary<T>(Dictionary<string, T> left, Dictionary<string, T> right)
+	private static bool SameDictionary<TKey, T>(Dictionary<TKey, T> left, Dictionary<TKey, T> right) where TKey : notnull
 		=> left.Count == right.Count && System.Linq.Enumerable.All(left, pair => right.TryGetValue(pair.Key, out var value)
 			&& EqualityComparer<T>.Default.Equals(pair.Value, value));
 	private void Remember(string label)
@@ -289,12 +355,14 @@ public partial class AccessoryWardrobe : Node
 		{
 			return;
 		}
+		var index = _equipped.FindIndex(item => item.Id == id);
+		// Saved preferences can outlive ownership, but a new placement always needs a confirmed copy.
+		if (index < 0 && (_equipped.Count >= MaxPlacements || (!_loading && !CanAddCopy(id)))) return;
 
 		var placement = new AccessoryPlacement(id, ClampPosition(id, normalizedPosition))
 			{ Tint = GetTint(id), Scale = GetScale(id), RotationDegrees = GetRotationDegrees(id),
 				Text = Find(id)?.IsText == true ? _text : string.Empty,
 				BackgroundVisible = Find(id)?.IsText != true || _textBackgroundVisible };
-		var index = _equipped.FindIndex(item => item.Id == id);
 		if (index >= 0)
 		{
 			if (_equipped[index] == placement)
@@ -391,13 +459,19 @@ public partial class AccessoryWardrobe : Node
 		if (text.VariantType == Variant.Type.String) SetText(text.AsString());
 		var background = config.GetValue(TextSection, TextBackgroundKey, true);
 		if (background.VariantType == Variant.Type.Bool) SetTextBackgroundVisible(background.AsBool());
-		foreach (var definition in _catalog)
+		var transformIds = new HashSet<string>(StringComparer.Ordinal);
+		foreach (var definition in _catalog) transformIds.Add(definition.Id);
+		foreach (var section in new[] { ScaleSection, RotationSection })
+			if (config.HasSection(section))
+				foreach (var id in config.GetSectionKeys(section))
+					if (Find(id) != null) transformIds.Add(id);
+		foreach (var id in transformIds)
 		{
-			var scale = config.GetValue(ScaleSection, definition.Id, 1f);
-			var rotation = config.GetValue(RotationSection, definition.Id, 0f);
+			var scale = config.GetValue(ScaleSection, id, 1f);
+			var rotation = config.GetValue(RotationSection, id, 0f);
 			var validScale = scale.VariantType is Variant.Type.Float or Variant.Type.Int && float.IsFinite(scale.AsSingle());
 			var validRotation = rotation.VariantType is Variant.Type.Float or Variant.Type.Int && float.IsFinite(rotation.AsSingle());
-			SetTransform(definition.Id, validScale ? scale.AsSingle() : 1, validRotation ? rotation.AsSingle() : 0);
+			SetTransform(id, validScale ? scale.AsSingle() : 1, validRotation ? rotation.AsSingle() : 0);
 		}
 		if (config.HasSection(ColorSection))
 		{

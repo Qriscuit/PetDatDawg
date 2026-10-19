@@ -23,34 +23,44 @@ theme_override_styles/panel = ExtResource("3")
 
 [node name="Margin" type="MarginContainer" parent="Background"]
 layout_mode = 2
-theme_override_constants/margin_left = 20
+theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
+theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 20
 
 [node name="Panel" type="PanelContainer" parent="Background/Margin"]
 layout_mode = 2
 theme_override_styles/panel = ExtResource("4")
 
-[node name="Content" type="VBoxContainer" parent="Background/Margin/Panel"]
+[node name="ContentScroll" type="ScrollContainer" parent="Background/Margin/Panel"]
+unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 3
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Panel/ContentScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="Heading" type="Label" parent="Background/Margin/Panel/Content"]
+[node name="Heading" type="Label" parent="Background/Margin/Panel/ContentScroll/Content"]
 layout_mode = 2
 theme_type_variation = &"WoodlandHeading"
 text = "Your dog presets"
 
-[node name="Instructions" type="Label" parent="Background/Margin/Panel/Content"]
+[node name="Instructions" type="Label" parent="Background/Margin/Panel/ContentScroll/Content"]
 layout_mode = 2
 text = "Save a dog and its accessories together. Click a preview to use that look."
 autowrap_mode = 3
 
-[node name="SaveRow" type="HBoxContainer" parent="Background/Margin/Panel/Content"]
+[node name="SaveRow" type="HFlowContainer" parent="Background/Margin/Panel/ContentScroll/Content"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
 
-[node name="PresetName" type="LineEdit" parent="Background/Margin/Panel/Content/SaveRow"]
+[node name="PresetName" type="LineEdit" parent="Background/Margin/Panel/ContentScroll/Content/SaveRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 40)
 layout_mode = 2
@@ -58,25 +68,19 @@ size_flags_horizontal = 3
 placeholder_text = "Preset name (optional)"
 max_length = 48
 
-[node name="SavePreset" type="Button" parent="Background/Margin/Panel/Content/SaveRow"]
+[node name="SavePreset" type="Button" parent="Background/Margin/Panel/ContentScroll/Content/SaveRow"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ActionButton"
 text = "Save Preset"
 
-[node name="EmptyPresets" type="Label" parent="Background/Margin/Panel/Content"]
+[node name="EmptyPresets" type="Label" parent="Background/Margin/Panel/ContentScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "No presets yet. Dress your dog in Items, then choose Save Preset."
 autowrap_mode = 3
 
-[node name="Scroll" type="ScrollContainer" parent="Background/Margin/Panel/Content"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="PresetGrid" type="GridContainer" parent="Background/Margin/Panel/Content/Scroll"]
+[node name="PresetGrid" type="GridContainer" parent="Background/Margin/Panel/ContentScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -84,7 +88,7 @@ columns = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
 
-[node name="PresetStatus" type="Label" parent="Background/Margin/Panel/Content"]
+[node name="PresetStatus" type="Label" parent="Background/Margin/Panel/ContentScroll/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 12

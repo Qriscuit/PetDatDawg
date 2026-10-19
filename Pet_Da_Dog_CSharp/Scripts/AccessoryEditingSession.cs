@@ -10,7 +10,8 @@ public partial class AccessoryEditingSession : Node
 	public string? SelectedId { get; private set; }
 	public bool IsPlacing { get; private set; }
 	public bool IsDragging { get; private set; }
-	public bool IsManipulating => IsDragging;
+	public bool IsCatalogDragging { get; private set; }
+	public bool IsManipulating => IsDragging || IsCatalogDragging;
 	public event Action? StateChanged;
 	public event Action<bool>? OutfitSaved;
 	public event Action? EditStarting;
@@ -49,9 +50,53 @@ public partial class AccessoryEditingSession : Node
 		if (!Active || _wardrobe?.CanEquip(id) != true) return;
 		CompleteGesture();
 		EditStarting?.Invoke();
-		SelectedId = id;
-		IsPlacing = _wardrobe.GetPlacement(id) == null;
+		IsCatalogDragging = false;
+		// A catalog choice offers the next unused copy. Equipped copies are selected
+		// directly on the dog; when the quantity is exhausted the card selects one.
+		var definition = _wardrobe.Find(id);
+		var existing = _wardrobe.GetPlacement(id) ?? System.Linq.Enumerable.FirstOrDefault(_wardrobe.Equipped,
+			placement => _wardrobe.Find(placement.Id)?.Id == definition?.Id);
+		var nextCopy = _wardrobe.CreatePlacementId(id);
+		SelectedId = nextCopy ?? existing?.Id;
+		IsPlacing = nextCopy != null;
 		StateChanged?.Invoke();
+	}
+
+	public void ChooseAdditionalCopy(string id)
+	{
+		if (!Active || _wardrobe?.CanAddCopy(id) != true) return;
+		CompleteGesture();
+		EditStarting?.Invoke();
+		var copy = _wardrobe.CreatePlacementId(id);
+		if (copy == null) return;
+		IsCatalogDragging = false;
+		SelectedId = copy;
+		IsPlacing = true;
+		StateChanged?.Invoke();
+	}
+
+	public bool BeginCatalogDrag(string id)
+	{
+		// Do not let dragging an exhausted card move or replace an equipped copy.
+		if (!Active) return false;
+		if (_wardrobe?.CanAddCopy(id) != true) { CancelInteraction(); return false; }
+		ChooseAdditionalCopy(id);
+		if (!IsPlacing || SelectedId == null) return false;
+		IsCatalogDragging = true;
+		StateChanged?.Invoke();
+		return true;
+	}
+
+	public bool CompleteCatalogDrag(Vector2 normalizedPosition)
+	{
+		if (!IsCatalogDragging) return false;
+		IsCatalogDragging = false;
+		if (!PlaceAt(normalizedPosition))
+		{
+			CancelInteraction();
+			return false;
+		}
+		return true;
 	}
 
 	public void SelectAccessory(string id)
@@ -61,6 +106,7 @@ public partial class AccessoryEditingSession : Node
 		EditStarting?.Invoke();
 		SelectedId = id;
 		IsPlacing = false;
+		IsCatalogDragging = false;
 		StateChanged?.Invoke();
 	}
 
@@ -101,6 +147,11 @@ public partial class AccessoryEditingSession : Node
 		if (!Active || SelectedId == null || _wardrobe?.CanEquip(SelectedId) != true || !normalizedPosition.IsFinite()) return false;
 		if (!IsDragging && !BeginGesture("place accessory")) return false;
 		_wardrobe.Equip(SelectedId, normalizedPosition);
+		if (_wardrobe.GetPlacement(SelectedId) == null)
+		{
+			CancelInteraction();
+			return false;
+		}
 		IsPlacing = false;
 		CompleteGesture();
 		return true;
@@ -108,6 +159,7 @@ public partial class AccessoryEditingSession : Node
 
 	public void CancelInteraction()
 	{
+		IsCatalogDragging = false;
 		if (IsDragging && _wardrobe != null)
 		{
 			IsDragging = false;
@@ -122,7 +174,9 @@ public partial class AccessoryEditingSession : Node
 
 	private void OnWardrobeChanged()
 	{
-		if (SelectedId != null && _wardrobe?.CanEquip(SelectedId) != true)
+		if (SelectedId != null && (_wardrobe?.CanEquip(SelectedId) != true
+			|| (!IsPlacing && _wardrobe.GetPlacement(SelectedId) == null)
+			|| (IsPlacing && _wardrobe.GetPlacement(SelectedId) == null && !_wardrobe.CanAddCopy(SelectedId))))
 		{
 			CancelInteraction(); SelectedId = null; StateChanged?.Invoke(); return;
 		}

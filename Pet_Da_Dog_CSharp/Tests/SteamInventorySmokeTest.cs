@@ -43,6 +43,7 @@ public partial class SteamInventorySmokeTest : Node
 			wardrobe.SelectDog(dog.ItemDefId);
 			Require(wardrobe.GetPlacement(accessory.AccessoryId) == null && wardrobe.SelectedDogItemDefId == 0,
 				"Unconfirmed items cannot be equipped or selected.");
+			VerifyAccessoryQuantities(wardrobe, accessory);
 			GetNode<PetSettings>("/root/PetSettings").DismissWelcome();
 			GetNode<AccessoryEditingSession>("/root/AccessoryEditingSession").SetActive(false);
 			pet = ResourceLoader.Load<PackedScene>("res://Main.tscn").Instantiate<DesktopPet>();
@@ -99,6 +100,54 @@ public partial class SteamInventorySmokeTest : Node
 		}
 	}
 	private async Task Settle() { for (var i = 0; i < 3; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); }
+	private void VerifyAccessoryQuantities(AccessoryWardrobe wardrobe, SteamCosmeticDefinition accessory)
+	{
+		var id = accessory.AccessoryId;
+		wardrobe.SetSteamInventory(new[] { new SteamInventoryItem("stack", accessory.ItemDefId, 2) });
+		Require(wardrobe.GetOwnedQuantity(id) == 2 && wardrobe.CanAddCopy(id),
+			"A Steam stack of quantity two permits two accessory copies.");
+		wardrobe.Equip(id, new Vector2(0.25f, 0.3f));
+		var extra = wardrobe.CreatePlacementId(id);
+		Require(extra != null && extra != id && wardrobe.Find(extra) == wardrobe.Find(id),
+			"Another owned copy receives a distinct placement ID mapped to the same artwork.");
+		wardrobe.Equip(extra!, new Vector2(0.75f, 0.3f));
+		wardrobe.SetTransform(extra!, 1.4f, 35);
+		Require(wardrobe.GetEquippedCount(id) == 2 && !wardrobe.CanAddCopy(id) && wardrobe.CreatePlacementId(id) == null,
+			"Two equipped copies exhaust a confirmed quantity-two stack.");
+		var forgedExtra = $"{id}::{Guid.NewGuid():N}";
+		wardrobe.Equip(forgedExtra, Vector2.One);
+		Require(wardrobe.GetPlacement(forgedExtra) == null && wardrobe.GetEquippedCount(id) == 2,
+			"A caller cannot bypass Steam quantity by inventing another valid placement ID.");
+		var expected = wardrobe.Equipped.ToArray();
+		wardrobe.SetSteamInventory(new[] { new SteamInventoryItem("stack", accessory.ItemDefId, 1) });
+		Require(wardrobe.GetEquippedCount(id) == 1 && wardrobe.GetPlacement(id) == expected[0] && wardrobe.GetPlacement(extra!) == null,
+			"Losing one owned copy hides only the excess placement while retaining the first copy.");
+		Require(wardrobe.Save(), "Hidden excess placement preferences can be saved.");
+		var restored = new AccessoryWardrobe { StoragePath = _savePath };
+		AddChild(restored);
+		Require(restored.GetOwnedQuantity(id) == 0 && restored.GetEquippedCount(id) == 0 && !restored.CanAddCopy(id),
+			"Restart restores no Steam quantity from local cosmetic preferences.");
+		restored.SetSteamInventory(new[] { new SteamInventoryItem("fresh", accessory.ItemDefId, 1) });
+		Require(restored.GetPlacement(id) == expected[0] && restored.GetPlacement(extra!) == null,
+			"A fresh one-copy snapshot reveals only the first saved placement after restart.");
+		restored.SetSteamInventory(new[] { new SteamInventoryItem("fresh", accessory.ItemDefId, 2) });
+		Require(restored.Equipped.SequenceEqual(expected),
+			"A fresh two-copy snapshot restores the hidden placement's ID, position and transform.");
+		restored.Free();
+		wardrobe.SetSteamInventory(new[] { new SteamInventoryItem("stack", accessory.ItemDefId, 2) });
+		Require(wardrobe.Equipped.SequenceEqual(expected), "Regaining quantity restores the retained outfit without equipping again.");
+		wardrobe.SetSteamInventory(new[]
+		{
+			new SteamInventoryItem("first", accessory.ItemDefId, 1), new SteamInventoryItem("second", accessory.ItemDefId, 2),
+			new SteamInventoryItem("empty", accessory.ItemDefId, 0), new SteamInventoryItem("invalid", accessory.ItemDefId, -5)
+		});
+		Require(wardrobe.GetOwnedQuantity(id) == 3 && wardrobe.CanAddCopy(id),
+			"Separate inventory rows sum their positive stack quantities without counting invalid rows.");
+		wardrobe.SetSteamOwnership(new[] { accessory.ItemDefId, accessory.ItemDefId });
+		Require(wardrobe.GetOwnedQuantity(id) == 2 && wardrobe.GetEquippedCount(id) == 2,
+			"Legacy ownership snapshots retain repeated definitions as separate owned copies.");
+		wardrobe.Clear(); wardrobe.ClearHistory(); wardrobe.SetSteamOwnership(Array.Empty<int>());
+	}
 	private async Task VerifyOwnedDogSelector(AccessoryWardrobe wardrobe, GridContainer dogs, DesktopPet pet,
 		SteamCosmeticDefinition accessory, SteamCosmeticDefinition firstDog)
 	{
@@ -251,6 +300,16 @@ public partial class SteamInventorySmokeTest : Node
 		pet._Input(clearClick); pet._Input(release);
 		Require(backend.PendingGrantCount == 0 && backend.ConfirmedPets == null, "Local texture hits and releases do not duplicate background grants.");
 		Require(!hand.Visible, "Transparent pixels and button releases never show petting feedback.");
+		var windowSizeField = typeof(DesktopPet).GetField("_windowSize", BindingFlags.Instance | BindingFlags.NonPublic)!;
+		var originalWindowSize = (Vector2I)windowSizeField.GetValue(pet)!;
+		try
+		{
+			windowSizeField.SetValue(pet, Vector2I.Zero);
+			typeof(DesktopPet).GetMethod("ShowPettingHand", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(pet, new object[] { opaque.Value });
+			Require(!hand.Visible && backend.PendingGrantCount == 0,
+				"A zero-sized headless or transient viewport safely keeps petting feedback hidden without creating an input grant.");
+		}
+		finally { windowSizeField.SetValue(pet, originalWindowSize); }
 		using var click = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = opaque.Value };
 		pet._Input(click);
 		Require(backend.PendingGrantCount == 0, "Local dog feedback never queues a duplicate input grant.");

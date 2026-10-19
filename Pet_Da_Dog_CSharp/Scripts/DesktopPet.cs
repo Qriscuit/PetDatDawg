@@ -203,7 +203,7 @@ public partial class DesktopPet : Node2D
 		if (!ReferenceEquals(_lastInventoryItems, _backend.InventoryItems))
 		{
 			_lastInventoryItems = _backend.InventoryItems;
-			_wardrobe?.SetSteamOwnership(_lastInventoryItems.Where(item => item.Quantity > 0).Select(item => item.ItemDefId));
+			_wardrobe?.SetSteamInventory(_lastInventoryItems);
 		}
 		UpdateStatusWindow();
 		_steam.RunCallbacks();
@@ -423,8 +423,13 @@ public partial class DesktopPet : Node2D
 	private void ShowPettingHand(Vector2 position)
 	{
 		if (_pettingHand?.Texture == null) return;
-		var size = Mathf.Min(_visibleDogSize.Y * 0.6f, 96.0f);
-		_pettingHand.Scale = Vector2.One * (size / _pettingHand.Texture.GetHeight());
+		// Headless checks and transient window changes can have no drawable area.
+		var available = (Vector2)_windowSize - Vector2.One * 12;
+		if (available.X <= 0 || available.Y <= 0) { _pettingHand.Visible = false; return; }
+		var textureSize = _pettingHand.Texture.GetSize();
+		var scale = Mathf.Min(Mathf.Min(_visibleDogSize.Y * 0.6f, 96.0f) / textureSize.Y,
+			Mathf.Min(available.X / textureSize.X, available.Y / textureSize.Y));
+		_pettingHand.Scale = Vector2.One * scale;
 		// Keep the short pat inside the overlay, including clicks near the dog's feet.
 		_pettingHandStart = _footAnchor.ToLocal(ClampPettingHandPosition(position));
 		_pettingHand.Position = _pettingHandStart;
@@ -451,7 +456,8 @@ public partial class DesktopPet : Node2D
 	private Vector2 ClampPettingHandPosition(Vector2 position)
 	{
 		var halfSize = _pettingHand!.Texture.GetSize() * _pettingHand.Scale * 0.5f;
-		return position.Clamp(halfSize + Vector2.One * 6, (Vector2)_windowSize - halfSize - Vector2.One * 6);
+		var minimum = halfSize + Vector2.One * 6;
+		return position.Clamp(minimum, ((Vector2)_windowSize - minimum).Max(minimum));
 	}
 
 	private void SyncAppearance()
@@ -489,7 +495,7 @@ public partial class DesktopPet : Node2D
 					}
 					var textSize = definition.Size * _visibleDogLocalRect.Size.Y * placement.Scale;
 					textBox.Position = _visibleDogLocalRect.Position + _visibleDogLocalRect.Size * placement.Position;
-					textBox.Scale = textSize / textBox.BubbleSize * new Vector2(_direction, 1);
+					textBox.Scale = textSize / textBox.BubbleSize * new Vector2(VisualFacing, 1);
 					textBox.RotationDegrees = placement.RotationDegrees;
 					textBox.Text = placement.Text; textBox.TextColor = placement.Tint;
 					textBox.BackgroundVisible = placement.BackgroundVisible; textBox.QueueRedraw();
@@ -714,6 +720,8 @@ public partial class DesktopPet : Node2D
 
 	internal bool IsPatrolEditing => _patrolEditing;
 	private bool IsStationary => _settings?.Stationary ?? PetSettings.DefaultStationary;
+	// Mirror the complete outfit independently of its walking or patrol direction.
+	private float VisualFacing => _direction * ((_settings?.FlipHorizontally ?? PetSettings.DefaultFlipHorizontally) ? -1 : 1);
 	internal bool IsPatrolling => _patrolRunning && !IsStationary && !_patrolEditing && !_accessoryEditing && !_fallingToGround;
 	internal Vector2 PatrolPosition => _patrolPosition;
 	internal int PatrolTargetIndex => _patrolTargetIndex;
@@ -794,10 +802,11 @@ public partial class DesktopPet : Node2D
 			_walkX,
 			_windowSize.Y - GroundMargin - GetAppearanceExtents().Bottom - hop * HopHeight
 		);
-		_visualRoot.Scale = new Vector2(_direction * _dogScale * squash, _dogScale * stretch);
-		_visualRoot.Rotation = bouncing ? Mathf.Sin(_stepPhase * 0.5f) * 0.035f * _direction : 0.0f;
+		var facing = VisualFacing;
+		_visualRoot.Scale = new Vector2(facing * _dogScale * squash, _dogScale * stretch);
+		_visualRoot.Rotation = bouncing ? Mathf.Sin(_stepPhase * 0.5f) * 0.035f * facing : 0.0f;
 		foreach (var textBox in _textAccessories.Values)
-			textBox.Scale = new Vector2(Mathf.Abs(textBox.Scale.X) * _direction, textBox.Scale.Y);
+			textBox.Scale = new Vector2(Mathf.Abs(textBox.Scale.X) * facing, textBox.Scale.Y);
 	}
 
 	private void SpawnFloatingHeart()
@@ -862,7 +871,7 @@ public partial class DesktopPet : Node2D
 
 	private void TickBackend(double delta)
 	{
-		if (_shutdown.IsCancellationRequested || !_steam.IsInitialized)
+		if (_shutdown.IsCancellationRequested || !_steam.TryInitialize(delta))
 		{
 			return;
 		}
@@ -883,7 +892,7 @@ public partial class DesktopPet : Node2D
 
 	private void LogPetValidation(double delta)
 	{
-		var status = $"{_backend.Status} confirmed={_backend.ConfirmedPets?.ToString() ?? "unknown"}; pending={_backend.PendingGrantCount}";
+		var status = $"{_backend.Status} confirmed={_backend.ConfirmedPets?.ToString() ?? "unknown"}; pending={_backend.PendingGrantCount}; input={_globalInputMonitor?.Status ?? "unavailable"}";
 		if (_lastValidationStatus != status)
 		{
 			GD.Print($"PET_VALIDATION: {status}");
@@ -1152,7 +1161,8 @@ public partial class DesktopPet : Node2D
 
 	private void UpdateStatusWindow()
 	{
-		_statusWindow?.UpdateStatus(_backend.ConfirmedPets, _backend.Status, _steam.Status, _steam.IsInitialized, _backend.IsAuthenticated);
+		_statusWindow?.UpdateStatus(_backend.ConfirmedPets, _backend.Status, _steam.Status, _steam.IsInitialized, _backend.IsAuthenticated,
+			_globalInputMonitor?.IsAvailable == true, _globalInputMonitor?.Status ?? "Desktop input monitoring is unavailable.");
 	}
 
 	private bool IsVisibleDogPixel(Vector2 viewportPosition)

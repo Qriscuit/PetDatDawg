@@ -99,9 +99,10 @@ text = "Choose an item, then click your desktop dog to place it.
 Drag equipped items to move them; use the handles to resize or rotate."
 autowrap_mode = 3
 
-[node name="PresetActions" type="HBoxContainer" parent="."]
+[node name="PresetActions" type="HFlowContainer" parent="."]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
 
 [node name="PresetName" type="LineEdit" parent="PresetActions"]
 unique_name_in_owner = true
@@ -134,7 +135,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 12
 autowrap_mode = 3
 
-[node name="Workspace" type="HBoxContainer" parent="." unique_id=712838]
+[node name="Workspace" type="BoxContainer" parent="." unique_id=712838]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -189,6 +190,24 @@ theme_override_constants/icon_max_width = 14
 theme_override_font_sizes/font_size = 13
 text = "Remove"
 icon = ExtResource("7_pkvd0")
+
+[node name="AccessoryCopyCount" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="AddAccessoryCopy" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+theme_override_font_sizes/font_size = 13
+text = "Add another"
+tooltip_text = "Place another owned copy of this accessory."
 
 [node name="OutfitActions" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=2101730394]
 layout_mode = 2

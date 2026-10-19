@@ -19,11 +19,12 @@ public partial class AccessoryEditor : VBoxContainer
 	[Export] public string LayerBehindDogText { get; set; } = "Layers · Behind dog";
 	[Export] public string LayerInFrontOfDogText { get; set; } = "Layers · In front of dog";
 	[ExportGroup("Instructions")]
-	[Export(PropertyHint.MultilineText)] public string IdleInstructions { get; set; } = "Choose an item, then click your desktop dog to place it.\nDrag the dog to move it; right-click the dog or an item for layer options.";
+	[Export(PropertyHint.MultilineText)] public string IdleInstructions { get; set; } = "Click an item, then click your dog, or drag an item onto it.\nChoose the same item again to place another owned copy.";
 	/// <summary>Use {name} for the selected accessory's display name.</summary>
-	[Export(PropertyHint.MultilineText)] public string SelectedInstructionsFormat { get; set; } = "Drag {name} to move it; use its handles to resize or rotate.\nRight-click it or use the layer arrows to change what appears in front.";
+	[Export(PropertyHint.MultilineText)] public string SelectedInstructionsFormat { get; set; } = "Drag {name} to move it; use its handles to resize or rotate.\nClick its delete button to remove this copy, or choose the card to add another.";
 	/// <summary>Use {name} for the accessory being placed.</summary>
 	[Export(PropertyHint.MultilineText)] public string ItemPlacementInstructionsFormat { get; set; } = "Click your desktop dog to place {name}.\nPress Escape or Cancel to choose something else.";
+	[Export(PropertyHint.MultilineText)] public string CatalogDragInstructionsFormat { get; set; } = "Release {name} over your desktop dog to place this copy.\nRelease elsewhere or press Escape to cancel.";
 	[Export(PropertyHint.MultilineText)] public string TextPlacementInstructions { get; set; } = "Click near your desktop dog to place the text.\nEdit its message, color and background in the side panel.";
 	[ExportGroup("Save status")]
 	[Export] public string OutfitSavedText { get; set; } = "Outfit saved";
@@ -52,6 +53,8 @@ public partial class AccessoryEditor : VBoxContainer
 	private Label? _selectionLabel;
 	private Label? _saveStatusLabel;
 	private Button? _removeButton;
+	private Button? _addCopyButton;
+	private Label? _copyCountLabel;
 	private Button? _cancelButton;
 	private Button? _clearButton;
 	private Button? _undoButton;
@@ -107,6 +110,8 @@ public partial class AccessoryEditor : VBoxContainer
 		_selectionLabel = GetNode<Label>("%AccessorySelectionLabel");
 		_saveStatusLabel = GetNode<Label>("%OutfitSaveStatus");
 		_removeButton = GetNode<Button>("%RemoveAccessory");
+		_addCopyButton = GetNode<Button>("%AddAccessoryCopy");
+		_copyCountLabel = GetNode<Label>("%AccessoryCopyCount");
 		_cancelButton = GetNode<Button>("%CancelAccessory");
 		_clearButton = GetNode<Button>("%ClearOutfit");
 		_undoButton = GetNode<Button>("%UndoOutfit");
@@ -135,6 +140,10 @@ public partial class AccessoryEditor : VBoxContainer
 	{
 		_cancelButton!.Pressed += CancelInteraction;
 		_removeButton!.Pressed += RemoveSelected;
+		_addCopyButton!.Pressed += () =>
+		{
+			if (_session?.SelectedId is string id) _session.ChooseAdditionalCopy(id);
+		};
 		_clearButton!.Pressed += () =>
 		{
 			CancelInteraction(); _wardrobe!.Clear(); ShowSaveStatus(_wardrobe.Save()); _session!.ClearSelection();
@@ -291,7 +300,21 @@ public partial class AccessoryEditor : VBoxContainer
 	public override void _Process(double delta)
 	{
 		if (Engine.IsEditorHint()) return;
+		UpdateResponsiveLayout();
 		if (_transformDragging && (!Input.IsMouseButtonPressed(MouseButton.Left) || !GetWindow().Visible || !GetWindow().HasFocus())) FinishTransform();
+	}
+
+	private void UpdateResponsiveLayout()
+	{
+		// At large menu scales the same physical window has fewer logical pixels.
+		// Stack the two panels and let the Items page scroll, rather than growing the window.
+		var compact = GetViewportRect().Size.X < 480;
+		var workspace = GetNode<BoxContainer>("Workspace");
+		var minimumHeight = compact ? 560 : 480;
+		if (workspace.Vertical == compact && Mathf.IsEqualApprox(CustomMinimumSize.Y, minimumHeight)) return;
+		workspace.Vertical = compact;
+		CustomMinimumSize = new Vector2(0, minimumHeight);
+		GetNode<PanelContainer>("Workspace/InspectorPanel").CustomMinimumSize = compact ? new Vector2(0, 160) : new Vector2(164, 0);
 	}
 
 	private void OnAccessoryColorChanged(Color color)
@@ -360,7 +383,8 @@ public partial class AccessoryEditor : VBoxContainer
 		if (CardScene == null) throw new InvalidOperationException("Assign the accessory card scene in the AccessoryEditor inspector.");
 		var card = CardScene.Instantiate<AccessoryCard>();
 		card.Configure(accessory, _wardrobe!.GetTint(accessory.Id));
-		card.Pressed += () => _session?.ChooseAccessory(accessory.Id);
+		card.CatalogChosen += () => _session?.ChooseAccessory(accessory.Id);
+		card.CatalogDragStarted += () => _session?.BeginCatalogDrag(accessory.Id) == true;
 		_cards.Add(accessory.Id, card);
 		_cardTextures.Add(accessory.Id, card.Preview);
 		_cardStatuses.Add(accessory.Id, card.Status);
@@ -398,7 +422,7 @@ public partial class AccessoryEditor : VBoxContainer
 		_textControls!.Visible = textSelected;
 		if (textSelected) SyncTextInput();
 		var colorAccessory = _session.SelectedId == null ? null : _wardrobe.Find(_session.SelectedId);
-		var colorAccessoryId = colorAccessory is { CanRecolor: true } ? colorAccessory.Id : null;
+		var colorAccessoryId = colorAccessory is { CanRecolor: true } ? _session.SelectedId : null;
 		if (_colorAccessoryId != colorAccessoryId)
 		{
 			SavePendingColor();
@@ -437,14 +461,17 @@ public partial class AccessoryEditor : VBoxContainer
 				availableCount++;
 				availableCounts[AccessoryCategories.For(accessory)]++;
 			}
-			var selected = accessory.Id == _session.SelectedId;
+			var selected = accessory.Id == _wardrobe.Find(_session.SelectedId ?? string.Empty)?.Id;
 			if (selected)
 			{
 				selectedName = accessory.Name;
 			}
 			card.SetPressedNoSignal(selected);
-			_cardTextures[accessory.Id].Modulate = _wardrobe.GetTint(accessory.Id);
-			((AccessoryCard)card).RefreshStatus(selected && _session.IsPlacing, equippedIds.Contains(accessory.Id), accessory.IsText, available);
+			_cardTextures[accessory.Id].Modulate = _wardrobe.GetTint(selected ? _session.SelectedId! : accessory.Id);
+			var placedCopies = _wardrobe.GetEquippedCount(accessory.Id);
+			((AccessoryCard)card).RefreshStatus(selected && _session.IsPlacing, placedCopies > 0, accessory.IsText, available, _wardrobe.CanAddCopy(accessory.Id));
+			if (available && accessory.SteamItemDefId > 0 && !(selected && _session.IsPlacing))
+				_cardStatuses[accessory.Id].Text = $"{placedCopies} / {_wardrobe.GetOwnedQuantity(accessory.Id)} placed";
 		}
 		foreach (var (category, row) in _categoryRows)
 		{
@@ -455,6 +482,20 @@ public partial class AccessoryEditor : VBoxContainer
 		_catalogHeading!.Text = FormatCopy(CatalogHeadingFormat, "count", availableCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
 		_selectionLabel!.Text = selectedName ?? NoSelectionText;
 		_selectionLabel.TooltipText = FormatCopy(SelectionTooltipFormat, "name", _selectionLabel.Text);
+		var selectedDefinition = _wardrobe.Find(_session.SelectedId ?? string.Empty);
+		var canRepeat = selectedDefinition is { IsText: false };
+		_addCopyButton!.Visible = canRepeat;
+		_addCopyButton.Disabled = !canRepeat || _session.IsPlacing || !_wardrobe.CanAddCopy(selectedDefinition!.Id);
+		_addCopyButton.TooltipText = canRepeat && !_wardrobe.CanAddCopy(selectedDefinition!.Id)
+			? "All owned copies are placed. Get another copy from an Accessories Box to add more."
+			: "Place another copy of this accessory on your dog.";
+		_copyCountLabel!.Visible = canRepeat;
+		if (canRepeat)
+		{
+			var count = _wardrobe.GetEquippedCount(selectedDefinition!.Id);
+			_copyCountLabel.Text = selectedDefinition.SteamItemDefId > 0
+				? $"Placed: {count} / {_wardrobe.GetOwnedQuantity(selectedDefinition.Id)} owned" : $"Placed: {count}";
+		}
 		_removeButton!.Disabled = _session.SelectedId == null || !equippedIds.Contains(_session.SelectedId);
 		_layerControls!.Visible = !_removeButton.Disabled;
 		if (_session.SelectedId is string layerId && equippedIds.Contains(layerId))
@@ -479,7 +520,7 @@ public partial class AccessoryEditor : VBoxContainer
 			_syncingTransform = false;
 		}
 		_cancelButton!.Visible = _session.IsPlacing || _session.IsDragging;
-		var instructions = _session.IsPlacing
+		var instructions = _session.IsCatalogDragging ? CatalogDragInstructionsFormat : _session.IsPlacing
 			? textSelected ? TextPlacementInstructions : ItemPlacementInstructionsFormat
 			: _session.SelectedId != null ? SelectedInstructionsFormat : IdleInstructions;
 		_instructions!.Text = FormatCopy(instructions, "name", selectedName ?? string.Empty);
@@ -852,17 +893,7 @@ public partial class AccessoryPreview : Control
 
 	private AccessoryDefinition? FindDefinition(string id)
 	{
-		if (_wardrobe != null)
-		{
-			foreach (var definition in _wardrobe.Catalog)
-			{
-				if (definition.Id == id)
-				{
-					return definition;
-				}
-			}
-		}
-		return null;
+		return _wardrobe?.Find(id);
 	}
 
 	private AccessoryPlacement? FindPlacement(string id)

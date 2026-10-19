@@ -91,6 +91,15 @@ public partial class DesktopAccessoryControls : Node2D
 		var middle = (corners[0] + corners[1]) * 0.5f;
 		return middle + (middle - SelectedNode!.GlobalPosition).Normalized() * Look.RotationHandleOffset;
 	}
+	public Vector2 GetAccessoryDeleteHandle()
+	{
+		var corners = GetSelectionCorners();
+		if (corners.Length == 0) return Vector2.Zero;
+		var point = corners[1] + (corners[1] - SelectedNode!.GlobalPosition).Normalized() * Look.DeleteHandleOffset;
+		// Keep the small button reachable even when the selected copy touches a screen edge.
+		var inset = Vector2.One * (HandleRadius + Look.HandleBorderWidth + 2);
+		return point.Clamp(inset, ((Vector2)GetWindow().Size - inset).Max(inset));
+	}
 	private bool Near(Vector2 point, Vector2 handle) => point.DistanceSquaredTo(handle) <= (HandleRadius + 4) * (HandleRadius + 4);
 	private Rect2 PlacementArea(string id)
 	{
@@ -107,7 +116,8 @@ public partial class DesktopAccessoryControls : Node2D
 		if (!Active || !point.IsFinite()) return false;
 		if (_gesture != Gesture.None) return true;
 		if (GetDogMoveRect().HasPoint(point) || (SelectedNode == null && Near(point, GetDogResizeHandle()))) return true;
-		if (SelectedNode != null && (Near(point, GetAccessoryResizeHandle()) || Near(point, GetAccessoryRotationHandle()))) return true;
+		if (SelectedNode != null && (Near(point, GetAccessoryResizeHandle()) || Near(point, GetAccessoryRotationHandle())
+			|| Near(point, GetAccessoryDeleteHandle()))) return true;
 		if (_session!.IsPlacing && _session.SelectedId is string id && PlacementArea(id).HasPoint(point)) return true;
 		return HitLayer(point) != null;
 	}
@@ -118,6 +128,13 @@ public partial class DesktopAccessoryControls : Node2D
 		_pointer = position;
 		if (!pressed)
 		{
+			if (_session.IsCatalogDragging)
+			{
+				if (_session.SelectedId is string id && PlacementArea(id).HasPoint(position))
+					return _session.CompleteCatalogDrag(_pet.NormalizeAccessoryPoint(position));
+				_session.CancelInteraction(); QueueRedraw();
+				return true;
+			}
 			if (_gesture == Gesture.None) return false;
 			UpdatePointer(position);
 			_gesture = Gesture.None; _gestureId = null;
@@ -125,6 +142,7 @@ public partial class DesktopAccessoryControls : Node2D
 			return true;
 		}
 		if (_gesture != Gesture.None) CancelGesture();
+		if (SelectedNode != null && Near(position, GetAccessoryDeleteHandle())) return DeleteSelectedAccessory();
 		if (_session.IsPlacing && _session.SelectedId is string placing && PlacementArea(placing).HasPoint(position))
 			return _session.PlaceAt(_pet.NormalizeAccessoryPoint(position));
 		if (SelectedNode != null && Near(position, GetAccessoryRotationHandle()))
@@ -215,7 +233,7 @@ public partial class DesktopAccessoryControls : Node2D
 		if (!Active) return;
 		UpdatePointer((Vector2)(DisplayServer.MouseGetPosition() - DisplayServer.WindowGetPosition((int)DisplayServer.MainWindowId)));
 		// Global polling catches releases beyond a native clip or window boundary.
-		if (_gesture != Gesture.None && !NativeWindowBridge.IsLeftMouseButtonDown()) HandlePointer(_pointer, false);
+		if ((_gesture != Gesture.None || _session?.IsCatalogDragging == true) && !NativeWindowBridge.IsLeftMouseButtonDown()) HandlePointer(_pointer, false);
 	}
 	public void CancelGesture() => _session?.CancelInteraction();
 	private void RestoreCanceledGesture()
@@ -240,9 +258,18 @@ public partial class DesktopAccessoryControls : Node2D
 		}
 		if (key.Keycode == Key.Delete && _session.SelectedId is string id)
 		{
-			CancelGesture(); _wardrobe.Remove(id); _wardrobe.Save(); _session.ClearSelection(); return true;
+			return DeleteSelectedAccessory();
 		}
 		return false;
+	}
+	private bool DeleteSelectedAccessory()
+	{
+		if (!Active || _session?.SelectedId is not string id || _wardrobe?.GetPlacement(id) == null) return false;
+		CancelGesture();
+		_wardrobe.Remove(id);
+		_session.ReportOutfitSave(_wardrobe.Save());
+		_session.ClearSelection();
+		return true;
 	}
 
 	private string? HitLayer(Vector2 point)
@@ -288,7 +315,7 @@ public partial class DesktopAccessoryControls : Node2D
 			bounds = bounds.Merge(AccessoryGeometry.BoundsFromCorners(node, NodeRect(node)));
 			foreach (var corner in GetSelectionCorners())
 				bounds = bounds.Merge(new Rect2(corner, Vector2.Zero).Grow(Mathf.Abs(Look.SelectionWidth) * 0.5f + 2));
-			foreach (var handle in new[] { GetAccessoryResizeHandle(), GetAccessoryRotationHandle() })
+			foreach (var handle in new[] { GetAccessoryResizeHandle(), GetAccessoryRotationHandle(), GetAccessoryDeleteHandle() })
 				bounds = bounds.Merge(new Rect2(handle - Vector2.One * padding, Vector2.One * padding * 2));
 		}
 		if (_session!.IsPlacing && _session.SelectedId is string id && PlacementArea(id).HasPoint(_pointer))
@@ -319,6 +346,7 @@ public partial class DesktopAccessoryControls : Node2D
 			DrawLine((corners[0] + corners[1]) * 0.5f, GetAccessoryRotationHandle(), Look.SelectionColor, Look.SelectionWidth, true);
 			DrawHandle(GetAccessoryResizeHandle(), false);
 			DrawHandle(GetAccessoryRotationHandle(), true);
+			DrawDeleteHandle(GetAccessoryDeleteHandle());
 		}
 		if (_session.IsPlacing && _session.SelectedId is string id && PlacementArea(id).HasPoint(_pointer))
 		{
@@ -361,5 +389,13 @@ public partial class DesktopAccessoryControls : Node2D
 			DrawLine(point + new Vector2(diagonal, 0), point + new Vector2(diagonal, diagonal), Look.HandleGlyphColor, Look.HandleGlyphWidth, true);
 			DrawLine(point + new Vector2(0, diagonal), point + new Vector2(diagonal, diagonal), Look.HandleGlyphColor, Look.HandleGlyphWidth, true);
 		}
+	}
+	private void DrawDeleteHandle(Vector2 point)
+	{
+		DrawCircle(point, HandleRadius + Look.HandleBorderWidth, Look.HandleBorderColor, true, -1, true);
+		DrawCircle(point, HandleRadius, Near(_pointer, point) ? Look.DeleteHoverColor : Look.DeleteFillColor, true, -1, true);
+		var diagonal = Mathf.Max(3, Look.HandleGlyphSize * 0.7f);
+		DrawLine(point - Vector2.One * diagonal, point + Vector2.One * diagonal, Look.DeleteGlyphColor, Look.HandleGlyphWidth, true);
+		DrawLine(point + new Vector2(-diagonal, diagonal), point + new Vector2(diagonal, -diagonal), Look.DeleteGlyphColor, Look.HandleGlyphWidth, true);
 	}
 }

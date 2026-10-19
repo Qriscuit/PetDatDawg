@@ -77,9 +77,10 @@ theme_override_font_sizes/font_size = 13
 text = "Pets: Waiting to sync"
 horizontal_alignment = 2
 
-[node name="Tabs" type="HBoxContainer" parent="Background/Margin/Layout/Header/Content" unique_id=1631545867]
+[node name="Tabs" type="HFlowContainer" parent="Background/Margin/Layout/Header/Content" unique_id=1631545867]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 4
 
 [node name="DogsTab" type="Button" parent="Background/Margin/Layout/Header/Content/Tabs" unique_id=1520912525]
 unique_name_in_owner = true
@@ -267,15 +268,24 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = ExtResource("5_plain")
 
-[node name="AccessoryEditor" parent="Background/Margin/Layout/Pages/ItemsPage" unique_id=533840356 instance=ExtResource("6_accessories")]
+[node name="ItemsScroll" type="ScrollContainer" parent="Background/Margin/Layout/Pages/ItemsPage"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 3
 
-[node name="InstructionsIcon" parent="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/InstructionsRow" parent_id_path=PackedInt32Array(533840356, 762991107) index="0" unique_id=1889488040]
+[node name="AccessoryEditor" parent="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll" unique_id=533840356 instance=ExtResource("6_accessories")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="InstructionsIcon" parent="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/InstructionsRow" parent_id_path=PackedInt32Array(533840356, 762991107) index="0" unique_id=1889488040]
 modulate = Color(0.31871995, 0.48, 0.2112, 1)
 texture = SubResource("CompressedTexture2D_ntckc")
 
-[node name="CatalogHeadingIcon" parent="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/CatalogHeadingRow" parent_id_path=PackedInt32Array(533840356, 123407669) index="0" unique_id=236326192]
+[node name="CatalogHeadingIcon" parent="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/CatalogHeadingRow" parent_id_path=PackedInt32Array(533840356, 123407669) index="0" unique_id=236326192]
 texture = SubResource("CompressedTexture2D_me600")
 
 [node name="ShopPage" type="PanelContainer" parent="Background/Margin/Layout/Pages" unique_id=1913922211]
@@ -501,6 +511,12 @@ button_pressed = true
 tooltip_text = "Turn off the bouncing animation while your dog walks."
 text = "Bounce while moving"
 
+[node name="FlipHorizontally" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Mirror your dog and its outfit horizontally. Walking and patrol movement continue."
+text = "Flip horizontally"
+
 [node name="AlwaysOnTop" type="CheckBox" parent="Background/Margin/Layout/Pages/SettingsPage/Content/AppearanceSettings/Margin/Content" unique_id=169955784]
 unique_name_in_owner = true
 layout_mode = 2
@@ -547,6 +563,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+scrollable = false
 max_value = 1.0
 step = 0.01
 value = 1.0
@@ -585,6 +602,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+scrollable = false
 min_value = 0.5
 max_value = 2.0
 step = 0.01
@@ -616,6 +634,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 28)
 layout_mode = 2
 size_flags_horizontal = 3
+scrollable = false
 min_value = 0.75
 max_value = 1.75
 step = 0.01
@@ -692,12 +711,12 @@ tooltip_text = "Closes the app and removes the desktop dog. Waiting inputs are n
 theme_type_variation = &"SecondaryButton"
 text = "Quit Pet Da Dog"
 
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor"]
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings"]
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1"]
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2"]
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Collars"]
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses"]
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1"]
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations"]
-[editable path="Background/Margin/Layout/Pages/ItemsPage/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Collars"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations"]
+[editable path="Background/Margin/Layout/Pages/ItemsPage/ItemsScroll/AccessoryEditor/Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text"]

@@ -11,6 +11,7 @@ public partial class PetSettings : Node
     public const bool DefaultDogClickThrough = false;
     public const bool DefaultStationary = false;
     public const bool DefaultBounceEnabled = true;
+    public const bool DefaultFlipHorizontally = false;
     public const float DefaultDogTransparency = 1.0f;
     public const float DefaultDogScale = 1.0f;
     public const float DefaultUiScale = 1.0f;
@@ -29,6 +30,7 @@ public partial class PetSettings : Node
     private bool _dogClickThrough = DefaultDogClickThrough;
     private bool _stationary = DefaultStationary;
     private bool _bounceEnabled = DefaultBounceEnabled;
+    private bool _flipHorizontally = DefaultFlipHorizontally;
     private float _dogTransparency = DefaultDogTransparency;
     private float _dogScale = DefaultDogScale;
     private float _uiScale = DefaultUiScale;
@@ -38,6 +40,7 @@ public partial class PetSettings : Node
     public bool DogClickThrough => _dogClickThrough;
     public bool Stationary => _stationary;
     public bool BounceEnabled => _bounceEnabled;
+    public bool FlipHorizontally => _flipHorizontally;
     public float DogTransparency => _dogTransparency;
     public float DogScale => _dogScale;
     public float UiScale => _uiScale;
@@ -74,6 +77,11 @@ public partial class PetSettings : Node
         SetBool(ref _bounceEnabled, value);
     }
 
+    public void SetFlipHorizontally(bool value)
+    {
+        SetBool(ref _flipHorizontally, value);
+    }
+
     public void SetDogTransparency(float value)
     {
         SetFloat(ref _dogTransparency, Mathf.Clamp(value, MinDogTransparency, MaxDogTransparency));
@@ -103,6 +111,7 @@ public partial class PetSettings : Node
         _dogClickThrough = ReadBool(config, "dog_click_through", DefaultDogClickThrough);
         _stationary = ReadBool(config, "stationary", DefaultStationary);
         _bounceEnabled = ReadBool(config, "bounce_enabled", DefaultBounceEnabled);
+        _flipHorizontally = ReadBool(config, "flip_horizontally", DefaultFlipHorizontally);
         _dogTransparency = Mathf.Clamp(ReadFloat(config, "dog_transparency", DefaultDogTransparency), MinDogTransparency, MaxDogTransparency);
         _dogScale = Mathf.Clamp(ReadFloat(config, "dog_scale", DefaultDogScale), MinDogScale, MaxDogScale);
         _uiScale = Mathf.Clamp(ReadFloat(config, "ui_scale", DefaultUiScale), MinUiScale, MaxUiScale);
@@ -116,6 +125,7 @@ public partial class PetSettings : Node
         config.SetValue(Section, "dog_click_through", DogClickThrough);
         config.SetValue(Section, "stationary", Stationary);
         config.SetValue(Section, "bounce_enabled", BounceEnabled);
+        config.SetValue(Section, "flip_horizontally", FlipHorizontally);
         config.SetValue(Section, "dog_transparency", DogTransparency);
         config.SetValue(Section, "dog_scale", DogScale);
         config.SetValue(Section, "ui_scale", UiScale);
