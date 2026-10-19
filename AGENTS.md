@@ -18,7 +18,7 @@ Main client entrypoints:
 - `Pet_Da_Dog_CSharp/Scripts/NativeWindowBridge.cs` applies Windows overlay styles and owns the native tray menu.
 - `Pet_Da_Dog_CSharp/Scripts/SteamIntegration.cs` wraps Steamworks.NET initialization and Web API ticket requests.
 - `Pet_Da_Dog_CSharp/Scripts/BackendPetClient.cs` talks to the backend and keeps pending pet grants in memory.
-- `Pet_Da_Dog_CSharp/Scripts/SteamCosmeticCatalog.cs` maps the 88 Steam cosmetic itemdefs to local art; `StatusWindow.Inventory.cs` binds Shop and dog selection controls.
+- `Pet_Da_Dog_CSharp/Scripts/SteamCosmeticCatalog.cs` maps the 136 Steam cosmetic itemdefs (73 dogs and 63 accessories) to local art; `StatusWindow.Inventory.cs` binds Shop and dog selection controls. Preserve existing IDs when adding cosmetics; accessory IDs currently end at 2062 and dog IDs at 3072. The latest eight dogs (3065–3072) are prepared locally; Steam schema upload and Worker redeployment remain pending.
 - The Dogs tab places the saved outfit preview grid before the owned dog selection grid. `UI/DogChoiceCard.tscn` and `UI/DogPresetCard.tscn` author their reusable cards. Items hides unowned Steam accessory cards and counts only usable accessories; starter cosmetics and Text Box remain available.
 
 Main backend entrypoint:

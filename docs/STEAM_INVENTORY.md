@@ -1,10 +1,32 @@
 # Pet Da Dog Steam Inventory
 
 The upload schema is `SteamInventory/itemdefs.json` for Steam AppID **4817200**.
-It contains 93 definitions: Pets currency, 43 accessories, 45 dog variants, two
+It contains 141 definitions: Pets currency, 63 accessories, 73 dog variants, two
 inventory boxes, and two random generators. Each PNG in `Pet_Da_Dog_CSharp/Art/Items` or
 `Pet_Da_Dog_CSharp/Art/Dogs` maps to exactly one cosmetic definition. Matching
 `Art/UI` images are previews of the same items.
+
+The October 18, 2026 [source asset sync](https://drive.google.com/drive/folders/1FuRSUheNvpy9rXZlQkTX8Rh3XpYCGfUV)
+adds 20 accessories and 20 dog variants while preserving every existing ID.
+`Maltese.png` has the same visible artwork as `Maltese1.png` and shares that
+single reward. `Art/UI/Feedback/PetHand.png` supplies brief petting feedback
+outside the wearable pool. Steam accepted the expanded schema on October 18,
+2026 (`Modified 44/133 item definitions. Flushed Econ caches: yes.`). Worker
+version `da77dafc-73eb-47ed-a9d2-e02716dd499c` deployed on October 19 with the
+expanded reward ranges. Its health check passed. Desktop Steam readback confirmed
+all 133 IDs and 40 additions. A secure read-only publisher `GetItemDefs` request
+on October 19 returned HTTP 200 and `x-eresult: 1`, with zero differences from the
+uploaded schema, including both exact generator pools and exchange recipes.
+The publisher response omits `auto_stack=false`, its documented default; the
+native client also omits the generator bundles and container-content references,
+so the publisher readback supplies the pool verification. No live box purchase
+or opening was used for validation.
+
+The subsequent Drive sync prepares eight more dog variants locally, using IDs
+3065–3072. The client catalog, item definitions, and Worker reward range now
+include them. This 141-definition schema still needs to be uploaded to Steam,
+followed by Worker redeployment. The verified live release above remains the
+133-definition release with 65 dog outcomes until those publication steps finish.
 
 ## Definition IDs
 
@@ -15,14 +37,27 @@ inventory boxes, and two random generators. Each PNG in `Pet_Da_Dog_CSharp/Art/I
 | Dog Box | 1001 |
 | Accessories Box Contents generator | 1100 |
 | Dog Box Contents generator | 1101 |
-| Accessories | 2000–2042 |
-| Dog variants | 3000–3044 |
+| Accessories | 2000–2062 |
+| Dog variants | 3000–3072 |
 
 IDs are permanent inventory identities once uploaded or granted. Keep existing
 asset-to-ID mappings when adding items. Use new unused IDs for additions.
 The schema's `pdd_kind`, `pdd_asset`, and `pdd_ui_asset` fields are custom
 metadata for the client catalog mapping; local resource paths are
 not Steam image URLs.
+
+The latest additions preserve the source filenames, including their spelling:
+
+| Dog | Definition ID | Source filename |
+| --- | --- | --- |
+| Dalmatian 1 | 3065 | `Dalmatian1.png` |
+| Dalmatian 2 | 3066 | `Dalmatian2.png` |
+| Dachshund 1 | 3067 | `Daschund1.png` |
+| Dachshund 2 | 3068 | `Daschund2.png` |
+| Portuguese Water Dog 1 | 3069 | `PortugeseWaterDog1.png` |
+| Portuguese Water Dog 2 | 3070 | `PortugeseWaterDog2.png` |
+| Shiba Inu 1 | 3071 | `ShibaInu1.png` |
+| Shiba Inu 2 | 3072 | `ShibaInu2.png` |
 
 ## Earning Pets and buying boxes
 
@@ -65,17 +100,19 @@ pricing; use `exchange` recipes for purchases with earned Pets currency.
 
 ## Equal odds
 
+These odds describe the prepared local schema. The live Dog Box retains its
+65-outcome pool until the updated schema is uploaded.
+
 | Box | Outcomes | Weight per outcome | Exact chance | Approximate chance |
 | --- | --- | --- | --- | --- |
-| Accessories Box | 43 accessories | 1 | 1/43 | 2.325581% |
-| Dog Box | 45 dog variants | 1 | 1/45 | 2.222222% |
+| Accessories Box | 63 accessories | 1 | 1/63 | 1.587302% |
+| Dog Box | 73 dog variants | 1 | 1/73 | 1.369863% |
 
 Each generator lists every eligible item once in its `bundle` field with
 weight `x1`. Steam chooses one outcome when the generator is expanded.
-This is equal odds per individual asset across 22 breeds. Labrador has three
-variants; the other breeds have two variants each. Consequently, the combined
-chance of any Labrador variant is 3/45, while any other breed has a combined
-chance of 2/45.
+This is equal odds per individual asset. A breed's combined chance is its number
+of eligible variants divided by 73: Corgi has four variants (4/73), Labrador
+has three (3/73), and the other breed groups have two variants each (2/73).
 
 Duplicates are possible and stack as quantities of the same cosmetic item.
 Cosmetics and boxes have trading and marketplace sales disabled. Each box is an
@@ -138,9 +175,11 @@ previews using isolated preferences and fake ownership.
 1. Open the Inventory Service configuration for app **4817200**:
    https://partner.steamgames.com/apps/inventoryservice/4817200/
 2. Upload `SteamInventory/itemdefs.json` using the item-definition upload control.
-   If the previous 92-definition version was already uploaded, upload this
-   updated file to add Pets (100) and the box purchase recipes; all previous
-   definition IDs are preserved.
+   This version adds dogs 3065–3072 to the deployed 133-definition catalog,
+   producing 141 definitions; all existing IDs, names and resource paths are
+   preserved.
+   Upload the expanded schema before deploying the Worker's expanded reward
+   ranges. A local catalog update does not change the live Steam reward pools.
 3. Check Steamworks' validation results and enable Inventory Service.
 4. Test grants and opening with a Steamworks partner-group account while item
    visibility is Private.

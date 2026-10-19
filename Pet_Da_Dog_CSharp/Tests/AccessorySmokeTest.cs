@@ -76,8 +76,12 @@ public partial class AccessorySmokeTest : Node
 			Require(Mathf.IsEqualApprox(Mathf.Max(definition.Size.X, definition.Size.Y), 0.26f), "Accessory maximum size uses dog height.");
 			Require(!definition.CanRecolor, $"Existing colored artwork keeps its fixed color: {id}.");
 		}
-		Require(wardrobe.Catalog.Count == 50 && wardrobe.Find(AccessoryWardrobe.TextAccessoryId)?.IsText == true,
-			"Catalog includes six starter accessories, the editable Text Box, and 43 Steam accessories.");
+		Require(wardrobe.Catalog.Count == 70 && wardrobe.Find(AccessoryWardrobe.TextAccessoryId)?.IsText == true,
+			"Catalog includes six starter accessories, the editable Text Box, and 63 Steam accessories.");
+		Require(AccessoryCategories.For(wardrobe.Find("steam:2056")!) == "Collars"
+			&& AccessoryCategories.For(wardrobe.Find("steam:2049")!) == "Glasses"
+			&& AccessoryCategories.For(wardrobe.Find("steam:2061")!) == "Decorations",
+			"Chain Necklace, Cyber Visor and Sun Visor appear on their matching shelves.");
 		foreach (var id in new[] { "DragonWing.jpg", "FairyWing.jpg", "SafetyGlasses.jpg" })
 		{
 			var definition = wardrobe.Find(id);
@@ -1079,7 +1083,7 @@ public partial class AccessorySmokeTest : Node
 		var grants = backend.PendingGrantCount;
 		var expectedCounts = new Dictionary<string, int>
 		{
-			["Wings"] = 5, ["Collars"] = 2, ["Glasses"] = 5, ["Decorations"] = 37, ["Text"] = 1
+			["Wings"] = 6, ["Collars"] = 3, ["Glasses"] = 6, ["Decorations"] = 54, ["Text"] = 1
 		};
 		Require(rows.Keys.SequenceEqual(expectedCounts.Keys), "The browser stacks Wings, Collars, Glasses, Decorations and Text in order.");
 		Require(!rows["Collars"].Expanded && !rows["Collars"].Scroll.Visible, "The populated Collars shelf retains its authored collapsed state.");
@@ -1197,6 +1201,13 @@ public partial class AccessorySmokeTest : Node
 			collarCard.EmitSignal(BaseButton.SignalName.Pressed);
 			Require(Session.SelectedId == null && !Session.IsPlacing,
 				"A stale hidden-card callback cannot select an unowned Steam accessory.");
+			wardrobe.SetSteamOwnership(SteamCosmeticCatalog.All.Where(item => item.Kind == "accessory").Select(item => item.ItemDefId));
+			await SettleFrames();
+			Require(heading.Text == "Accessories · 70" && cards.Count(pair => pair.Value.Visible) == 70,
+				"Confirming the complete accessory pool reveals every starter and Steam accessory exactly once.");
+			Require(wardrobe.Catalog.All(item => cards[item.Id].Visible && !cards[item.Id].Disabled
+				&& cards[item.Id].GetNode<TextureRect>("%CardTexture").Texture != null),
+				"Every owned accessory card has usable artwork, including all new Drive assets.");
 		}
 		finally
 		{

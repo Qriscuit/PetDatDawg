@@ -11,6 +11,26 @@ contains both secret bindings and the `PLAYER_INVENTORY` storage binding. The
 Godot project is configured for that URL. Real Steam sign-in, grants, purchases,
 and box openings still require the live checks in section 7.
 
+The October 19, 2026 catalog release deployed Worker version
+`da77dafc-73eb-47ed-a9d2-e02716dd499c` after Steam accepted the 133-definition
+schema. Its reward ranges cover 65 dogs and 63 accessories. `/health` returned
+HTTP 200, and both secret bindings plus the existing `PLAYER_INVENTORY` namespace
+were preserved. The previous production version was
+`e34a7a97-2a84-48c6-bbb7-98ae8a9da6b2`. Native Steam readback confirmed all 133
+definition IDs, 65 dogs, 63 accessories and 40 additions. A temporary remote
+preview used the existing backend-only publisher secret to read `GetItemDefs`
+with `cache_max_age_seconds=0` at 15:06 UTC: HTTP 200, `x-eresult: 1`, zero schema
+differences, and exact 65-dog/63-accessory generator pools with equal weights.
+The omitted `auto_stack=false` values match Steam's documented default. The
+preview was stopped and the production deployment remained unchanged. These
+were read-only checks; no live box purchase or opening was performed.
+
+The latest local catalog prepares eight additional dogs (3065–3072), bringing
+the source schema to 141 definitions: 73 dogs and 63 accessories plus currency,
+boxes, and generators. Its Worker dog reward range ends at 3072. Steam upload
+and Worker redeployment are pending; the production version recorded above
+still uses the verified 65-dog pool.
+
 ## 1. Finish the Steamworks configuration
 
 Upload the current [item definitions](../SteamInventory/itemdefs.json) in
@@ -20,8 +40,8 @@ check the upload results, and enable Inventory Service. The schema includes:
 | Item | Definition ID | Use |
 | --- | --- | --- |
 | Pets | 100 | One accepted mouse-button or keyboard press earns one unit |
-| Dog Box | 1001 | Costs 1 Pet; opens into one of 45 dog variants |
-| Accessories Box | 1000 | Costs 2 Pets; opens into one of 43 accessories |
+| Dog Box | 1001 | Costs 1 Pet; prepared schema opens into one of 73 dog variants |
+| Accessories Box | 1000 | Costs 2 Pets; opens into one of 63 accessories |
 
 Use a Steamworks partner-group account with access to this app for testing
 while Inventory visibility is Private. See [Steam's inventory setup](https://partner.steamgames.com/doc/features/inventory).
@@ -404,9 +424,10 @@ check. Inspect both the game display and Steam Inventory.
    a key must not add repeated grants. A dog click earns once and shows a heart.
 3. Earn enough Pets and buy a Dog Box. Pets should decrease by one and the
    owned Dog Box count increase by one.
-4. Open that Dog Box. Its count should decrease by one, and one of the 45 dog
-   variants should appear as owned and selectable.
-5. Buy an Accessories Box for two Pets and open it. Confirm one of the 43
+4. After uploading the prepared schema and redeploying the Worker, open that
+   Dog Box. Its count should decrease by one, and one of the 73 dog variants
+   should appear as owned and selectable.
+5. Buy an Accessories Box for two Pets and open it. Confirm one of the 63
    accessories becomes owned and usable.
 6. Relaunch. The Pets balance and cosmetic ownership should restore from Steam.
 7. Briefly interrupt connectivity after a click, then reconnect without closing

@@ -136,8 +136,9 @@ public static class AccessoryCategories
 		if (accessory.IsText) return "Text";
 		var name = $"{accessory.Id} {accessory.Name}";
 		if (name.Contains("wing", StringComparison.OrdinalIgnoreCase)) return "Wings";
-		if (name.Contains("collar", StringComparison.OrdinalIgnoreCase)) return "Collars";
-		if (name.Contains("glasses", StringComparison.OrdinalIgnoreCase) || name.Contains("goggle", StringComparison.OrdinalIgnoreCase))
+		if (name.Contains("collar", StringComparison.OrdinalIgnoreCase) || name.Contains("necklace", StringComparison.OrdinalIgnoreCase)) return "Collars";
+		if (name.Contains("glasses", StringComparison.OrdinalIgnoreCase) || name.Contains("goggle", StringComparison.OrdinalIgnoreCase)
+			|| name.Contains("Cyber Visor", StringComparison.OrdinalIgnoreCase))
 			return "Glasses";
 		return "Decorations";
 	}

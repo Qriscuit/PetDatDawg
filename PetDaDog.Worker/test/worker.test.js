@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { DatabaseSync } from "node:sqlite";
+import { readFileSync } from "node:fs";
 import worker, { ApiError, configuration, createSession, validateSession, steamRequestId,
   parseItems, SteamClient, PlayerService, PlayerInventory, exchangeIntent, exchangeReceipt } from "../src/index.js";
 
@@ -485,6 +486,29 @@ test("buying and opening each box uses schema-defined costs/generators and produ
     const restarted = new PlayerService(storage, steam, config);
     assert.deepEqual((await restarted.exchange(steamId, "open", input)).receivedItems, opened.receivedItems);
     assert.equal(steam.exchanges, 2);
+  }
+});
+
+test("box reward ranges match the Steam schema and accept new upper-bound rewards while rejecting items outside their pool", () => {
+  const schema = JSON.parse(readFileSync(new URL("../../SteamInventory/itemdefs.json", import.meta.url), "utf8"));
+  assert.equal(schema.items.length, 141);
+  for (const [kind, boxDef, generatorDef, firstReward, lastReward] of [
+    ["accessory", 1000, 1100, 2000, 2062], ["dog", 1001, 1101, 3000, 3072],
+  ]) {
+    const rewards = schema.items.filter(row => row.pdd_kind === kind).map(row => row.itemdefid);
+    assert.deepEqual(rewards, Array.from({ length: lastReward - firstReward + 1 }, (_, index) => firstReward + index));
+    assert.equal(schema.items.find(row => row.itemdefid === generatorDef).bundle, rewards.map(id => `${id}x1`).join(";"));
+    const before = inventory([item("1", boxDef, 1)]);
+    const intent = exchangeIntent("open", { boxItemId: "1" }, before);
+    assert.equal(intent.outputItemDefId, generatorDef);
+    assert.equal(intent.firstReward, firstReward);
+    assert.equal(intent.lastReward, lastReward);
+    const removedBox = { ...item("1", boxDef, 0), removed: true };
+    const receipt = rewardDef => [removedBox, { ...item("2", rewardDef, 1), removed: false }];
+    assert.deepEqual(exchangeReceipt(intent, before, receipt(lastReward)), [item("2", lastReward, 1)]);
+    assert.throws(() => exchangeReceipt(intent, before, receipt(lastReward + 1)), { status: 503 });
+    assert.throws(() => exchangeReceipt(intent, before, receipt(firstReward - 1)), { status: 503 });
+    assert.throws(() => exchangeReceipt(intent, before, receipt(kind === "dog" ? 2062 : 3072)), { status: 503 });
   }
 });
 

@@ -10,6 +10,7 @@ public partial class DesktopPet : Node2D
 	[Export] public PackedScene? TextAccessoryScene { get; set; }
 	private const string DogTexturePath = "res://Sprites/Doggo.png";
 	private const string HeartTexturePath = "res://Sprites/PetzHeart.png";
+	private const string PettingHandTexturePath = "res://Art/UI/Feedback/PetHand.png";
 	private const string FallbackTexturePath = "res://icon.svg";
 	private const string StatusWindowScenePath = "res://StatusWindow.tscn";
 
@@ -27,6 +28,7 @@ public partial class DesktopPet : Node2D
 	private const float HeartDriftDistance = 46.0f;
 	private const float HeartSize = 42.0f;
 	private const int MaxActiveHearts = 8;
+	private const float PettingHandLifetime = 0.36f;
 
 	private static int MainWindowId => (int)DisplayServer.MainWindowId;
 
@@ -37,6 +39,9 @@ public partial class DesktopPet : Node2D
 	private string _activeDogTexturePath = DogTexturePath;
 	private IReadOnlyList<SteamInventoryItem>? _lastInventoryItems;
 	private Texture2D? _heartTexture;
+	private Sprite2D? _pettingHand;
+	private Vector2 _pettingHandStart;
+	private float _pettingHandAge;
 
 	private Vector2 _visibleDogSize = new(128.0f, 128.0f);
 	private Rect2 _visibleDogLocalRect = new(-64.0f, -64.0f, 128.0f, 128.0f);
@@ -138,6 +143,7 @@ public partial class DesktopPet : Node2D
 		}
 		SyncAccessories();
 		ConfigureHeartTexture();
+		ConfigurePettingHand();
 		MoveOverlayToBottom(force: true);
 
 		_walkX = _windowSize.X * 0.5f;
@@ -191,6 +197,7 @@ public partial class DesktopPet : Node2D
 		}
 		AnimateDog();
 		UpdateFloatingHearts(deltaF);
+		UpdatePettingHand(deltaF);
 		UpdateDogMouseRegion();
 		TickBackend(delta);
 		if (!ReferenceEquals(_lastInventoryItems, _backend.InventoryItems))
@@ -250,6 +257,7 @@ public partial class DesktopPet : Node2D
 		{
 			// Global input counts this same physical click. Local dog input only adds feedback.
 			SpawnFloatingHeart();
+			ShowPettingHand(mouseButton.Position);
 		}
 		else
 		{
@@ -399,6 +407,51 @@ public partial class DesktopPet : Node2D
 			var bounds = AccessoryWardrobe.GetVisibleBounds(_heartTexture);
 			if (bounds.Size != Vector2I.Zero) _heartTexture = new AtlasTexture { Atlas = _heartTexture, Region = bounds, FilterClip = true };
 		}
+	}
+
+	private void ConfigurePettingHand()
+	{
+		var texture = SteamCosmeticCatalog.CroppedTexture(PettingHandTexturePath);
+		if (texture == null) return;
+		_pettingHand = new Sprite2D
+		{
+			Name = "PettingHand", Texture = texture, Centered = true, Visible = false, ZIndex = 21
+		};
+		_footAnchor.AddChild(_pettingHand);
+	}
+
+	private void ShowPettingHand(Vector2 position)
+	{
+		if (_pettingHand?.Texture == null) return;
+		var size = Mathf.Min(_visibleDogSize.Y * 0.6f, 96.0f);
+		_pettingHand.Scale = Vector2.One * (size / _pettingHand.Texture.GetHeight());
+		// Keep the short pat inside the overlay, including clicks near the dog's feet.
+		_pettingHandStart = _footAnchor.ToLocal(ClampPettingHandPosition(position));
+		_pettingHand.Position = _pettingHandStart;
+		_pettingHand.Modulate = Colors.White;
+		_pettingHandAge = 0;
+		_pettingHand.Visible = true;
+	}
+
+	private void UpdatePettingHand(float delta)
+	{
+		if (_pettingHand?.Visible != true) return;
+		_pettingHandAge += delta;
+		var progress = Mathf.Clamp(_pettingHandAge / PettingHandLifetime, 0, 1);
+		if (progress >= 1 || _accessoryEditing || _patrolEditing || ShouldDogPassThrough())
+		{
+			_pettingHand.Visible = false;
+			return;
+		}
+		var position = _footAnchor.ToGlobal(_pettingHandStart + new Vector2(0, Mathf.Sin(progress * Mathf.Pi) * 5));
+		_pettingHand.Position = _footAnchor.ToLocal(ClampPettingHandPosition(position));
+		_pettingHand.Modulate = new Color(1, 1, 1, 1 - Mathf.SmoothStep(0.35f, 1, progress));
+	}
+
+	private Vector2 ClampPettingHandPosition(Vector2 position)
+	{
+		var halfSize = _pettingHand!.Texture.GetSize() * _pettingHand.Scale * 0.5f;
+		return position.Clamp(halfSize + Vector2.One * 6, (Vector2)_windowSize - halfSize - Vector2.One * 6);
 	}
 
 	private void SyncAppearance()
@@ -857,6 +910,8 @@ public partial class DesktopPet : Node2D
 		var globalBounds = AccessoryGeometry.BoundsFromCorners(_dogSprite, rect);
 		foreach (var heart in _floatingHearts)
 			globalBounds = globalBounds.Merge(AccessoryGeometry.BoundsFromCorners(heart.Sprite, heart.Sprite.GetRect()));
+		if (_pettingHand?.Visible == true)
+			globalBounds = globalBounds.Merge(AccessoryGeometry.BoundsFromCorners(_pettingHand, _pettingHand.GetRect()));
 		if (_accessoryEditing && _accessoryControls?.GetRenderBounds() is Rect2 controlsBounds)
 			globalBounds = globalBounds.Merge(controlsBounds);
 		if (_patrolEditing) globalBounds = new Rect2(Vector2.Zero, _windowSize);

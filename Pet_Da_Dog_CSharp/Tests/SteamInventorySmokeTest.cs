@@ -23,13 +23,20 @@ public partial class SteamInventorySmokeTest : Node
 			wardrobe.StoragePath = _savePath;
 			wardrobe.Clear();
 			wardrobe.SetSteamOwnership(Array.Empty<int>());
-			Require(SteamCosmeticCatalog.All.Count == 88 && SteamCosmeticCatalog.All.Select(item => item.ItemDefId).Distinct().Count() == 88,
-				"All 88 Steam cosmetics have unique definition IDs.");
-			Require(SteamCosmeticCatalog.All.Count(item => item.Kind == "dog") == 45
-				&& SteamCosmeticCatalog.All.Count(item => item.Kind == "accessory") == 43, "Both complete reward pools are mapped.");
+			Require(SteamCosmeticCatalog.All.Count == 136 && SteamCosmeticCatalog.All.Select(item => item.ItemDefId).Distinct().Count() == 136,
+				"All 136 Steam cosmetics have unique definition IDs.");
+			Require(SteamCosmeticCatalog.All.Count(item => item.Kind == "dog") == 73
+				&& SteamCosmeticCatalog.All.Count(item => item.Kind == "accessory") == 63, "Both complete reward pools are mapped.");
 			Require(SteamCosmeticCatalog.All.All(item => ResourceLoader.Exists(item.AssetPath) && ResourceLoader.Exists(item.UiAssetPath)),
 				"Every mapped source and preview resource exists.");
-			Require(wardrobe.Catalog.Count(item => item.SteamItemDefId > 0) == 43, "Items includes every Steam accessory.");
+			foreach (var cosmetic in SteamCosmeticCatalog.All)
+				foreach (var path in new[] { cosmetic.AssetPath, cosmetic.UiAssetPath })
+				{
+					var texture = ResourceLoader.Load<Texture2D>(path);
+					using var image = texture?.GetImage();
+					Require(image != null && image.GetUsedRect().HasArea(), $"{cosmetic.Name} decodes with visible pixels: {path}.");
+				}
+			Require(wardrobe.Catalog.Count(item => item.SteamItemDefId > 0) == 63, "Items includes every Steam accessory.");
 			var accessory = SteamCosmeticCatalog.All.First(item => item.Kind == "accessory");
 			var dog = SteamCosmeticCatalog.All.First(item => item.Kind == "dog");
 			wardrobe.Equip(accessory.AccessoryId, Vector2.One * 0.5f);
@@ -70,7 +77,7 @@ public partial class SteamInventorySmokeTest : Node
 			RequireDogChoices(dogs, new[] { 0 }, "Empty Steam ownership shows only Starter dog.");
 			Require(SelectedDogId(dogs) == 0, "Starter dog is selected with empty ownership.");
 			await VerifyOwnedDogSelector(wardrobe, dogs, pet, accessory, dog);
-			await VerifyDogGridLayout(menu, wardrobe, dogs);
+			await VerifyDogGridLayout(menu, wardrobe, dogs, pet);
 			if (DisplayServer.GetName() != "headless")
 			{
 				menu.GetNode<Button>("%ShopTab").EmitSignal(BaseButton.SignalName.Pressed);
@@ -151,7 +158,7 @@ public partial class SteamInventorySmokeTest : Node
 		RequireDogChoices(dogs, new[] { 0 }, "Removing all ownership returns the menu to Starter only.");
 		Require(SelectedDogId(dogs) == 0, "The empty refreshed list keeps Starter selected.");
 	}
-	private async Task VerifyDogGridLayout(StatusWindow menu, AccessoryWardrobe wardrobe, GridContainer dogs)
+	private async Task VerifyDogGridLayout(StatusWindow menu, AccessoryWardrobe wardrobe, GridContainer dogs, DesktopPet pet)
 	{
 		var originalSize = menu.Size;
 		try
@@ -179,6 +186,16 @@ public partial class SteamInventorySmokeTest : Node
 				"All owned dog pictures appear once in the vertically scrolling collection.");
 			Require(menu.GetNode<Label>("%DogSelectionStatus").Text.Contains("Starter dog", StringComparison.Ordinal),
 				"The collection names the current selected dog separately from its cards.");
+			foreach (var dog in SteamCosmeticCatalog.All.Where(item => item.Kind == "dog"))
+			{
+				SelectDogByItemId(dogs, dog.ItemDefId);
+				await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+				Require(wardrobe.SelectedDogItemDefId == dog.ItemDefId && SelectedDogId(dogs) == dog.ItemDefId
+					&& pet.EditableDog.Texture.ResourcePath == dog.AssetPath,
+					$"Every owned dog card selects its matching desktop texture: {dog.Name}.");
+			}
+			SelectDogByItemId(dogs, 0);
+			await Settle();
 			if (DisplayServer.GetName() != "headless")
 			{
 				await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
@@ -215,6 +232,9 @@ public partial class SteamInventorySmokeTest : Node
 		settings.SetDogTransparency(1);
 		var backend = (BackendPetClient)typeof(DesktopPet).GetField("_backend", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(pet)!;
 		var sprite = pet.GetNode<Sprite2D>("FootAnchor/VisualRoot/PetSprite");
+		var hand = pet.GetNode<Sprite2D>("FootAnchor/PettingHand");
+		void UpdateHand(float delta) => typeof(DesktopPet).GetMethod("UpdatePettingHand", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(pet, new object[] { delta });
+		Require(hand.Texture != null && !hand.Visible, "The Drive petting-hand artwork starts hidden as feedback, outside the wearable catalog.");
 		using var image = sprite.Texture.GetImage();
 		Vector2? opaque = null;
 		Vector2? transparent = null;
@@ -230,27 +250,50 @@ public partial class SteamInventorySmokeTest : Node
 		using var release = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = opaque!.Value };
 		pet._Input(clearClick); pet._Input(release);
 		Require(backend.PendingGrantCount == 0 && backend.ConfirmedPets == null, "Local texture hits and releases do not duplicate background grants.");
+		Require(!hand.Visible, "Transparent pixels and button releases never show petting feedback.");
 		using var click = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = opaque.Value };
 		pet._Input(click);
 		Require(backend.PendingGrantCount == 0, "Local dog feedback never queues a duplicate input grant.");
+		Require(hand.Visible, "An opaque left press shows the petting hand without granting currency locally.");
+		var anchor = pet.GetNode<Node2D>("FootAnchor");
+		var anchorPosition = anchor.Position;
+		var viewportSize = pet.GetWindow().Size;
+		anchor.Position += (Vector2)viewportSize;
+		UpdateHand(0.01f);
+		var handBounds = AccessoryGeometry.BoundsFromCorners(hand, hand.GetRect());
+		Require(handBounds.Position.X >= 0 && handBounds.Position.Y >= 0
+			&& handBounds.End.X <= viewportSize.X && handBounds.End.Y <= viewportSize.Y,
+			"Moving the dog during a pat keeps the hand inside the overlay.");
+		anchor.Position = anchorPosition;
+		UpdateHand(0.4f);
+		Require(!hand.Visible, "Petting-hand feedback expires after the brief pat.");
 		pet.RecordInputActivity(1);
 		Require(backend.PendingGrantCount == 1 && backend.ConfirmedPets == null, "One observed input queues exactly one grant without inventing a total.");
 		pet._Input(click);
 		pet.RecordInputActivity(1);
 		Require(backend.PendingGrantCount == 2 && backend.ConfirmedPets == null, "A second input queues one additional grant while Steam is offline.");
 		settings.SetDogClickThrough(true);
+		UpdateHand(0.01f);
 		pet._Input(click);
 		pet.RecordInputActivity(1);
 		Require(backend.PendingGrantCount == 3, "Background earning continues with dog click-through enabled.");
+		Require(!hand.Visible, "Click-through mode hides petting feedback and ignores local dog clicks.");
 		settings.SetDogClickThrough(false);
 		settings.SetDogTransparency(0);
+		UpdateHand(0.01f);
 		pet._Input(click);
 		pet.RecordInputActivity(2);
 		Require(backend.PendingGrantCount == 5, "Background earning continues with an invisible dog and counts every input in a batch.");
 		pet.RecordInputActivity(0);
 		pet.RecordInputActivity(-1);
 		Require(backend.PendingGrantCount == 5 && backend.ConfirmedPets == null, "Empty activity never creates grants or a local Pets total.");
+		Require(!hand.Visible, "An invisible dog never shows petting-hand feedback.");
 		settings.SetDogTransparency(1);
+		pet._Input(click);
+		GetNode<AccessoryEditingSession>("/root/AccessoryEditingSession").SetActive(true);
+		UpdateHand(0.01f);
+		Require(!hand.Visible && backend.PendingGrantCount == 5, "Entering accessory editing hides the hand without duplicating input grants.");
+		GetNode<AccessoryEditingSession>("/root/AccessoryEditingSession").SetActive(false);
 	}
 	private void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); _assertions++; }
 }
