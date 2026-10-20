@@ -8,10 +8,14 @@
   },
   "scripts": {
     "dev": "wrangler dev",
+    "dev:economy": "wrangler dev --config wrangler.test.jsonc --config wrangler.fake-steam.jsonc",
+    "economy:check": "node ../scripts/economy-generate.mjs --check",
+    "predeploy": "node ../scripts/economy-generate.mjs --check && node ../scripts/economy-assets.mjs",
     "deploy": "wrangler deploy",
+    "precheck": "node ../scripts/economy-generate.mjs --check && node ../scripts/economy-assets.mjs",
     "check": "wrangler deploy --dry-run --outdir .wrangler/build",
     "test": "node --test test/*.test.js",
-    "test:runtime": "node test/runtime-smoke.js"
+    "test:runtime": "node test/runtime-smoke.js && node test/runtime-shop-smoke.js"
   },
   "devDependencies": {
     "wrangler": "4.149.0"

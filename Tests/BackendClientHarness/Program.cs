@@ -2,6 +2,16 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 
+if (args.Contains("--local-economy", StringComparer.Ordinal))
+{
+#if DEBUG
+	await LocalEconomyScenario.RunAsync();
+	return;
+#else
+	throw new InvalidOperationException("The isolated local economy scenario requires a Debug build.");
+#endif
+}
+
 await Run("backend URL defaults to the shared Worker and preserves explicit overrides", VerifyBackendUrlConfigurationAsync);
 await Run("401 renews authentication and preserves the click GUID", VerifyExpiredSessionAsync);
 await Run("uncertain purchases reuse the original GUID and block new exchanges", VerifyUncertainPurchaseAsync);
@@ -15,7 +25,8 @@ await Run("uncertain and rate-limited grants retry one GUID without inventing pe
 await Run("every inventory refresh replaces the total only with a valid Steam snapshot", VerifyAuthoritativeRefreshAsync);
 await Run("changing Steam accounts discards the previous account's queued clicks", VerifyAccountChangeAsync);
 await Run("Steam error diagnostics show only allowlisted endpoints, categories and bounded numeric results", VerifySafeSteamDiagnosticsAsync);
-Console.WriteLine("BACKEND_CLIENT_HARNESS_PASS: 13 scenarios");
+await ShopScenarios.RunAsync();
+Console.WriteLine("BACKEND_CLIENT_HARNESS_PASS: 25 scenarios");
 
 static async Task Run(string name, Func<Task> scenario)
 {
@@ -55,7 +66,7 @@ static async Task VerifyBackendUrlConfigurationAsync()
 			await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
 			Require(client.IsAuthenticated && requests.SequenceEqual(new[]
 			{
-				new Uri(expectedBaseUrl + "v1/auth/steam"), new Uri(expectedBaseUrl + "v1/inventory"),
+				new Uri(expectedBaseUrl + "v1/auth/steam"), new Uri(expectedBaseUrl + "v1/inventory"), new Uri(expectedBaseUrl + "v2/shop"),
 			}), "Authentication and inventory must use the selected backend with its full base path.");
 		}
 		Environment.SetEnvironmentVariable("PDD_BACKEND_URL", "http://127.0.0.1:5155");
@@ -458,6 +469,7 @@ static HttpResponseMessage AuthenticationOrInventory(HttpRequestMessage request,
 {
 	"/v1/auth/steam" => Json(HttpStatusCode.OK, """{"sessionToken":"fixture-session","steamId":"76561198000000000"}"""),
 	"/v1/inventory" => Json(HttpStatusCode.OK, $$"""{"pets":{{pets}},"items":[]}"""),
+	"/v2/shop" => Json(HttpStatusCode.NotFound, "{}"),
 	_ => throw new InvalidOperationException($"Unexpected fixture request: {Path(request)}"),
 };
 

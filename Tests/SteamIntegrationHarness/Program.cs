@@ -62,7 +62,8 @@ try
 		Check(!configured.TryInitialize(4) && SteamAPI.InitializationCalls == 5, "Configuration failures also respect the retry delay.");
 		Check(configured.TryInitialize(1) && SteamAPI.InitializationCalls == 6, "Correcting configuration permits a later retry.");
 	}
-	Console.WriteLine($"STEAM_RECONNECT_HARNESS_PASS: {checks} checks; no native Steam, input hooks, network calls or grants.");
+	await CommerceScenarios.RunAsync();
+	Console.WriteLine($"STEAM_RECONNECT_HARNESS_PASS: {checks} reconnect checks plus commerce scenarios; no native Steam, input hooks, network calls or grants.");
 }
 finally
 {

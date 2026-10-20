@@ -10,7 +10,7 @@ public partial class StatusWindow
 	private BackendPetClient? _inventoryBackend;
 	private AccessoryWardrobe? _inventoryWardrobe;
 	private CancellationToken _inventoryCancellation;
-	private Button? _buyDogBox, _buyAccessoryBox, _openBox, _refreshInventory;
+	private Button? _openBox, _refreshInventory;
 	private OptionButton? _boxChoices;
 	private Label? _boxSummary, _shopStatus, _dogSelectionStatus;
 	private GridContainer? _dogGrid;
@@ -22,8 +22,6 @@ public partial class StatusWindow
 
 	private void BindInventoryControls()
 	{
-		_buyDogBox = GetNodeOrNull<Button>("%BuyDogBox");
-		_buyAccessoryBox = GetNodeOrNull<Button>("%BuyAccessoryBox");
 		_openBox = GetNodeOrNull<Button>("%OpenBox");
 		_refreshInventory = GetNodeOrNull<Button>("%RefreshInventory");
 		_boxChoices = GetNodeOrNull<OptionButton>("%BoxChoices");
@@ -34,11 +32,10 @@ public partial class StatusWindow
 			foreach (var preview in _dogGrid.GetChildren()) { _dogGrid.RemoveChild(preview); preview.QueueFree(); }
 		_boxSummary = GetNodeOrNull<Label>("%BoxSummary");
 		_shopStatus = GetNodeOrNull<Label>("%ShopStatus");
-		if (_buyDogBox != null) _buyDogBox.Pressed += () => _ = RunInventoryAction("dog");
-		if (_buyAccessoryBox != null) _buyAccessoryBox.Pressed += () => _ = RunInventoryAction("accessory");
 		if (_openBox != null) _openBox.Pressed += () => _ = RunInventoryAction("open");
 		if (_refreshInventory != null) _refreshInventory.Pressed += () => _ = RunInventoryAction("refresh");
 		if (_boxChoices != null) _boxChoices.ItemSelected += _ => UpdateInventoryControls();
+		BindShopControls();
 		UpdateInventoryControls();
 	}
 
@@ -55,27 +52,35 @@ public partial class StatusWindow
 	private async Task RunInventoryAction(string action)
 	{
 		var backend = _inventoryBackend;
-		if (backend == null || backend.IsOperationInFlight || !backend.IsAuthenticated) return;
-		if (action == "refresh") await backend.RefreshInventoryAsync(_inventoryCancellation);
+		if (backend == null || IsShopBusy || !backend.IsAuthenticated) return;
+		if (action == "refresh") await backend.RefreshShopAsync(_inventoryCancellation);
 		else if (backend.HasPendingExchange) return;
 		else if (action == "open")
 		{
 			var index = _boxChoices?.Selected ?? -1;
 			if (index < 0 || index >= _displayedBoxes.Count) return;
-			await backend.OpenBoxAsync(_displayedBoxes[index].ItemId, _inventoryCancellation);
+			_shopActionActive = true;
+			BoxRevealRequested?.Invoke(_displayedBoxes[index].ItemDefId == 1001 ? "dog" : "accessory");
+			try
+			{
+				if (await backend.OpenBoxAsync(_displayedBoxes[index].ItemId, _inventoryCancellation))
+				{
+					await backend.RefreshShopAsync(_inventoryCancellation);
+					PresentNextShopReceipt(true);
+				}
+				else BoxRevealFailed?.Invoke(backend.Status);
+			}
+			finally { _shopActionActive = false; }
 		}
-		else await backend.BuyBoxAsync(action, _inventoryCancellation);
 		if (GodotObject.IsInstanceValid(this) && IsInsideTree()) UpdateInventoryControls();
 	}
 
 	private void UpdateInventoryControls()
 	{
-		if (_buyDogBox == null) return;
+		if (_openBox == null) return;
 		var backend = _inventoryBackend;
-		var ready = backend?.IsAuthenticated == true && !backend.IsOperationInFlight && !backend.HasPendingExchange;
-		_buyDogBox.Disabled = !ready || backend?.ConfirmedPets is not >= 1;
-		_buyAccessoryBox!.Disabled = !ready || backend?.ConfirmedPets is not >= 2;
-		_refreshInventory!.Disabled = backend?.IsAuthenticated != true || backend.IsOperationInFlight;
+		var ready = backend?.IsAuthenticated == true && !IsShopBusy && !backend.HasPendingExchange;
+		_refreshInventory!.Disabled = backend?.IsAuthenticated != true || IsShopBusy;
 		if (backend != null && !ReferenceEquals(_displayedInventory, backend.InventoryItems))
 		{
 			_displayedInventory = backend.InventoryItems;
@@ -94,12 +99,11 @@ public partial class StatusWindow
 		_openBox!.Disabled = !ready || _displayedBoxes.Count == 0 || _boxChoices.Selected < 0;
 		if (_shopStatus != null)
 		{
-			_shopStatus.Text = backend == null || !backend.IsAuthenticated ? "Connect to Steam to earn Pets and use boxes."
-				: backend.HasPendingExchange ? "Your box transaction is awaiting Steam confirmation. Box actions and pet syncing are paused. Contact support if this persists."
-				: backend.ReceivedItems.Count > 0 ? "Received: " + string.Join(", ", backend.ReceivedItems.Select(item =>
-					SteamCosmeticCatalog.Find(item.ItemDefId)?.Name ?? (item.ItemDefId == 1001 ? "Dog Box" : item.ItemDefId == 1000 ? "Accessories Box" : "Pets")))
-				: backend.Status;
+			_shopStatus.Text = backend == null || !backend.IsAuthenticated ? "Connect to Steam to use the Shop."
+				: backend.HasPendingExchange || backend.HasPendingShopOperation ? "Steam is confirming your transaction. Your result will appear when it is confirmed."
+				: backend.ShopStatus;
 		}
+		UpdateShopControls();
 		RefreshDogGrid();
 	}
 

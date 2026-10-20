@@ -5,7 +5,7 @@
       "itemdefid": 100,
       "type": "item",
       "name": "Pets",
-      "description": "Earned by petting your desktop dog. Spend Pets on Dog Boxes and Accessories Boxes.",
+      "description": "Earn Pets through desktop activity. Spend 500 Pets on a Dig Box every 20 minutes.",
       "display_type": "Currency",
       "tradable": false,
       "marketable": false,
@@ -13,15 +13,37 @@
       "pdd_kind": "currency"
     },
     {
+      "itemdefid": 101,
+      "type": "item",
+      "name": "Golden Bones",
+      "description": "Premium currency for dogs, accessories, and premium boxes.",
+      "display_type": "Currency",
+      "tradable": false,
+      "marketable": false,
+      "auto_stack": true,
+      "store_hidden": true,
+      "pdd_kind": "currency"
+    },
+    {
+      "itemdefid": 102,
+      "type": "item",
+      "name": "Dig Permit",
+      "description": "Single-use server-issued Dig Box permit.",
+      "tradable": false,
+      "marketable": false,
+      "auto_stack": false,
+      "hidden": true,
+      "pdd_kind": "permit"
+    },
+    {
       "itemdefid": 1000,
       "type": "item",
       "name": "Accessories Box",
-      "description": "Costs 2 Pets. Open to receive one of 63 accessories. Every accessory has an equal 1 in 63 chance. Duplicates are possible.",
+      "description": "Legacy box. Existing boxes can still be opened; new purchases have moved to the Shop.",
       "display_type": "Loot Box",
       "tradable": false,
       "marketable": false,
       "auto_stack": false,
-      "exchange": "100x2",
       "container_contents_generator": 1100,
       "pdd_kind": "box"
     },
@@ -29,12 +51,11 @@
       "itemdefid": 1001,
       "type": "item",
       "name": "Dog Box",
-      "description": "Costs 1 Pet. Open to receive one of 73 dog variants. Every variant has an equal 1 in 73 chance. Duplicates are possible.",
+      "description": "Legacy box. Existing boxes can still be opened; new purchases have moved to the Shop.",
       "display_type": "Loot Box",
       "tradable": false,
       "marketable": false,
       "auto_stack": false,
-      "exchange": "100x1",
       "container_contents_generator": 1101,
       "pdd_kind": "box"
     },
@@ -42,8 +63,7 @@
       "itemdefid": 1100,
       "type": "generator",
       "name": "Accessories Box Contents",
-      "description": "Consumes one Accessories Box and generates one accessory with equal odds.",
-      "display_type": "Loot Generator",
+      "description": "One of 63 equally likely cosmetics. Duplicates are possible.",
       "tradable": false,
       "marketable": false,
       "bundle": "2000x1;2001x1;2002x1;2003x1;2004x1;2005x1;2006x1;2007x1;2008x1;2009x1;2010x1;2011x1;2012x1;2013x1;2014x1;2015x1;2016x1;2017x1;2018x1;2019x1;2020x1;2021x1;2022x1;2023x1;2024x1;2025x1;2026x1;2027x1;2028x1;2029x1;2030x1;2031x1;2032x1;2033x1;2034x1;2035x1;2036x1;2037x1;2038x1;2039x1;2040x1;2041x1;2042x1;2043x1;2044x1;2045x1;2046x1;2047x1;2048x1;2049x1;2050x1;2051x1;2052x1;2053x1;2054x1;2055x1;2056x1;2057x1;2058x1;2059x1;2060x1;2061x1;2062x1",
@@ -54,13 +74,89 @@
       "itemdefid": 1101,
       "type": "generator",
       "name": "Dog Box Contents",
-      "description": "Consumes one Dog Box and generates one dog variant with equal odds.",
-      "display_type": "Loot Generator",
+      "description": "One of 73 equally likely cosmetics. Duplicates are possible.",
       "tradable": false,
       "marketable": false,
       "bundle": "3000x1;3001x1;3002x1;3003x1;3004x1;3005x1;3006x1;3007x1;3008x1;3009x1;3010x1;3011x1;3012x1;3013x1;3014x1;3015x1;3016x1;3017x1;3018x1;3019x1;3020x1;3021x1;3022x1;3023x1;3024x1;3025x1;3026x1;3027x1;3028x1;3029x1;3030x1;3031x1;3032x1;3033x1;3034x1;3035x1;3036x1;3037x1;3038x1;3039x1;3040x1;3041x1;3042x1;3043x1;3044x1;3045x1;3046x1;3047x1;3048x1;3049x1;3050x1;3051x1;3052x1;3053x1;3054x1;3055x1;3056x1;3057x1;3058x1;3059x1;3060x1;3061x1;3062x1;3063x1;3064x1;3065x1;3066x1;3067x1;3068x1;3069x1;3070x1;3071x1;3072x1",
       "exchange": "1001x1",
       "pdd_kind": "generator"
+    },
+    {
+      "itemdefid": 1110,
+      "type": "generator",
+      "name": "Dig Box Contents",
+      "description": "One of 20 equally likely cosmetics. Duplicates are possible.",
+      "tradable": false,
+      "marketable": false,
+      "bundle": "3000x1;3002x1;3006x1;3012x1;3014x1;3018x1;3028x1;3030x1;3035x1;3037x1;2001x1;2002x1;2003x1;2004x1;2007x1;2030x1;2033x1;2035x1;2038x1;2039x1",
+      "exchange": "100x500,102x1",
+      "pdd_kind": "generator"
+    },
+    {
+      "itemdefid": 1111,
+      "type": "generator",
+      "name": "Premium Dog Box Contents",
+      "description": "One of 63 equally likely cosmetics. Duplicates are possible.",
+      "tradable": false,
+      "marketable": false,
+      "bundle": "3001x1;3003x1;3004x1;3005x1;3007x1;3008x1;3009x1;3010x1;3011x1;3013x1;3015x1;3016x1;3017x1;3019x1;3020x1;3021x1;3022x1;3023x1;3024x1;3025x1;3026x1;3027x1;3029x1;3031x1;3032x1;3033x1;3034x1;3036x1;3038x1;3039x1;3040x1;3041x1;3042x1;3043x1;3044x1;3045x1;3046x1;3047x1;3048x1;3049x1;3050x1;3051x1;3052x1;3053x1;3054x1;3055x1;3056x1;3057x1;3058x1;3059x1;3060x1;3061x1;3062x1;3063x1;3064x1;3065x1;3066x1;3067x1;3068x1;3069x1;3070x1;3071x1;3072x1",
+      "exchange": "101x50",
+      "pdd_kind": "generator"
+    },
+    {
+      "itemdefid": 1112,
+      "type": "generator",
+      "name": "Premium Accessory Box Contents",
+      "description": "One of 53 equally likely cosmetics. Duplicates are possible.",
+      "tradable": false,
+      "marketable": false,
+      "bundle": "2000x1;2005x1;2006x1;2008x1;2009x1;2010x1;2011x1;2012x1;2013x1;2014x1;2015x1;2016x1;2017x1;2018x1;2019x1;2020x1;2021x1;2022x1;2023x1;2024x1;2025x1;2026x1;2027x1;2028x1;2029x1;2031x1;2032x1;2034x1;2036x1;2037x1;2040x1;2041x1;2042x1;2043x1;2044x1;2045x1;2046x1;2047x1;2048x1;2049x1;2050x1;2051x1;2052x1;2053x1;2054x1;2055x1;2056x1;2057x1;2058x1;2059x1;2060x1;2061x1;2062x1",
+      "exchange": "101x25",
+      "pdd_kind": "generator"
+    },
+    {
+      "itemdefid": 1113,
+      "type": "bundle",
+      "name": "Recycled Golden Bones",
+      "description": "Recycle one cosmetic for Golden Bones.",
+      "tradable": false,
+      "marketable": false,
+      "bundle": "101x5",
+      "exchange": "2000x1;2001x1;2002x1;2003x1;2004x1;2005x1;2006x1;2007x1;2008x1;2009x1;2010x1;2011x1;2012x1;2013x1;2014x1;2015x1;2016x1;2017x1;2018x1;2019x1;2020x1;2021x1;2022x1;2023x1;2024x1;2025x1;2026x1;2027x1;2028x1;2029x1;2030x1;2031x1;2032x1;2033x1;2034x1;2035x1;2036x1;2037x1;2038x1;2039x1;2040x1;2041x1;2042x1;2043x1;2044x1;2045x1;2046x1;2047x1;2048x1;2049x1;2050x1;2051x1;2052x1;2053x1;2054x1;2055x1;2056x1;2057x1;2058x1;2059x1;2060x1;2061x1;2062x1;3000x1;3001x1;3002x1;3003x1;3004x1;3005x1;3006x1;3007x1;3008x1;3009x1;3010x1;3011x1;3012x1;3013x1;3014x1;3015x1;3016x1;3017x1;3018x1;3019x1;3020x1;3021x1;3022x1;3023x1;3024x1;3025x1;3026x1;3027x1;3028x1;3029x1;3030x1;3031x1;3032x1;3033x1;3034x1;3035x1;3036x1;3037x1;3038x1;3039x1;3040x1;3041x1;3042x1;3043x1;3044x1;3045x1;3046x1;3047x1;3048x1;3049x1;3050x1;3051x1;3052x1;3053x1;3054x1;3055x1;3056x1;3057x1;3058x1;3059x1;3060x1;3061x1;3062x1;3063x1;3064x1;3065x1;3066x1;3067x1;3068x1;3069x1;3070x1;3071x1;3072x1",
+      "pdd_kind": "recycle"
+    },
+    {
+      "itemdefid": 1200,
+      "type": "bundle",
+      "name": "100 Golden Bones",
+      "description": "100 Golden Bones for the Pet Da Dog Shop.",
+      "tradable": false,
+      "marketable": false,
+      "bundle": "101x100",
+      "pdd_kind": "currency_pack",
+      "hidden": true
+    },
+    {
+      "itemdefid": 1201,
+      "type": "bundle",
+      "name": "550 Golden Bones",
+      "description": "550 Golden Bones for the Pet Da Dog Shop.",
+      "tradable": false,
+      "marketable": false,
+      "bundle": "101x550",
+      "pdd_kind": "currency_pack",
+      "hidden": true
+    },
+    {
+      "itemdefid": 1202,
+      "type": "bundle",
+      "name": "1200 Golden Bones",
+      "description": "1200 Golden Bones for the Pet Da Dog Shop.",
+      "tradable": false,
+      "marketable": false,
+      "bundle": "101x1200",
+      "pdd_kind": "currency_pack",
+      "hidden": true
     },
     {
       "itemdefid": 2000,
@@ -71,9 +167,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/AngelWing.png",
-      "pdd_ui_asset": "res://Art/UI/Items/AngelWing.png"
+      "pdd_ui_asset": "res://Art/UI/Items/AngelWing.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2000.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2000.png"
     },
     {
       "itemdefid": 2001,
@@ -84,9 +183,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Ball.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Ball.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Ball.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2001.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2001.png"
     },
     {
       "itemdefid": 2002,
@@ -97,9 +199,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Bandana1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Bandana1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Bandana1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2002.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2002.png"
     },
     {
       "itemdefid": 2003,
@@ -110,9 +215,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Bone.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Bone.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Bone.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2003.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2003.png"
     },
     {
       "itemdefid": 2004,
@@ -123,9 +231,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Bow1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Bow1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Bow1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2004.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2004.png"
     },
     {
       "itemdefid": 2005,
@@ -136,9 +247,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/ChefHat.png",
-      "pdd_ui_asset": "res://Art/UI/Items/ChefHat.png"
+      "pdd_ui_asset": "res://Art/UI/Items/ChefHat.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2005.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2005.png"
     },
     {
       "itemdefid": 2006,
@@ -149,9 +263,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/CircleCharm.png",
-      "pdd_ui_asset": "res://Art/UI/Items/CircleCharm.png"
+      "pdd_ui_asset": "res://Art/UI/Items/CircleCharm.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2006.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2006.png"
     },
     {
       "itemdefid": 2007,
@@ -162,9 +279,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Collar1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Collar1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Collar1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2007.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2007.png"
     },
     {
       "itemdefid": 2008,
@@ -175,9 +295,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/CollarClip.png",
-      "pdd_ui_asset": "res://Art/UI/Items/CollarClip.png"
+      "pdd_ui_asset": "res://Art/UI/Items/CollarClip.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2008.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2008.png"
     },
     {
       "itemdefid": 2009,
@@ -188,9 +311,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Crown1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Crown1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Crown1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2009.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2009.png"
     },
     {
       "itemdefid": 2010,
@@ -201,9 +327,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/DiamondCharm.png",
-      "pdd_ui_asset": "res://Art/UI/Items/DiamondCharm.png"
+      "pdd_ui_asset": "res://Art/UI/Items/DiamondCharm.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2010.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2010.png"
     },
     {
       "itemdefid": 2011,
@@ -214,9 +343,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/DragonWing.png",
-      "pdd_ui_asset": "res://Art/UI/Items/DragonWing.png"
+      "pdd_ui_asset": "res://Art/UI/Items/DragonWing.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2011.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2011.png"
     },
     {
       "itemdefid": 2012,
@@ -227,9 +359,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/ExtraEyeHalf1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/ExtraEyeHalf1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/ExtraEyeHalf1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2012.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2012.png"
     },
     {
       "itemdefid": 2013,
@@ -240,9 +375,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/ExtraEyeHalf2.png",
-      "pdd_ui_asset": "res://Art/UI/Items/ExtraEyeHalf2.png"
+      "pdd_ui_asset": "res://Art/UI/Items/ExtraEyeHalf2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2013.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2013.png"
     },
     {
       "itemdefid": 2014,
@@ -253,9 +391,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/ExtraEyeOpen1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/ExtraEyeOpen1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/ExtraEyeOpen1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2014.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2014.png"
     },
     {
       "itemdefid": 2015,
@@ -266,9 +407,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/ExtraEyeOpen2.png",
-      "pdd_ui_asset": "res://Art/UI/Items/ExtraEyeOpen2.png"
+      "pdd_ui_asset": "res://Art/UI/Items/ExtraEyeOpen2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2015.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2015.png"
     },
     {
       "itemdefid": 2016,
@@ -279,9 +423,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Eyepatch.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Eyepatch.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Eyepatch.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2016.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2016.png"
     },
     {
       "itemdefid": 2017,
@@ -292,9 +439,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/FairyWing.png",
-      "pdd_ui_asset": "res://Art/UI/Items/FairyWing.png"
+      "pdd_ui_asset": "res://Art/UI/Items/FairyWing.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2017.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2017.png"
     },
     {
       "itemdefid": 2018,
@@ -305,9 +455,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/GooglyEye.png",
-      "pdd_ui_asset": "res://Art/UI/Items/GooglyEye.png"
+      "pdd_ui_asset": "res://Art/UI/Items/GooglyEye.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2018.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2018.png"
     },
     {
       "itemdefid": 2019,
@@ -318,9 +471,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Halo.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Halo.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Halo.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2019.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2019.png"
     },
     {
       "itemdefid": 2020,
@@ -331,9 +487,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/HeartCharm.png",
-      "pdd_ui_asset": "res://Art/UI/Items/HeartCharm.png"
+      "pdd_ui_asset": "res://Art/UI/Items/HeartCharm.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2020.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2020.png"
     },
     {
       "itemdefid": 2021,
@@ -344,9 +503,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/HeartGlasses.png",
-      "pdd_ui_asset": "res://Art/UI/Items/HeartGlasses.png"
+      "pdd_ui_asset": "res://Art/UI/Items/HeartGlasses.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2021.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2021.png"
     },
     {
       "itemdefid": 2022,
@@ -357,9 +519,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Horn1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Horn1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Horn1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2022.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2022.png"
     },
     {
       "itemdefid": 2023,
@@ -370,9 +535,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/HotDogBun.png",
-      "pdd_ui_asset": "res://Art/UI/Items/HotDogBun.png"
+      "pdd_ui_asset": "res://Art/UI/Items/HotDogBun.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2023.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2023.png"
     },
     {
       "itemdefid": 2024,
@@ -383,9 +551,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/JesterHat1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/JesterHat1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/JesterHat1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2024.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2024.png"
     },
     {
       "itemdefid": 2025,
@@ -396,9 +567,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/JesterHat2.png",
-      "pdd_ui_asset": "res://Art/UI/Items/JesterHat2.png"
+      "pdd_ui_asset": "res://Art/UI/Items/JesterHat2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2025.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2025.png"
     },
     {
       "itemdefid": 2026,
@@ -409,9 +583,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/RoundGlasses.png",
-      "pdd_ui_asset": "res://Art/UI/Items/RoundGlasses.png"
+      "pdd_ui_asset": "res://Art/UI/Items/RoundGlasses.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2026.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2026.png"
     },
     {
       "itemdefid": 2027,
@@ -422,9 +599,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/RubberDuck.png",
-      "pdd_ui_asset": "res://Art/UI/Items/RubberDuck.png"
+      "pdd_ui_asset": "res://Art/UI/Items/RubberDuck.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2027.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2027.png"
     },
     {
       "itemdefid": 2028,
@@ -435,9 +615,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/SafetyGlasses.png",
-      "pdd_ui_asset": "res://Art/UI/Items/SafetyGlasses.png"
+      "pdd_ui_asset": "res://Art/UI/Items/SafetyGlasses.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2028.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2028.png"
     },
     {
       "itemdefid": 2029,
@@ -448,9 +631,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Sauce.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Sauce.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Sauce.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2029.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2029.png"
     },
     {
       "itemdefid": 2030,
@@ -461,9 +647,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Scarf.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Scarf.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Scarf.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2030.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2030.png"
     },
     {
       "itemdefid": 2031,
@@ -474,9 +663,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/SFlower1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/SFlower1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/SFlower1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2031.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2031.png"
     },
     {
       "itemdefid": 2032,
@@ -487,9 +679,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/SFlower2.png",
-      "pdd_ui_asset": "res://Art/UI/Items/SFlower2.png"
+      "pdd_ui_asset": "res://Art/UI/Items/SFlower2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2032.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2032.png"
     },
     {
       "itemdefid": 2033,
@@ -500,9 +695,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Sock.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Sock.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Sock.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2033.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2033.png"
     },
     {
       "itemdefid": 2034,
@@ -513,9 +711,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/SquareCharm.png",
-      "pdd_ui_asset": "res://Art/UI/Items/SquareCharm.png"
+      "pdd_ui_asset": "res://Art/UI/Items/SquareCharm.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2034.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2034.png"
     },
     {
       "itemdefid": 2035,
@@ -526,9 +727,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/StrawHat1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/StrawHat1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/StrawHat1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2035.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2035.png"
     },
     {
       "itemdefid": 2036,
@@ -539,9 +743,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/StrawHat2.png",
-      "pdd_ui_asset": "res://Art/UI/Items/StrawHat2.png"
+      "pdd_ui_asset": "res://Art/UI/Items/StrawHat2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2036.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2036.png"
     },
     {
       "itemdefid": 2037,
@@ -552,9 +759,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Tiara.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Tiara.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Tiara.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2037.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2037.png"
     },
     {
       "itemdefid": 2038,
@@ -565,9 +775,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Tie.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Tie.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Tie.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2038.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2038.png"
     },
     {
       "itemdefid": 2039,
@@ -578,9 +791,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/TopHat1.png",
-      "pdd_ui_asset": "res://Art/UI/Items/TopHat1.png"
+      "pdd_ui_asset": "res://Art/UI/Items/TopHat1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2039.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2039.png"
     },
     {
       "itemdefid": 2040,
@@ -591,9 +807,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/TopHat2.png",
-      "pdd_ui_asset": "res://Art/UI/Items/TopHat2.png"
+      "pdd_ui_asset": "res://Art/UI/Items/TopHat2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2040.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2040.png"
     },
     {
       "itemdefid": 2041,
@@ -604,9 +823,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/TriangleGlasses.png",
-      "pdd_ui_asset": "res://Art/UI/Items/TriangleGlasses.png"
+      "pdd_ui_asset": "res://Art/UI/Items/TriangleGlasses.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2041.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2041.png"
     },
     {
       "itemdefid": 2042,
@@ -617,9 +839,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Tutu.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Tutu.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Tutu.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2042.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2042.png"
     },
     {
       "itemdefid": 2043,
@@ -630,9 +855,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/AngryBrows.png",
-      "pdd_ui_asset": "res://Art/UI/Items/AngryBrows.png"
+      "pdd_ui_asset": "res://Art/UI/Items/AngryBrows.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2043.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2043.png"
     },
     {
       "itemdefid": 2044,
@@ -643,9 +871,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Antennae.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Antennae.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Antennae.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2044.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2044.png"
     },
     {
       "itemdefid": 2045,
@@ -656,9 +887,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/BaseballCatHat.png",
-      "pdd_ui_asset": "res://Art/UI/Items/BaseballCatHat.png"
+      "pdd_ui_asset": "res://Art/UI/Items/BaseballCatHat.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2045.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2045.png"
     },
     {
       "itemdefid": 2046,
@@ -669,9 +903,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Boot.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Boot.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Boot.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2046.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2046.png"
     },
     {
       "itemdefid": 2047,
@@ -682,9 +919,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/BucketHat.png",
-      "pdd_ui_asset": "res://Art/UI/Items/BucketHat.png"
+      "pdd_ui_asset": "res://Art/UI/Items/BucketHat.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2047.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2047.png"
     },
     {
       "itemdefid": 2048,
@@ -695,9 +935,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/CatEars.png",
-      "pdd_ui_asset": "res://Art/UI/Items/CatEars.png"
+      "pdd_ui_asset": "res://Art/UI/Items/CatEars.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2048.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2048.png"
     },
     {
       "itemdefid": 2049,
@@ -708,9 +951,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/CyberVisor.png",
-      "pdd_ui_asset": "res://Art/UI/Items/CyberVisor.png"
+      "pdd_ui_asset": "res://Art/UI/Items/CyberVisor.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2049.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2049.png"
     },
     {
       "itemdefid": 2050,
@@ -721,9 +967,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/CyberWing.png",
-      "pdd_ui_asset": "res://Art/UI/Items/CyberWing.png"
+      "pdd_ui_asset": "res://Art/UI/Items/CyberWing.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2050.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2050.png"
     },
     {
       "itemdefid": 2051,
@@ -734,9 +983,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/DizzyEye.png",
-      "pdd_ui_asset": "res://Art/UI/Items/DizzyEye.png"
+      "pdd_ui_asset": "res://Art/UI/Items/DizzyEye.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2051.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2051.png"
     },
     {
       "itemdefid": 2052,
@@ -747,9 +999,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Headphones.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Headphones.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Headphones.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2052.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2052.png"
     },
     {
       "itemdefid": 2053,
@@ -760,9 +1015,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/HeartEye.png",
-      "pdd_ui_asset": "res://Art/UI/Items/HeartEye.png"
+      "pdd_ui_asset": "res://Art/UI/Items/HeartEye.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2053.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2053.png"
     },
     {
       "itemdefid": 2054,
@@ -773,9 +1031,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Leaf.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Leaf.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Leaf.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2054.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2054.png"
     },
     {
       "itemdefid": 2055,
@@ -786,9 +1047,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Lily.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Lily.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Lily.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2055.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2055.png"
     },
     {
       "itemdefid": 2056,
@@ -799,9 +1063,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/LoopCollar.png",
-      "pdd_ui_asset": "res://Art/UI/Items/LoopCollar.png"
+      "pdd_ui_asset": "res://Art/UI/Items/LoopCollar.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2056.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2056.png"
     },
     {
       "itemdefid": 2057,
@@ -812,9 +1079,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/PawDecal.png",
-      "pdd_ui_asset": "res://Art/UI/Items/PawDecal.png"
+      "pdd_ui_asset": "res://Art/UI/Items/PawDecal.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2057.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2057.png"
     },
     {
       "itemdefid": 2058,
@@ -825,9 +1095,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/PropellerHat.png",
-      "pdd_ui_asset": "res://Art/UI/Items/PropellerHat.png"
+      "pdd_ui_asset": "res://Art/UI/Items/PropellerHat.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2058.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2058.png"
     },
     {
       "itemdefid": 2059,
@@ -838,9 +1111,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/Rose.png",
-      "pdd_ui_asset": "res://Art/UI/Items/Rose.png"
+      "pdd_ui_asset": "res://Art/UI/Items/Rose.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2059.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2059.png"
     },
     {
       "itemdefid": 2060,
@@ -851,9 +1127,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/TenGallonHat.png",
-      "pdd_ui_asset": "res://Art/UI/Items/TenGallonHat.png"
+      "pdd_ui_asset": "res://Art/UI/Items/TenGallonHat.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2060.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2060.png"
     },
     {
       "itemdefid": 2061,
@@ -864,9 +1143,12 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/VisorHat.png",
-      "pdd_ui_asset": "res://Art/UI/Items/VisorHat.png"
+      "pdd_ui_asset": "res://Art/UI/Items/VisorHat.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2061.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2061.png"
     },
     {
       "itemdefid": 2062,
@@ -877,958 +1159,1180 @@
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x100",
       "pdd_kind": "accessory",
       "pdd_asset": "res://Art/Items/WitchHat.png",
-      "pdd_ui_asset": "res://Art/UI/Items/WitchHat.png"
+      "pdd_ui_asset": "res://Art/UI/Items/WitchHat.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2062.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/2062.png"
     },
     {
       "itemdefid": 3000,
       "type": "item",
       "name": "Australian Shepherd 1",
       "description": "Australian Shepherd 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/AustralianShepard1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/AustralianShepard1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/AustralianShepard1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3000.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3000.png"
     },
     {
       "itemdefid": 3001,
       "type": "item",
       "name": "Australian Shepherd 2",
       "description": "Australian Shepherd 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/AustralianShepard2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/AustralianShepard2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/AustralianShepard2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3001.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3001.png"
     },
     {
       "itemdefid": 3002,
       "type": "item",
       "name": "Basset Hound 1",
       "description": "Basset Hound 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Bassethound1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Bassethound1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Bassethound1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3002.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3002.png"
     },
     {
       "itemdefid": 3003,
       "type": "item",
       "name": "Basset Hound 2",
       "description": "Basset Hound 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Bassethound2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Bassethound2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Bassethound2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3003.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3003.png"
     },
     {
       "itemdefid": 3004,
       "type": "item",
       "name": "Bloodhound 1",
       "description": "Bloodhound 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Bloodhound1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Bloodhound1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Bloodhound1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3004.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3004.png"
     },
     {
       "itemdefid": 3005,
       "type": "item",
       "name": "Bloodhound 2",
       "description": "Bloodhound 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Bloodhound2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Bloodhound2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Bloodhound2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3005.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3005.png"
     },
     {
       "itemdefid": 3006,
       "type": "item",
       "name": "Border Collie 1",
       "description": "Border Collie 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/BorderCollie1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/BorderCollie1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/BorderCollie1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3006.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3006.png"
     },
     {
       "itemdefid": 3007,
       "type": "item",
       "name": "Border Collie 2",
       "description": "Border Collie 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/BorderCollie2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/BorderCollie2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/BorderCollie2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3007.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3007.png"
     },
     {
       "itemdefid": 3008,
       "type": "item",
       "name": "Borzoi 1",
       "description": "Borzoi 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Borzoi1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Borzoi1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Borzoi1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3008.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3008.png"
     },
     {
       "itemdefid": 3009,
       "type": "item",
       "name": "Borzoi 2",
       "description": "Borzoi 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Borzoi2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Borzoi2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Borzoi2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3009.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3009.png"
     },
     {
       "itemdefid": 3010,
       "type": "item",
       "name": "Boxer 1",
       "description": "Boxer 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Boxer1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Boxer1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Boxer1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3010.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3010.png"
     },
     {
       "itemdefid": 3011,
       "type": "item",
       "name": "Boxer 2",
       "description": "Boxer 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Boxer2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Boxer2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Boxer2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3011.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3011.png"
     },
     {
       "itemdefid": 3012,
       "type": "item",
       "name": "Bulldog 1",
       "description": "Bulldog 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Bulldog1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Bulldog1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Bulldog1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3012.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3012.png"
     },
     {
       "itemdefid": 3013,
       "type": "item",
       "name": "Bulldog 2",
       "description": "Bulldog 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Bulldog2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Bulldog2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Bulldog2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3013.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3013.png"
     },
     {
       "itemdefid": 3014,
       "type": "item",
       "name": "Chihuahua 1",
       "description": "Chihuahua 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Chihuahua1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Chihuahua1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Chihuahua1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3014.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3014.png"
     },
     {
       "itemdefid": 3015,
       "type": "item",
       "name": "Chihuahua 2",
       "description": "Chihuahua 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Chihuahua2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Chihuahua2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Chihuahua2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3015.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3015.png"
     },
     {
       "itemdefid": 3016,
       "type": "item",
       "name": "Cocker Spaniel 1",
       "description": "Cocker Spaniel 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/CockerSpaniel1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/CockerSpaniel1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/CockerSpaniel1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3016.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3016.png"
     },
     {
       "itemdefid": 3017,
       "type": "item",
       "name": "Cocker Spaniel 2",
       "description": "Cocker Spaniel 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/CockerSpaniel2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/CockerSpaniel2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/CockerSpaniel2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3017.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3017.png"
     },
     {
       "itemdefid": 3018,
       "type": "item",
       "name": "Corgi 1",
       "description": "Corgi 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Corgi1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Corgi1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Corgi1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3018.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3018.png"
     },
     {
       "itemdefid": 3019,
       "type": "item",
       "name": "Corgi 2",
       "description": "Corgi 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Corgi2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Corgi2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Corgi2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3019.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3019.png"
     },
     {
       "itemdefid": 3020,
       "type": "item",
       "name": "English Sheepdog 1",
       "description": "English Sheepdog 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/EnglishSheepdog1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/EnglishSheepdog1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/EnglishSheepdog1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3020.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3020.png"
     },
     {
       "itemdefid": 3021,
       "type": "item",
       "name": "English Sheepdog 2",
       "description": "English Sheepdog 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/EnglishSheepdog2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/EnglishSheepdog2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/EnglishSheepdog2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3021.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3021.png"
     },
     {
       "itemdefid": 3022,
       "type": "item",
       "name": "Great Dane 1",
       "description": "Great Dane 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/GreatDane1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/GreatDane1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/GreatDane1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3022.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3022.png"
     },
     {
       "itemdefid": 3023,
       "type": "item",
       "name": "Great Dane 2",
       "description": "Great Dane 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/GreatDane2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/GreatDane2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/GreatDane2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3023.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3023.png"
     },
     {
       "itemdefid": 3024,
       "type": "item",
       "name": "Great Pyrenees 1",
       "description": "Great Pyrenees 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/GreatPyranees1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/GreatPyranees1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/GreatPyranees1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3024.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3024.png"
     },
     {
       "itemdefid": 3025,
       "type": "item",
       "name": "Great Pyrenees 2",
       "description": "Great Pyrenees 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/GreatPyranees2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/GreatPyranees2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/GreatPyranees2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3025.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3025.png"
     },
     {
       "itemdefid": 3026,
       "type": "item",
       "name": "Greyhound 1",
       "description": "Greyhound 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Greyhound1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Greyhound1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Greyhound1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3026.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3026.png"
     },
     {
       "itemdefid": 3027,
       "type": "item",
       "name": "Greyhound 2",
       "description": "Greyhound 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Greyhound2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Greyhound2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Greyhound2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3027.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3027.png"
     },
     {
       "itemdefid": 3028,
       "type": "item",
       "name": "Husky 1",
       "description": "Husky 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Husky1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Husky1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Husky1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3028.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3028.png"
     },
     {
       "itemdefid": 3029,
       "type": "item",
       "name": "Husky 2",
       "description": "Husky 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Husky2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Husky2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Husky2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3029.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3029.png"
     },
     {
       "itemdefid": 3030,
       "type": "item",
       "name": "Labrador Retriever 1",
       "description": "Labrador Retriever 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Lab1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Lab1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Lab1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3030.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3030.png"
     },
     {
       "itemdefid": 3031,
       "type": "item",
       "name": "Labrador Retriever 2",
       "description": "Labrador Retriever 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Lab2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Lab2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Lab2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3031.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3031.png"
     },
     {
       "itemdefid": 3032,
       "type": "item",
       "name": "Labrador Retriever 3",
       "description": "Labrador Retriever 3 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Lab3.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Lab3.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Lab3.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3032.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3032.png"
     },
     {
       "itemdefid": 3033,
       "type": "item",
       "name": "Pomeranian 1",
       "description": "Pomeranian 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Pomeranian1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Pomeranian1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Pomeranian1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3033.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3033.png"
     },
     {
       "itemdefid": 3034,
       "type": "item",
       "name": "Pomeranian 2",
       "description": "Pomeranian 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Pomeranian2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Pomeranian2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Pomeranian2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3034.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3034.png"
     },
     {
       "itemdefid": 3035,
       "type": "item",
       "name": "Poodle 1",
       "description": "Poodle 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Poodle1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Poodle1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Poodle1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3035.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3035.png"
     },
     {
       "itemdefid": 3036,
       "type": "item",
       "name": "Poodle 2",
       "description": "Poodle 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Poodle2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Poodle2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Poodle2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3036.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3036.png"
     },
     {
       "itemdefid": 3037,
       "type": "item",
       "name": "Pug 1",
       "description": "Pug 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Pug1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Pug1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Pug1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3037.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3037.png"
     },
     {
       "itemdefid": 3038,
       "type": "item",
       "name": "Pug 2",
       "description": "Pug 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Pug2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Pug2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Pug2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3038.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3038.png"
     },
     {
       "itemdefid": 3039,
       "type": "item",
       "name": "Rat Terrier 1",
       "description": "Rat Terrier 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/RatTerrier1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/RatTerrier1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/RatTerrier1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3039.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3039.png"
     },
     {
       "itemdefid": 3040,
       "type": "item",
       "name": "Rat Terrier 2",
       "description": "Rat Terrier 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/RatTerrier2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/RatTerrier2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/RatTerrier2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3040.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3040.png"
     },
     {
       "itemdefid": 3041,
       "type": "item",
       "name": "Shih Tzu 1",
       "description": "Shih Tzu 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/ShihTzu1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/ShihTzu1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/ShihTzu1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3041.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3041.png"
     },
     {
       "itemdefid": 3042,
       "type": "item",
       "name": "Shih Tzu 2",
       "description": "Shih Tzu 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/ShihTzu2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/ShihTzu2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/ShihTzu2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3042.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3042.png"
     },
     {
       "itemdefid": 3043,
       "type": "item",
       "name": "Saint Bernard 1",
       "description": "Saint Bernard 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/StBernard1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/StBernard1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/StBernard1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3043.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3043.png"
     },
     {
       "itemdefid": 3044,
       "type": "item",
       "name": "Saint Bernard 2",
       "description": "Saint Bernard 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/StBernard2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/StBernard2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/StBernard2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3044.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3044.png"
     },
     {
       "itemdefid": 3045,
       "type": "item",
       "name": "Bernese Mountain Dog 1",
       "description": "Bernese Mountain Dog 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/BermeseMountainDog1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/BermeseMountainDog1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/BermeseMountainDog1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3045.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3045.png"
     },
     {
       "itemdefid": 3046,
       "type": "item",
       "name": "Bernese Mountain Dog Mix",
       "description": "Bernese Mountain Dog Mix for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/BermeseMountainDog2MIX.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/BermeseMountainDog2MIX.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/BermeseMountainDog2MIX.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3046.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3046.png"
     },
     {
       "itemdefid": 3047,
       "type": "item",
       "name": "Cane Corso 1",
       "description": "Cane Corso 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/CaneCorso1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/CaneCorso1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/CaneCorso1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3047.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3047.png"
     },
     {
       "itemdefid": 3048,
       "type": "item",
       "name": "Cane Corso 2",
       "description": "Cane Corso 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/CaneCorso2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/CaneCorso2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/CaneCorso2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3048.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3048.png"
     },
     {
       "itemdefid": 3049,
       "type": "item",
       "name": "Corgi 3",
       "description": "Corgi 3 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Corgi3.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Corgi3.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Corgi3.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3049.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3049.png"
     },
     {
       "itemdefid": 3050,
       "type": "item",
       "name": "Corgi 4",
       "description": "Corgi 4 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Corgi4.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Corgi4.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Corgi4.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3050.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3050.png"
     },
     {
       "itemdefid": 3051,
       "type": "item",
       "name": "Doberman 1",
       "description": "Doberman 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Doberman1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Doberman1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Doberman1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3051.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3051.png"
     },
     {
       "itemdefid": 3052,
       "type": "item",
       "name": "Doberman 2",
       "description": "Doberman 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Doberman2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Doberman2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Doberman2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3052.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3052.png"
     },
     {
       "itemdefid": 3053,
       "type": "item",
       "name": "Finnish Spitz 1",
       "description": "Finnish Spitz 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/FinnishSpitz1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/FinnishSpitz1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/FinnishSpitz1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3053.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3053.png"
     },
     {
       "itemdefid": 3054,
       "type": "item",
       "name": "Finnish Spitz 2",
       "description": "Finnish Spitz 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/FinnishSpitz2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/FinnishSpitz2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/FinnishSpitz2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3054.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3054.png"
     },
     {
       "itemdefid": 3055,
       "type": "item",
       "name": "German Shorthaired Pointer 1",
       "description": "German Shorthaired Pointer 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/GermanShorthairPointer1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/GermanShorthairPointer1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/GermanShorthairPointer1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3055.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3055.png"
     },
     {
       "itemdefid": 3056,
       "type": "item",
       "name": "German Shorthaired Pointer 2",
       "description": "German Shorthaired Pointer 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/GermanShorthairPointer2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/GermanShorthairPointer2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/GermanShorthairPointer2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3056.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3056.png"
     },
     {
       "itemdefid": 3057,
       "type": "item",
       "name": "Indian Pariah 1",
       "description": "Indian Pariah 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/IndianPariah1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/IndianPariah1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/IndianPariah1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3057.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3057.png"
     },
     {
       "itemdefid": 3058,
       "type": "item",
       "name": "Indian Pariah 2",
       "description": "Indian Pariah 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/IndianPariah2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/IndianPariah2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/IndianPariah2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3058.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3058.png"
     },
     {
       "itemdefid": 3059,
       "type": "item",
       "name": "Jack Russell Terrier 1",
       "description": "Jack Russell Terrier 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/JackRusselTerrier1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/JackRusselTerrier1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/JackRusselTerrier1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3059.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3059.png"
     },
     {
       "itemdefid": 3060,
       "type": "item",
       "name": "Jack Russell Terrier 2",
       "description": "Jack Russell Terrier 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/JackRusselTerrier2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/JackRusselTerrier2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/JackRusselTerrier2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3060.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3060.png"
     },
     {
       "itemdefid": 3061,
       "type": "item",
       "name": "Maltese 1",
       "description": "Maltese 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Maltese1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Maltese1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Maltese1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3061.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3061.png"
     },
     {
       "itemdefid": 3062,
       "type": "item",
       "name": "Maltese 2",
       "description": "Maltese 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Maltese2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Maltese2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Maltese2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3062.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3062.png"
     },
     {
       "itemdefid": 3063,
       "type": "item",
       "name": "Schnauzer 1",
       "description": "Schnauzer 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Schnauzer1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Schnauzer1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Schnauzer1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3063.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3063.png"
     },
     {
       "itemdefid": 3064,
       "type": "item",
       "name": "Schnauzer 2",
       "description": "Schnauzer 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Schnauzer2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Schnauzer2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Schnauzer2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3064.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3064.png"
     },
     {
       "itemdefid": 3065,
       "type": "item",
       "name": "Dalmatian 1",
       "description": "Dalmatian 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Dalmatian1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Dalmatian1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Dalmatian1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3065.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3065.png"
     },
     {
       "itemdefid": 3066,
       "type": "item",
       "name": "Dalmatian 2",
       "description": "Dalmatian 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Dalmatian2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Dalmatian2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Dalmatian2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3066.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3066.png"
     },
     {
       "itemdefid": 3067,
       "type": "item",
       "name": "Dachshund 1",
       "description": "Dachshund 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Daschund1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Daschund1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Daschund1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3067.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3067.png"
     },
     {
       "itemdefid": 3068,
       "type": "item",
       "name": "Dachshund 2",
       "description": "Dachshund 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/Daschund2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/Daschund2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/Daschund2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3068.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3068.png"
     },
     {
       "itemdefid": 3069,
       "type": "item",
       "name": "Portuguese Water Dog 1",
       "description": "Portuguese Water Dog 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/PortugeseWaterDog1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/PortugeseWaterDog1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/PortugeseWaterDog1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3069.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3069.png"
     },
     {
       "itemdefid": 3070,
       "type": "item",
       "name": "Portuguese Water Dog 2",
       "description": "Portuguese Water Dog 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/PortugeseWaterDog2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/PortugeseWaterDog2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/PortugeseWaterDog2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3070.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3070.png"
     },
     {
       "itemdefid": 3071,
       "type": "item",
       "name": "Shiba Inu 1",
       "description": "Shiba Inu 1 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/ShibaInu1.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/ShibaInu1.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/ShibaInu1.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3071.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3071.png"
     },
     {
       "itemdefid": 3072,
       "type": "item",
       "name": "Shiba Inu 2",
       "description": "Shiba Inu 2 for your desktop companion.",
-      "display_type": "Dog",
+      "display_type": "Dog Skin",
       "tradable": false,
       "marketable": false,
       "auto_stack": true,
+      "exchange": "101x200",
       "pdd_kind": "dog",
       "pdd_asset": "res://Art/Dogs/ShibaInu2.png",
-      "pdd_ui_asset": "res://Art/UI/Dogs/ShibaInu2.png"
+      "pdd_ui_asset": "res://Art/UI/Dogs/ShibaInu2.png",
+      "icon_url": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3072.png",
+      "icon_url_large": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1/3072.png"
     }
   ]
 }

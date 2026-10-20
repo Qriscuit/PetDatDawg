@@ -9,7 +9,8 @@ param(
     [switch]$WorkerOnly,
     [string]$RetryEventId = '',
     [long]$RetryExpectedPets = 0,
-    [string]$LogDirectory = ''
+    [string]$LogDirectory = '',
+    [ValidateSet('any', 'enabled', 'disabled')][string]$ExpectedShopState = 'any'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,7 +23,7 @@ if ($RetryEventId) {
 } elseif ($PSBoundParameters.ContainsKey('RetryExpectedPets')) { throw 'RetryExpectedPets requires RetryEventId.' }
 if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) { throw "Godot 4.6.3 was not found at $GodotPath." }
 $liveSmokeProjectPath = Split-Path -Parent $PSScriptRoot
-$liveSmokeNames = @('PDD_LIVE_STEAM_SMOKE', 'PDD_LIVE_SMOKE_GRANTS', 'PDD_LIVE_SMOKE_TIMEOUT_SECONDS', 'PDD_LIVE_SMOKE_DOG_INPUT', 'PDD_LIVE_SMOKE_WORKER_ONLY', 'PDD_LIVE_SMOKE_RETRY_EVENT_ID', 'PDD_LIVE_SMOKE_RETRY_EXPECTED_PETS', 'PDD_STEAM_APP_ID', 'PDD_BACKEND_URL', 'PDD_DISABLE_STEAM', 'PDD_DISABLE_GLOBAL_INPUT', 'PDD_DISABLE_TRAY', 'APPDATA', 'LOCALAPPDATA', 'TEMP', 'TMP')
+$liveSmokeNames = @('PDD_LIVE_STEAM_SMOKE', 'PDD_LIVE_SMOKE_GRANTS', 'PDD_LIVE_SMOKE_TIMEOUT_SECONDS', 'PDD_LIVE_SMOKE_DOG_INPUT', 'PDD_LIVE_SMOKE_WORKER_ONLY', 'PDD_LIVE_SMOKE_RETRY_EVENT_ID', 'PDD_LIVE_SMOKE_RETRY_EXPECTED_PETS', 'PDD_LIVE_SMOKE_EXPECT_SHOP_ENABLED', 'PDD_STEAM_APP_ID', 'PDD_BACKEND_URL', 'PDD_DISABLE_STEAM', 'PDD_DISABLE_GLOBAL_INPUT', 'PDD_DISABLE_TRAY', 'APPDATA', 'LOCALAPPDATA', 'TEMP', 'TMP')
 $liveSmokePrevious = @{}
 foreach ($liveSmokeName in $liveSmokeNames) { $liveSmokePrevious[$liveSmokeName] = [Environment]::GetEnvironmentVariable($liveSmokeName, 'Process') }
 $liveSmokeProcess = $null
@@ -34,6 +35,7 @@ try {
     $env:PDD_LIVE_SMOKE_WORKER_ONLY = if ($WorkerOnly) { '1' } else { '0' }
     $env:PDD_LIVE_SMOKE_RETRY_EVENT_ID = if ($RetryEventId) { $liveSmokeRetryGuid.ToString('D') } else { '' }
     $env:PDD_LIVE_SMOKE_RETRY_EXPECTED_PETS = if ($RetryEventId) { $RetryExpectedPets.ToString([Globalization.CultureInfo]::InvariantCulture) } else { '' }
+    $env:PDD_LIVE_SMOKE_EXPECT_SHOP_ENABLED = if ($ExpectedShopState -eq 'enabled') { '1' } elseif ($ExpectedShopState -eq 'disabled') { '0' } else { '' }
     $env:PDD_STEAM_APP_ID = '4817200'
     $env:PDD_DISABLE_STEAM = '0'
     $env:PDD_DISABLE_GLOBAL_INPUT = '1'

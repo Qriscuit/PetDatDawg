@@ -418,6 +418,15 @@ public partial class UiAuthoringSmokeTest : Node
 		foreach (var tab in new[] { "%DogsTab", "%ItemsTab", "%ShopTab", "%SettingsTab" })
 		{
 			menu.GetNode<Button>(tab).EmitSignal(BaseButton.SignalName.Pressed); await Settle();
+			if (tab == "%ShopTab" && !menu.GetVisibleRect().Grow(1).Encloses(menu.GetNode<Control>("Background").GetGlobalRect()))
+			{
+				await Capture(menu, "shop-overflow-diagnostic");
+				foreach (var name in new[] { "Background", "%ShopPage", "%ShopScroll", "%ShopBoxGrid", "%DigBoxOdds", "%ShopBones" })
+				{
+					var control = menu.GetNode<Control>(name);
+					GD.Print($"SHOP_LAYOUT_DIAGNOSTIC {name}: rect={control.GetGlobalRect()}; minimum={control.GetCombinedMinimumSize()}; viewport={menu.GetVisibleRect()}; native={menu.Size}");
+				}
+			}
 			Require(menu.GetVisibleRect().Grow(1).Encloses(menu.GetNode<Control>("Background").GetGlobalRect())
 				&& menu.Size == minimum && menu.MinSize == minimum && menu.Position == position,
 				$"The {tab} page fits the minimum window at both 150% fonts and 175% menu size.");

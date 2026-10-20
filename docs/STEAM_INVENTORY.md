@@ -1,10 +1,13 @@
 # Pet Da Dog Steam Inventory
 
 The upload schema is `SteamInventory/itemdefs.json` for Steam AppID **4817200**.
-It contains 141 definitions: Pets currency, 63 accessories, 73 dog variants, two
-inventory boxes, and two random generators. Each PNG in `Pet_Da_Dog_CSharp/Art/Items` or
-`Pet_Da_Dog_CSharp/Art/Dogs` maps to exactly one cosmetic definition. Matching
-`Art/UI` images are previews of the same items.
+The current Golden Bones implementation prepares **150 definitions** from
+`SteamInventory/economy.json`: both currencies, all 136 cosmetics, legacy boxes,
+new generators, a server-issued permit, recycling, and gated currency packs.
+Use [the current schema/release guide](../SteamInventory/README.md) and
+[Shop behavior](GOLDEN_BONES_SHOP.md). Publication is a separate operation;
+the historical release record below is not evidence that the new schema is live.
+Matching `Art/UI` images are previews of each cosmetic.
 
 The October 18, 2026 [source asset sync](https://drive.google.com/drive/folders/1FuRSUheNvpy9rXZlQkTX8Rh3XpYCGfUV)
 adds 20 accessories and 20 dog variants while preserving every existing ID.
@@ -24,8 +27,9 @@ or opening was used for validation.
 
 The subsequent Drive sync prepares eight more dog variants locally, using IDs
 3065–3072. The client catalog, item definitions, and Worker reward range now
-include them. This 141-definition schema still needs to be uploaded to Steam,
-followed by Worker redeployment. The verified live release above remains the
+include them. The Golden Bones implementation now supersedes that prepared
+catalog with 150 definitions; it requires Steam publication and Worker deployment.
+The verified live release above remains the
 133-definition release with 65 dog outcomes until those publication steps finish.
 
 ## Definition IDs

@@ -7,5 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../Pet_Da_Dog_CSharp/Scripts/BackendPetClient.cs" Link="BackendPetClient.cs" />
+    <Compile Include="../../Pet_Da_Dog_CSharp/Scripts/BackendPetClient.Shop.cs" Link="BackendPetClient.Shop.cs" />
+    <Compile Include="../../Pet_Da_Dog_CSharp/Scripts/ShopModels.cs" Link="ShopModels.cs" />
   </ItemGroup>
 </Project>

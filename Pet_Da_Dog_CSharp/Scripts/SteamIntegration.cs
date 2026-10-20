@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Godot;
 using Steamworks;
 
-public sealed class SteamIntegration : IDisposable
+public sealed partial class SteamIntegration : IDisposable
 {
 	public const string BackendIdentity = "petdadog-backend";
 
@@ -69,6 +69,7 @@ public sealed class SteamIntegration : IDisposable
 			SteamId = (ulong)SteamUser.GetSteamID().m_SteamID;
 			Status = $"Steam initialized as {SteamId}.";
 			_webApiTicketCallback = Callback<GetTicketForWebApiResponse_t>.Create(OnWebApiTicket);
+			InitializeCommerceCallbacks();
 			_initializationRetryDelay = 0;
 			return true;
 		}
@@ -138,6 +139,7 @@ public sealed class SteamIntegration : IDisposable
 
 		_webApiTicketCallback?.Dispose();
 		_webApiTicketCallback = null;
+		DisposeCommerce();
 
 		if (_initialized)
 		{

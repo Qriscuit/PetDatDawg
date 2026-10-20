@@ -11,7 +11,7 @@ using Godot;
 
 public sealed record SteamInventoryItem(string ItemId, int ItemDefId, long Quantity);
 
-public sealed class BackendPetClient : IDisposable
+public sealed partial class BackendPetClient : IDisposable
 {
 	private const string DefaultBackendUrl = "https://petdadawg.americlasagna.workers.dev";
 	private const double RetryDelaySeconds = 2.0;
@@ -47,8 +47,8 @@ public sealed class BackendPetClient : IDisposable
 	public long? ConfirmedPets { get; private set; }
 	public IReadOnlyList<SteamInventoryItem> InventoryItems { get; private set; } = Array.Empty<SteamInventoryItem>();
 	public IReadOnlyList<SteamInventoryItem> ReceivedItems { get; private set; } = Array.Empty<SteamInventoryItem>();
-	public bool IsOperationInFlight => _authInFlight || _requestInFlight || _exchangeInFlight;
-	public bool HasPendingExchange => _pendingExchange != null;
+	public bool IsOperationInFlight => _authInFlight || _requestInFlight || _exchangeInFlight || _shopRequestInFlight || _shopAckInFlight;
+	public bool HasPendingExchange => _pendingExchange != null || HasPendingShopOperation;
 	public string Status { get; private set; } = "Backend is not authenticated.";
 
 	public void EnqueuePetGrant(Guid clientEventId) => _pendingGrantIds.Enqueue(clientEventId);
@@ -56,10 +56,13 @@ public sealed class BackendPetClient : IDisposable
 	public void Tick(double delta, CancellationToken cancellationToken)
 	{
 		_retryDelay = Math.Max(0.0, _retryDelay - delta);
+		_shopAckRetryDelay = Math.Max(0.0, _shopAckRetryDelay - delta);
 		if (_disposed || cancellationToken.IsCancellationRequested || !IsAuthenticated || IsOperationInFlight || _retryDelay > 0.0)
 			return;
 		// Resolve an uncertain exchange before any new Steam inventory mutation.
-		if (_pendingExchange != null) _ = ProcessPendingExchangeAsync(cancellationToken);
+		if (HasPendingShopOperation) _ = RecoverShopOperationAsync(cancellationToken);
+		else if (_pendingExchange != null) _ = ProcessPendingExchangeAsync(cancellationToken);
+		else if (_pendingReceiptAckIds.Count > 0 && _shopAckRetryDelay <= 0) _ = RetryShopAcknowledgmentAsync(cancellationToken);
 		else if (_pendingGrantIds.Count > 0) _ = GrantNextPetAsync(cancellationToken);
 	}
 
@@ -86,6 +89,7 @@ public sealed class BackendPetClient : IDisposable
 					InventoryItems = Array.Empty<SteamInventoryItem>();
 					ReceivedItems = Array.Empty<SteamInventoryItem>();
 					_pendingExchange = null;
+					ResetShopAccount();
 					_pendingGrantIds.Clear();
 				}
 				_authenticatedSteamId = auth.SteamId;
@@ -99,6 +103,7 @@ public sealed class BackendPetClient : IDisposable
 				_requests.Release();
 			}
 			await RefreshInventoryAsync(cancellationToken);
+			await RefreshShopAsync(cancellationToken);
 		}
 		catch (OperationCanceledException) { Status = "Backend auth canceled."; }
 		catch (Exception exception)
@@ -181,7 +186,7 @@ public sealed class BackendPetClient : IDisposable
 			Status = "Connect to Steam before buying or opening a box.";
 			return Task.FromResult(false);
 		}
-		if (_pendingExchange != null)
+		if (HasPendingExchange || IsShopOperationInFlight)
 		{
 			Status = "Wait for Steam to confirm the previous box exchange.";
 			return Task.FromResult(false);
@@ -300,6 +305,7 @@ public sealed class BackendPetClient : IDisposable
 			throw new InvalidOperationException("Backend returned no confirmed Steam inventory.");
 		ConfirmedPets = confirmed;
 		InventoryItems = Array.AsReadOnly(items);
+		ApplyGoldenBonesFromInventory(items);
 	}
 
 	private async Task RequireSuccessAsync(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -339,6 +345,11 @@ public sealed class BackendPetClient : IDisposable
 	private void RecoverPendingExchange(PendingOperationResponse? operation)
 	{
 		if (operation == null) return;
+		if (operation.Kind is "purchase" or "recycle")
+		{
+			RecoverShopPending(new ShopPendingOperation { ClientEventId = operation.ClientEventId, Kind = operation.Kind, OfferId = operation.OfferId });
+			return;
+		}
 		if (!Guid.TryParse(operation.ClientEventId, out var clientEventId) ||
 			(operation.Kind == "buy" && operation.BoxType is not ("dog" or "accessory")) ||
 			(operation.Kind == "open" && string.IsNullOrWhiteSpace(operation.BoxItemId)) ||
@@ -349,7 +360,7 @@ public sealed class BackendPetClient : IDisposable
 
 	private static bool IsDefiniteExchangeRejection(BackendRequestException exception) =>
 		exception.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.Forbidden or HttpStatusCode.NotFound ||
-		(exception.StatusCode == HttpStatusCode.Conflict && exception.Code is "insufficient_pets" or "operation_conflict" or "exchange_rejected" or "box_not_found");
+		(exception.StatusCode == HttpStatusCode.Conflict && exception.Code is "insufficient_pets" or "operation_conflict" or "exchange_rejected" or "box_not_found" or "update_required");
 
 	private void ResetSession()
 	{
@@ -375,7 +386,7 @@ public sealed class BackendPetClient : IDisposable
 	private sealed record OpenBoxRequest(Guid ClientEventId, string BoxItemId);
 	private sealed record InventoryResponse(long? Pets, SteamInventoryItem[]? Items, PendingOperationResponse? PendingOperation);
 	private sealed record ExchangeResponse(long? Pets, SteamInventoryItem[]? Items, SteamInventoryItem[]? ReceivedItems, string? Status);
-	private sealed record PendingOperationResponse(string ClientEventId, string Kind, string? BoxType, string? BoxItemId);
+	private sealed record PendingOperationResponse(string ClientEventId, string Kind, string? BoxType, string? BoxItemId, string? OfferId = null);
 	private sealed record BackendError(string? Error, string? Code, PendingOperationResponse? PendingOperation,
 		string? SteamEndpoint = null, int? SteamHttpStatus = null,
 		JsonElement SteamFailureCategory = default, JsonElement SteamResult = default);

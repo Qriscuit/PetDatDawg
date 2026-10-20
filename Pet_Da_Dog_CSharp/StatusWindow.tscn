@@ -7,6 +7,7 @@
 [ext_resource type="StyleBox" uid="uid://ctu4cqgwtk78" path="res://UI/Theme/PlainPanel.tres" id="5_plain"]
 [ext_resource type="PackedScene" uid="uid://b0d6vg1y4eby2" path="res://UI/AccessoryEditor.tscn" id="6_accessories"]
 [ext_resource type="PackedScene" path="res://UI/DogChoiceCard.tscn" id="8_dog_card"]
+[ext_resource type="Texture2D" path="res://Art/UI/Shop/GoldenBones.svg" id="9_bones"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_ntckc"]
 load_path = "res://.godot/imported/PawPrint.svg-0246e2dccdcb1c1543af1b0c0f00c8a5.ctex"
@@ -303,80 +304,404 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="ShopScroll" type="ScrollContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin"]
-unique_name_in_owner = true
+[node name="ShopLayout" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-horizontal_scroll_mode = 3
-
-[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll" unique_id=387180359]
-layout_mode = 2
-size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="Heading" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content" unique_id=114758296]
+[node name="ShopBalances" type="HBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShopPets" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopBalances"]
+layout_mode = 2
+unique_name_in_owner = true
 size_flags_horizontal = 3
+text = "Pets: —"
+autowrap_mode = 3
 theme_type_variation = &"WoodlandHeading"
-text = "Boxes"
 
-[node name="ShopDescription" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content" unique_id=445454451]
+[node name="BoneBalance" type="HBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopBalances"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
+theme_override_constants/separation = 4
+
+[node name="ShopBonesIcon" type="TextureRect" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopBalances/BoneBalance"]
+layout_mode = 2
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(24, 24)
+size_flags_vertical = 4
+texture = ExtResource("9_bones")
+expand_mode = 1
+stretch_mode = 5
+tooltip_text = "Golden Bones"
+
+[node name="ShopBones" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopBalances/BoneBalance"]
+layout_mode = 2
+unique_name_in_owner = true
+size_flags_horizontal = 3
+text = "Golden Bones: —"
+autowrap_mode = 3
+theme_type_variation = &"WoodlandHeading"
+
+[node name="AddGoldenBones" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopBalances"]
+layout_mode = 2
+unique_name_in_owner = true
+size_flags_vertical = 4
+text = "+"
+tooltip_text = "Get Golden Bones"
+theme_type_variation = &"SecondaryButton"
+
+[node name="ShopScroll" type="ScrollContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout"]
+layout_mode = 2
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="ShopNavigation" type="HFlowContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+theme_override_constants/h_separation = 5
+
+[node name="ShopBoxesTab" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopNavigation"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Boxes"
+toggle_mode = true
+theme_type_variation = &"SecondaryButton"
+
+[node name="ShopDogsTab" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopNavigation"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Dogs"
+toggle_mode = true
+theme_type_variation = &"SecondaryButton"
+
+[node name="ShopAccessoriesTab" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopNavigation"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Accessories"
+toggle_mode = true
+theme_type_variation = &"SecondaryButton"
+
+[node name="ShopBonesTab" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopNavigation"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Golden Bones"
+toggle_mode = true
+theme_type_variation = &"SecondaryButton"
+
+[node name="ShopRecycleTab" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopNavigation"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Recycle"
+toggle_mode = true
+theme_type_variation = &"SecondaryButton"
+
+[node name="ShopSearchRow" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+visible = false
+
+[node name="ShopSearch" type="LineEdit" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopSearchRow"]
+layout_mode = 2
+unique_name_in_owner = true
+size_flags_horizontal = 3
+placeholder_text = "Find a dog or accessory…"
+
+[node name="ShopOwnedFilter" type="OptionButton" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopSearchRow"]
+layout_mode = 2
+unique_name_in_owner = true
+item_count = 3
+popup/item_0/text = "All items"
+popup/item_0/id = 0
+popup/item_1/text = "Owned"
+popup/item_1/id = 1
+popup/item_2/text = "Not owned"
+popup/item_2/id = 2
+selected = 0
+
+[node name="ShopDescription" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Find a new friend. One click buys a box and sends your dog digging."
+autowrap_mode = 3
+
+[node name="ShopBoxes" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+theme_override_constants/separation = 10
+
+[node name="ShopBoxGrid" type="GridContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes"]
+layout_mode = 2
+unique_name_in_owner = true
+size_flags_horizontal = 3
+columns = 1
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="DigBox" type="PanelContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(210, 0)
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DigBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DigBox/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="DigBoxArt" type="TextureRect" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DigBox/Margin/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DigBox/Margin/Content"]
+layout_mode = 2
+text = "Dig Box"
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"WoodlandHeading"
+
+[node name="Description" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DigBox/Margin/Content"]
+layout_mode = 2
+text = "One dog or accessory from the starter collection. Available once every 20 minutes."
+autowrap_mode = 3
 theme_override_font_sizes/font_size = 13
-text = "Earn Pets from mouse clicks and key presses anywhere on your desktop while Pet Da Dog runs. Spend them on boxes, then open a box to unlock one random dog or accessory."
-autowrap_mode = 3
 
-[node name="BuyDogBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
-unique_name_in_owner = true
+[node name="DigBoxOdds" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DigBox/Margin/Content"]
 layout_mode = 2
-theme_type_variation = &"ActionButton"
-text = "Buy Dog Box · 1 Pet"
+unique_name_in_owner = true
+text = "View contents & odds"
 autowrap_mode = 3
+theme_type_variation = &"SecondaryButton"
+
+[node name="BuyDigBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DigBox/Margin/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Dig · 500 Pets"
+autowrap_mode = 3
+theme_type_variation = &"ActionButton"
 disabled = true
 
-[node name="BuyAccessoryBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
-unique_name_in_owner = true
+[node name="DigCooldown" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DigBox/Margin/Content"]
 layout_mode = 2
-theme_type_variation = &"ActionButton"
-text = "Buy Accessories Box · 2 Pets"
+unique_name_in_owner = true
+text = "Connect to check availability."
 autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="DogBox" type="PanelContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(210, 0)
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DogBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DogBox/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="DogBoxArt" type="TextureRect" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DogBox/Margin/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DogBox/Margin/Content"]
+layout_mode = 2
+text = "Premium Dog Box"
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"WoodlandHeading"
+
+[node name="Description" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DogBox/Margin/Content"]
+layout_mode = 2
+text = "One dog from the premium collection."
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 13
+
+[node name="DogBoxOdds" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DogBox/Margin/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "View contents & odds"
+autowrap_mode = 3
+theme_type_variation = &"SecondaryButton"
+
+[node name="BuyDogBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/DogBox/Margin/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Dig · 50 Golden Bones"
+autowrap_mode = 3
+theme_type_variation = &"ActionButton"
 disabled = true
 
-[node name="BoxSummary" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
-unique_name_in_owner = true
+[node name="AccessoryBox" type="PanelContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid"]
 layout_mode = 2
+custom_minimum_size = Vector2(210, 0)
+size_flags_horizontal = 3
+theme_override_styles/panel = ExtResource("4_panel")
+
+[node name="Margin" type="MarginContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/AccessoryBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/AccessoryBox/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="AccessoryBoxArt" type="TextureRect" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/AccessoryBox/Margin/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/AccessoryBox/Margin/Content"]
+layout_mode = 2
+text = "Premium Accessory Box"
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_type_variation = &"WoodlandHeading"
+
+[node name="Description" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/AccessoryBox/Margin/Content"]
+layout_mode = 2
+text = "One accessory from the premium collection."
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 13
+
+[node name="AccessoryBoxOdds" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/AccessoryBox/Margin/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "View contents & odds"
+autowrap_mode = 3
+theme_type_variation = &"SecondaryButton"
+
+[node name="BuyAccessoryBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/ShopBoxGrid/AccessoryBox/Margin/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Dig · 25 Golden Bones"
+autowrap_mode = 3
+theme_type_variation = &"ActionButton"
+disabled = true
+
+[node name="LegacyBoxes" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes"]
+layout_mode = 2
+unique_name_in_owner = true
+visible = false
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/LegacyBoxes"]
+layout_mode = 2
+text = "Open owned boxes"
+theme_type_variation = &"WoodlandHeading"
+
+[node name="BoxSummary" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/LegacyBoxes"]
+layout_mode = 2
+unique_name_in_owner = true
 text = "Your boxes: waiting for Steam"
 autowrap_mode = 3
 
-[node name="BoxChoices" type="OptionButton" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
-unique_name_in_owner = true
+[node name="BoxChoices" type="OptionButton" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/LegacyBoxes"]
 layout_mode = 2
+unique_name_in_owner = true
 disabled = true
 
-[node name="OpenBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
-unique_name_in_owner = true
+[node name="OpenBox" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopBoxes/LegacyBoxes"]
 layout_mode = 2
+unique_name_in_owner = true
+text = "Dig up selected box"
+autowrap_mode = 3
+disabled = true
 theme_type_variation = &"ActionButton"
-text = "Open selected box"
-autowrap_mode = 3
-disabled = true
 
-[node name="RefreshInventory" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
-unique_name_in_owner = true
+[node name="ShopItemGrid" type="GridContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
 layout_mode = 2
+unique_name_in_owner = true
+visible = false
+size_flags_horizontal = 3
+columns = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="ShopEmpty" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+visible = false
+text = "No matching items."
+autowrap_mode = 3
+
+[node name="ShopPacks" type="VBoxContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+visible = false
+theme_override_constants/separation = 10
+
+[node name="ShopDeveloperControls" type="HFlowContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+visible = false
+
+[node name="ShopStatus" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Connect to Steam to use the Shop."
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 13
+
+[node name="ShopFooter" type="HFlowContainer" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+
+[node name="RefreshInventory" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopFooter"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Refresh"
+disabled = true
 theme_type_variation = &"SecondaryButton"
-text = "Refresh Steam inventory"
-autowrap_mode = 3
-disabled = true
 
-[node name="ShopStatus" type="Label" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopScroll/Content"]
-unique_name_in_owner = true
+[node name="SteamMarket" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopFooter"]
 layout_mode = 2
-text = "Connect to Steam to earn Pets and use boxes."
-autowrap_mode = 3
+unique_name_in_owner = true
+text = "Steam Market"
+disabled = true
+tooltip_text = "Sell through Steam for Steam Wallet funds."
+theme_type_variation = &"SecondaryButton"
+
+[node name="SteamInventoryLink" type="Button" parent="Background/Margin/Layout/Pages/ShopPage/Margin/ShopLayout/ShopScroll/Content/ShopFooter"]
+layout_mode = 2
+unique_name_in_owner = true
+text = "Steam inventory"
+disabled = true
+theme_type_variation = &"SecondaryButton"
 
 [node name="SettingsPage" type="ScrollContainer" parent="Background/Margin/Layout/Pages" unique_id=1312849053]
 unique_name_in_owner = true

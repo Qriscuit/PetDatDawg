@@ -121,6 +121,7 @@ public partial class LiveSteamSmokeTest : Node
 			await _backend.AuthenticateAsync(_steam, _timeout.Token);
 			Require(_backend.IsAuthenticated && _backend.ConfirmedPets.HasValue, $"Worker authentication or initial inventory failed: {_backend.Status}");
 			Require(!_backend.HasPendingExchange, "An unresolved box exchange must be completed before validating exact Pet increments.");
+			await VerifyLiveShopAsync();
 			var initial = _backend.ConfirmedPets!.Value;
 			GD.Print($"LIVE_WORKER_AUTHENTICATED: pets={initial}");
 			if (retryExpectedPets.HasValue)
@@ -209,6 +210,39 @@ public partial class LiveSteamSmokeTest : Node
 		}
 	}
 
+	private async Task VerifyLiveShopAsync()
+	{
+		Require(await _backend!.RefreshShopAsync(_timeout!.Token), $"Live Shop refresh failed: {_backend.ShopStatus}");
+		Require(_backend.EconomyVersion == "golden-bones-v1", "The deployed Shop uses an unexpected economy version.");
+		var offers = _backend.ShopCatalog.Offers;
+		Require(offers.Length == 139 && offers.Count(offer => offer.Kind is "dog" or "accessory") == 136,
+			"The deployed Shop must contain three boxes and all 136 direct cosmetic offers.");
+		foreach (var (id, price, size, currency) in new[] { ("dig", 500L, 20, 100), ("dog", 50L, 63, 101), ("accessory", 25L, 53, 101) })
+		{
+			var offer = offers.SingleOrDefault(candidate => candidate.Id == id);
+			Require(offer != null && offer.Kind == "box" && offer.Price == price && offer.CurrencyItemDefId == currency && offer.RewardItemDefIds.Length == size && offer.RewardItemDefIds.Distinct().Count() == size,
+				$"Live {id} box price, currency, or reward pool differs from the release contract.");
+		}
+		Require(offers.Where(offer => offer.Kind == "dog").All(offer => offer.Price == 200 && offer.CurrencyItemDefId == 101 && offer.RewardItemDefIds.Length == 1) &&
+			offers.Where(offer => offer.Kind == "accessory").All(offer => offer.Price == 100 && offer.CurrencyItemDefId == 101 && offer.RewardItemDefIds.Length == 1),
+			"Live direct purchase prices or currencies differ from the release contract.");
+		var starter = offers.Single(offer => offer.Id == "dig");
+		Require(starter.CooldownSeconds == 1200 && offers.Where(offer => offer.Id != "dig").All(offer => offer.CooldownSeconds == 0), "Only the Dig Box may have the 20-minute cooldown.");
+		Require(!offers.Where(offer => offer.Id is "dog" or "accessory").SelectMany(offer => offer.RewardItemDefIds).Intersect(starter.RewardItemDefIds).Any(),
+			"Live premium pools must exclude the starter-pool cosmetics.");
+		Require(_backend.ConfirmedGoldenBones == _backend.InventoryItems.Where(item => item.ItemDefId == 101).Sum(item => item.Quantity),
+			"The confirmed Golden Bones balance differs from the Worker's Steam inventory stacks.");
+		Require(_backend.ShopCatalog.RecycleValue == 5 && _backend.ShopCatalog.MaxRecycleQuantity == 1 && _backend.ShopCatalog.Packs.Length == 3,
+			"The deployed recycling or currency-pack catalog differs from the release contract.");
+		var capabilities = _backend.ShopCapabilities;
+		Require(!capabilities.CashPurchasesEnabled && !capabilities.MarketEnabled && !capabilities.DeveloperControls,
+			"Public cash sales, Market, and developer controls must remain disabled for this staged release.");
+		var expectedEnabled = System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_EXPECT_SHOP_ENABLED");
+		Require(string.IsNullOrEmpty(expectedEnabled) || expectedEnabled is "0" or "1", "Expected Shop enabled state must be 0, 1, or omitted.");
+		if (!string.IsNullOrEmpty(expectedEnabled)) Require(capabilities.ShopEnabled == (expectedEnabled == "1"), "The live Shop availability differs from the expected rollout state.");
+		GD.Print($"LIVE_SHOP_READ_ONLY_PASS: version={_backend.EconomyVersion} offers={offers.Length} direct=136 pools=20/63/53 goldenBones={_backend.ConfirmedGoldenBones} shopEnabled={capabilities.ShopEnabled} cash=false market=false developer=false purchases=0");
+	}
+
 	private async Task CompareNativeInventoryAsync(string stage, long expected)
 	{
 		// Steam documents that GetAllItems can return cached results when called
@@ -236,7 +270,7 @@ public partial class LiveSteamSmokeTest : Node
 		_inventoryCompletion = completion;
 		try
 		{
-			Require(SteamInventory.GetAllItems(out var handle), "Steam could not request its native inventory.");
+			Require(_steam!.TryRequestInventorySnapshot(out var handle), "Steam could not request its native inventory.");
 			_inventoryHandle = handle;
 			return await completion.Task.WaitAsync(cancellationToken ?? _timeout!.Token);
 		}
@@ -310,7 +344,7 @@ public partial class LiveSteamSmokeTest : Node
 
 	private void DestroyInventoryResult()
 	{
-		if (_inventoryHandle.HasValue && _steam?.IsInitialized == true) SteamInventory.DestroyResult(_inventoryHandle.Value);
+		if (_inventoryHandle.HasValue) _steam?.ReleaseInventorySnapshot(_inventoryHandle.Value);
 		_inventoryHandle = null;
 	}
 

@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[node name="BoxRevealVisual" type="Node2D"]
+visible = false
+z_index = 40
+
+[node name="Box" type="Sprite2D" parent="."]
+
+[node name="DirtFrames" type="Node2D" parent="."]
+metadata/purpose = "Attach future dirt AnimatedSprite2D frames here; local origin is the box center."

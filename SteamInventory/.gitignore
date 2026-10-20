@@ -1,0 +1,2 @@
+# Optional explicitly enabled release candidates are not the safe baseline.
+itemdefs.release-candidate.json

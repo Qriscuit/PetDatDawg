@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "petdadog-isolated-test",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-10",
+  "workers_dev": false,
+  "preview_urls": false,
+  "dev": { "ip": "127.0.0.1", "port": 8787 },
+  "vars": {
+    "PDD_STEAM_APP_ID": "4817200",
+    "PDD_STEAM_PETS_ITEMDEF_ID": "100",
+    "PDD_GRANTS_PER_MINUTE": "300",
+    "PDD_SHOP_ENABLED": "1",
+    "PDD_LEGACY_PURCHASES_ENABLED": "0",
+    "PDD_CASH_PURCHASES_ENABLED": "0",
+    "PDD_MARKET_ENABLED": "0",
+    "PDD_ECONOMY_ENVIRONMENT": "isolated-test",
+    "PDD_STEAM_PUBLISHER_KEY": "test-only-publisher-key",
+    "PDD_BACKEND_SESSION_SECRET": "local-fake-economy-only-never-use-in-production"
+  },
+  "services": [{ "binding": "PDD_FAKE_STEAM", "service": "petdadog-fake-steam-local" }],
+  "durable_objects": { "bindings": [{ "name": "PLAYER_INVENTORY", "class_name": "PlayerInventory" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PlayerInventory"] }]
+}

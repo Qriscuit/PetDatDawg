@@ -1,5 +1,6 @@
 // Steam remains the inventory authority. Durable storage contains operation
 // receipts, frozen exchange inputs and rate limits, never a writable balance.
+import { createShopService, GOLDEN_BONES } from "./shop.js";
 const APP_ID = 4817200;
 const PETS = 100;
 const IDENTITY = "petdadog-backend";
@@ -10,6 +11,7 @@ const STEAM_ENDPOINT_NAMES = Object.freeze({
   "IInventoryService/GetInventory/v1/": "IInventoryService/GetInventory",
   "IInventoryService/AddItem/v1/": "IInventoryService/AddItem",
   "IInventoryService/ExchangeItem/v1/": "IInventoryService/ExchangeItem",
+  "IInventoryService/ConsumeItem/v1/": "IInventoryService/ConsumeItem",
 });
 const STEAM_FAILURE_CATEGORIES = new Set([
   "item_properties_error", "item_definition_error", "inventory_disabled", "permission_denied", "invalid_parameters",
@@ -140,8 +142,17 @@ export function configuration(env) {
   }
   const grantsPerMinute = Number(env.PDD_GRANTS_PER_MINUTE ?? "300");
   if (!Number.isSafeInteger(grantsPerMinute) || grantsPerMinute < 1 || grantsPerMinute > 3600) throw unavailable();
+  const testEconomy = env.PDD_ECONOMY_ENVIRONMENT === "isolated-test"
+    && env.PDD_STEAM_PUBLISHER_KEY === "test-only-publisher-key"
+    && typeof env.PDD_FAKE_STEAM?.fetch === "function";
+  if (env.PDD_ECONOMY_ENVIRONMENT === "isolated-test" && !testEconomy) {
+    throw new ApiError(503, "configuration_required", "The isolated test transport is missing.");
+  }
   return { appId: APP_ID, petsItemDefId: PETS, key: env.PDD_STEAM_PUBLISHER_KEY.trim(),
-    secret: env.PDD_BACKEND_SESSION_SECRET, grantsPerMinute };
+    secret: env.PDD_BACKEND_SESSION_SECRET, grantsPerMinute,
+    shopEnabled: env.PDD_SHOP_ENABLED === "1", legacyPurchasesEnabled: env.PDD_LEGACY_PURCHASES_ENABLED !== "0" && env.PDD_SHOP_ENABLED !== "1",
+    cashPurchasesEnabled: env.PDD_CASH_PURCHASES_ENABLED === "1", marketEnabled: env.PDD_MARKET_ENABLED === "1",
+    testEconomy, testTransport: testEconomy ? env.PDD_FAKE_STEAM : undefined };
 }
 
 export function canonicalGuid(value) {
@@ -278,13 +289,15 @@ function inventoryView(rows) {
     .map(({ itemId, itemDefId, quantity }) => ({ itemId, itemDefId, quantity }));
   const pets = items.filter(row => row.itemDefId === PETS).reduce((total, row) => total + row.quantity, 0);
   if (!Number.isSafeInteger(pets)) throw unavailable();
-  return { pets, items };
+  const goldenBones = items.filter(row => row.itemDefId === GOLDEN_BONES).reduce((total, row) => total + row.quantity, 0);
+  if (!Number.isSafeInteger(goldenBones)) throw unavailable();
+  return { pets, goldenBones, items };
 }
 
 export class SteamClient {
   constructor(config, fetcher = fetch, timeoutMs = 15000) {
     this.config = config;
-    this.fetcher = (...args) => fetcher(...args);
+    this.fetcher = config.testTransport ? (...args) => config.testTransport.fetch(...args) : (...args) => fetcher(...args);
     this.timeoutMs = timeoutMs;
   }
 
@@ -361,14 +374,39 @@ export class SteamClient {
     // ExchangeItem has NO documented requestid. Never retry this call blindly.
     try {
       const result = (await this.call("POST", "IInventoryService/ExchangeItem/v1/", values)).response;
-      return parseItems(result, "IInventoryService/ExchangeItem/v1/");
+      const affected = parseItems(result, "IInventoryService/ExchangeItem/v1/");
+      // Steam documents item_json: "[]" as an unsuccessful exchange. Accept
+      // that exact shape only without a contradictory success assertion.
+      // success:true plus [] remains malformed/unknown and retains the lock.
+      return affected.length === 0 && result.success === undefined ? null : affected;
     } catch (error) {
       // Steam documents these as access denied / missing method / wrong HTTP
       // method: the mutation never ran. Timeouts, 5xx, 400, 429 and malformed
       // success responses remain ambiguous and must retain the durable lock.
-      if (error instanceof SteamHttpError && [401, 403, 404, 405].includes(error.httpStatus)) return [];
+      if (error instanceof SteamHttpError && [401, 403, 404, 405].includes(error.httpStatus)) return null;
       throw error;
     }
+  }
+
+  async addItem(steamId, itemDefId, requestId) {
+    const path = "IInventoryService/AddItem/v1/";
+    return parseItems((await this.call("POST", path, { steamid: steamId, "itemdefid[0]": String(itemDefId),
+      itempropsjson: "{}", notify: "0", requestid: requestId })).response, path);
+  }
+
+  async consumeItem(steamId, itemId, quantity, requestId) {
+    const path = "IInventoryService/ConsumeItem/v1/";
+    const response = (await this.call("POST", path, { steamid: steamId, itemid: itemId,
+      quantity: String(quantity), requestid: requestId })).response;
+    const rows = parseItems(response, path);
+    if (!rows.some(row => row.itemId === itemId && row.itemDefId === 102 && row.quantity === 0)) throw unavailable();
+  }
+
+  async seedTestInventory(steamId, requestId, pets, goldenBones) {
+    if (!this.config.testEconomy || !this.config.testTransport) throw new ApiError(404, "not_found", "Endpoint not found.");
+    const result = await this.config.testTransport.fetch("https://fake-steam.test/seed", { method: "POST",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify({ steamId, requestId, pets, goldenBones }) });
+    if (!result.ok) throw unavailable();
   }
 }
 
@@ -397,7 +435,8 @@ export function exchangeIntent(kind, input, inventory) {
 }
 
 export function exchangeReceipt(intent, before, affected) {
-  if (affected.length === 0) return null; // Documented rejection; no inventory changes.
+  if (affected === null) return null; // Explicit transport rejection; not an empty success body.
+  if (!Array.isArray(affected) || affected.length === 0) throw unavailable();
   for (const material of intent.materials) {
     const changed = affected.find(item => item.itemId === material.itemId);
     if (!changed || changed.itemDefId !== material.itemDefId
@@ -416,9 +455,12 @@ export function exchangeReceipt(intent, before, affected) {
     if (intent.materials.some(item => item.itemId === row.itemId)) continue;
     const previous = before.items.find(item => item.itemId === row.itemId);
     if (previous && previous.itemDefId !== row.itemDefId) throw unavailable();
-    const delta = row.quantity - (previous?.quantity ?? 0);
-    if (row.removed || row.itemDefId < intent.firstReward || row.itemDefId > intent.lastReward || delta <= 0) throw unavailable();
-    received.push({ itemId: row.itemId, itemDefId: row.itemDefId, quantity: delta });
+    if (row.removed || row.itemDefId < intent.firstReward || row.itemDefId > intent.lastReward
+      || !Number.isSafeInteger(row.quantity) || row.quantity <= 0 || row.quantity > 4294967295) throw unavailable();
+    // Legacy boxes do not stack; cosmetic stacks can concurrently receive a
+    // Market acquisition. The validated one-output recipe defines the award.
+    if ([1000, 1001].includes(row.itemDefId) && row.quantity !== 1) throw unavailable();
+    received.push({ itemId: row.itemId, itemDefId: row.itemDefId, quantity: 1 });
   }
   if (received.reduce((total, row) => total + row.quantity, 0) !== 1) throw unavailable();
   return received;
@@ -503,6 +545,9 @@ export class PlayerService {
       catch { throw new ApiError(400, "invalid_request", "boxItemId must be a Steam inventory item ID string."); }
     }
     let operation = await this.storage.get(`op:${id}`);
+    if (kind === "buy" && !operation && this.config.legacyPurchasesEnabled === false) {
+      throw new ApiError(409, "update_required", "Update Pet Da Dog to use the new Shop. Existing boxes can still be opened.");
+    }
     if (operation && (operation.kind !== kind || JSON.stringify(operation.input) !== JSON.stringify(intentInput))) {
       throw new ApiError(409, "operation_conflict", "This operation ID was already used for a different action.");
     }
@@ -567,6 +612,8 @@ export class PlayerService {
   }
 }
 
+export const ShopPlayerService = createShopService(PlayerService, { ApiError, canonicalGuid, steamRequestId });
+
 export class PlayerInventory {
   constructor(ctx, env) {
     this.ctx = ctx;
@@ -591,13 +638,19 @@ export class PlayerInventory {
       const owner = await this.ctx.storage.get("owner");
       if (owner && owner !== steamId) throw new ApiError(403, "invalid_session", "This session cannot access that inventory.");
       if (!owner) await this.ctx.storage.put("owner", steamId);
-      const service = new PlayerService(this.ctx.storage, new SteamClient(config), config);
+      const service = new ShopPlayerService(this.ctx.storage, new SteamClient(config), config);
       const path = new URL(request.url).pathname;
       let result;
       if (request.method === "GET" && ["/v1/pets", "/v1/inventory"].includes(path)) result = await service.readInventory(steamId);
       else if (request.method === "POST" && path === "/v1/pets/grant") result = await service.grant(steamId, await readJson(request));
       else if (request.method === "POST" && path === "/v1/boxes/buy") result = await service.exchange(steamId, "buy", await readJson(request));
       else if (request.method === "POST" && path === "/v1/boxes/open") result = await service.exchange(steamId, "open", await readJson(request));
+      else if (request.method === "GET" && path === "/v2/shop") result = await service.shopState(steamId);
+      else if (request.method === "GET" && path.startsWith("/v2/shop/operations/")) result = await service.shopOperation(steamId, path.slice("/v2/shop/operations/".length));
+      else if (request.method === "POST" && path === "/v2/shop/purchase") result = await service.purchase(steamId, "purchase", await readJson(request));
+      else if (request.method === "POST" && path === "/v2/shop/recycle") result = await service.purchase(steamId, "recycle", await readJson(request));
+      else if (request.method === "POST" && path === "/v2/shop/ack") result = await service.acknowledge(steamId, await readJson(request));
+      else if (request.method === "POST" && ["/v2/shop/dev/seed", "/v2/shop/dev/reset-cooldown"].includes(path)) result = await service.developerAction(steamId, path.endsWith("/seed") ? "seed" : "reset-cooldown", await readJson(request));
       else throw new ApiError(404, "not_found", "Endpoint not found.");
       return json(result, result.status === "pending" ? 202 : 200);
     } catch (error) { return errorResponse(error); }
@@ -615,8 +668,8 @@ export default {
         const steamId = await new SteamClient(config).authenticate(body.ticketHex, body.identity);
         return json({ steamId, sessionToken: await createSession(steamId, config.secret) });
       }
-      const read = request.method === "GET" && ["/v1/pets", "/v1/inventory"].includes(path);
-      const write = request.method === "POST" && ["/v1/pets/grant", "/v1/boxes/buy", "/v1/boxes/open"].includes(path);
+      const read = request.method === "GET" && (["/v1/pets", "/v1/inventory", "/v2/shop"].includes(path) || path.startsWith("/v2/shop/operations/"));
+      const write = request.method === "POST" && ["/v1/pets/grant", "/v1/boxes/buy", "/v1/boxes/open", "/v2/shop/purchase", "/v2/shop/recycle", "/v2/shop/ack", "/v2/shop/dev/seed", "/v2/shop/dev/reset-cooldown"].includes(path);
       if (!read && !write) throw new ApiError(404, "not_found", "Endpoint not found.");
       const authorization = request.headers.get("Authorization");
       if (!authorization || !/^Bearer\s+/i.test(authorization)) throw new ApiError(401, "session_expired", "Please reconnect to Steam.");

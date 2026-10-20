@@ -1598,9 +1598,10 @@ public partial class AccessorySmokeTest : Node
 				"Shop explains that Steam must connect before boxes are available.");
 			var buyDog = window.GetNode<Button>("%BuyDogBox");
 			var buyAccessory = window.GetNode<Button>("%BuyAccessoryBox");
-			Require(buyDog.Text == "Buy Dog Box · 1 Pet" && buyAccessory.Text == "Buy Accessories Box · 2 Pets",
-				"Shop shows the dog and accessory box prices beside their purchase controls.");
-			Require(new[] { buyDog, buyAccessory, window.GetNode<Button>("%OpenBox"), window.GetNode<Button>("%RefreshInventory") }
+			var buyDig = window.GetNode<Button>("%BuyDigBox");
+			Require(buyDog.Text == "Dig · 50 Golden Bones" && buyAccessory.Text == "Dig · 25 Golden Bones"
+				&& buyDig.Text == "Dig · 500 Pets", "Shop shows all three current box prices beside their purchase controls.");
+			Require(new[] { buyDig, buyDog, buyAccessory, window.GetNode<Button>("%OpenBox"), window.GetNode<Button>("%RefreshInventory") }
 				.All(button => button.Disabled) && window.GetNode<OptionButton>("%BoxChoices").Disabled,
 				"Offline shop purchase, opening, refresh and box-selection controls remain disabled.");
 			await Capture(window, "woodland-shop");

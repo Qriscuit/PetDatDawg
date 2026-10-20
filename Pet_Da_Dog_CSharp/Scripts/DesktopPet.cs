@@ -170,6 +170,7 @@ public partial class DesktopPet : Node2D
 			if (_editingSession.Active) OnAccessoryModeChanged(true);
 		}
 		_steam.Initialize();
+		_steam.InventoryChanged += OnSteamInventoryChanged;
 		_validatePets = Array.IndexOf(OS.GetCmdlineUserArgs(), "--validate-pets") >= 0;
 		if (_validatePets) GD.Print($"PET_VALIDATION: {_steam.Status}");
 		SetProcess(true);
@@ -192,9 +193,10 @@ public partial class DesktopPet : Node2D
 			MoveOverlayToBottom(force: false);
 		}
 
-		_accessoryControls?.PollPointer();
-		_patrolEditor?.PollPointer();
-		if (_fallingToGround) UpdateDogFall(deltaF);
+		if (!_boxRevealActive) _accessoryControls?.PollPointer();
+		if (!_boxRevealActive) _patrolEditor?.PollPointer();
+		if (_boxRevealActive) UpdateBoxReveal(deltaF);
+		else if (_fallingToGround) UpdateDogFall(deltaF);
 		else if (!_accessoryEditing && !_patrolEditing && !IsStationary)
 		{
 			if (_patrolRunning) StepPatrol(deltaF);
@@ -217,6 +219,7 @@ public partial class DesktopPet : Node2D
 
 	public override void _Input(InputEvent inputEvent)
 	{
+		if (_boxRevealActive) return;
 		if (_patrolEditing)
 		{
 			_patrolEditor?.HandleInput(inputEvent);
@@ -287,6 +290,8 @@ public partial class DesktopPet : Node2D
 
 	public override void _ExitTree()
 	{
+		_steam.InventoryChanged -= OnSteamInventoryChanged;
+		DisposeBoxReveal();
 		if (_globalInputMonitor != null) _globalInputMonitor.ActivityObserved -= RecordInputActivity;
 		if (_patrolRoute != null)
 		{
@@ -578,6 +583,8 @@ public partial class DesktopPet : Node2D
 
 	private void MoveOverlayToBottom(bool force)
 	{
+		// Digging uses one fixed surface; do not resize its native drawing region per frame.
+		if (_boxRevealActive) return;
 		if (_patrolRunning || _patrolEditing || FixedPetCounter)
 		{
 			EnsurePatrolOverlay(force);
@@ -803,6 +810,8 @@ public partial class DesktopPet : Node2D
 
 	private void AnimateDog()
 	{
+		if (_boxRevealActive) { ApplyBoxRevealPose(); return; }
+		_visualRoot.Position = Vector2.Zero;
 		// Rest while customizing, including redraws caused by live accessory/settings edits.
 		var resting = _accessoryEditing || _patrolEditing || _fallingToGround;
 		var bouncing = !resting && !IsStationary && (_settings?.BounceEnabled ?? PetSettings.DefaultBounceEnabled);
@@ -884,6 +893,26 @@ public partial class DesktopPet : Node2D
 
 	private void TickBackend(double delta)
 	{
+#if DEBUG
+		// Isolated fake-Steam tooling must be reachable without initializing real Steam.
+		// The backend client additionally enforces HTTP loopback and the test capability.
+		if (System.Environment.GetEnvironmentVariable("PDD_DEV_ECONOMY") == "1"
+			&& System.Environment.GetEnvironmentVariable("PDD_DISABLE_STEAM") == "1")
+		{
+			if (_shutdown.IsCancellationRequested) return;
+			if (!_backend.IsAuthenticated)
+			{
+				_authRetryTimer -= delta;
+				if (!_authStarted || _authRetryTimer <= 0)
+				{
+					_authStarted = true; _authRetryTimer = 5;
+					_ = _backend.AuthenticateTestEconomyAsync(_shutdown.Token);
+				}
+			}
+			_backend.Tick(delta, _shutdown.Token);
+			return;
+		}
+#endif
 		if (_shutdown.IsCancellationRequested || !_steam.TryInitialize(delta))
 		{
 			return;
@@ -951,6 +980,9 @@ public partial class DesktopPet : Node2D
 
 	private bool IsPointerOutsideDog()
 	{
+		// The reveal card has its own bounded window. Digging is decorative, including
+		// when the player was previously editing a full-screen patrol or outfit.
+		if (_boxRevealActive) return true;
 		if (_patrolEditing) return false;
 		if (Engine.IsEmbeddedInEditor())
 		{
@@ -1059,6 +1091,7 @@ public partial class DesktopPet : Node2D
 
 	private void OpenStatusWindow()
 	{
+		if (_boxRevealActive) { _boxRewardWindow?.GrabFocus(); return; }
 		if (_patrolEditing) _patrolRoute?.CancelEdit();
 		if (_statusWindow == null)
 		{
@@ -1074,6 +1107,11 @@ public partial class DesktopPet : Node2D
 			GetTree().Root.AddChild(_statusWindow);
 			_statusWindow.Configure(_settings);
 			_statusWindow.ConfigureSteamInventory(_backend, _wardrobe, _shutdown.Token);
+			_statusWindow.ConfigureSteamCommerce(_steam);
+			_statusWindow.BoxRevealRequested += BeginBoxReveal;
+			_statusWindow.BoxRewardConfirmed += FinishBoxReveal;
+			_statusWindow.BoxRevealFailed += FailBoxReveal;
+			_statusWindow.DirectRewardConfirmed += ShowShopReward;
 		}
 
 		UpdateStatusWindow();

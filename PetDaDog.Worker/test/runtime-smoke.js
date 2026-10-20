@@ -22,8 +22,7 @@ const inventoryResponse = () => asResponse({ response: { item_json: JSON.stringi
 
 const mf = new Miniflare(convertV4MiniflareOptions({
   name: "petdadog-api",
-  modules: true,
-  scriptPath: fileURLToPath(new URL("../src/index.js", import.meta.url)),
+  modules: ["index.js", "shop.js", "economy.generated.js"].map(name => ({ type: "ESModule", path: fileURLToPath(new URL(`../src/${name}`, import.meta.url)) })),
   compatibilityDate: "2026-10-01",
   cf: false,
   bindings: {

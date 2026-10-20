@@ -13,7 +13,7 @@ const env = { PDD_STEAM_APP_ID: "4817200", PDD_STEAM_PETS_ITEMDEF_ID: "100", PDD
   PDD_STEAM_PUBLISHER_KEY: "test-only-publisher-key", PDD_BACKEND_SESSION_SECRET: "test-only-secret-at-least-32-characters" };
 const config = configuration(env);
 const item = (itemId, itemDefId, quantity) => ({ itemId, itemDefId, quantity });
-const inventory = items => ({ items, pets: items.filter(i => i.itemDefId === 100).reduce((n, i) => n + i.quantity, 0) });
+const inventory = items => ({ items, pets: items.filter(i => i.itemDefId === 100).reduce((n, i) => n + i.quantity, 0), goldenBones: items.filter(i => i.itemDefId === 101).reduce((n, i) => n + i.quantity, 0) });
 const rawItem = (itemid, itemdefid, quantity = 1, state = "") => ({ itemid, itemdefid, quantity, state, appid: 4817200 });
 const steamResponse = rows => ({ response: { item_json: JSON.stringify(rows) } });
 const failure = () => new ApiError(503, "steam_unavailable", "Unconfirmed.");
@@ -73,7 +73,7 @@ class FakeSteam {
   async exchange(id, intent) {
     assert.equal(id, steamId);
     this.exchanges++;
-    if (this.rejectExchange) return [];
+    if (this.rejectExchange) return null;
     const affected = [];
     for (const material of intent.materials) {
       const owned = this.items.find(i => i.itemId === material.itemId);
@@ -296,7 +296,7 @@ test("HTTP 200 inventory failure headers cannot confirm an empty or valid-lookin
     assert.equal(logs.length, cases.length * 2);
     for (const headers of [{}, { "x-eresult": "1" }, { "x-eresult": "1", "x-error_message": "" }]) {
       const client = new SteamClient(config, async () => Response.json(steamResponse([]), { headers }));
-      assert.deepEqual(await client.inventory(steamId), { pets: 0, items: [] });
+      assert.deepEqual(await client.inventory(steamId), { pets: 0, goldenBones: 0, items: [] });
     }
     assert.equal(logs.length, cases.length * 2); // Successful reads do not emit failure logs.
   } finally { globalThis.fetch = originalFetch; console.warn = originalWarn; }
@@ -491,7 +491,7 @@ test("buying and opening each box uses schema-defined costs/generators and produ
 
 test("box reward ranges match the Steam schema and accept new upper-bound rewards while rejecting items outside their pool", () => {
   const schema = JSON.parse(readFileSync(new URL("../../SteamInventory/itemdefs.json", import.meta.url), "utf8"));
-  assert.equal(schema.items.length, 141);
+  assert.equal(schema.items.length, 150);
   for (const [kind, boxDef, generatorDef, firstReward, lastReward] of [
     ["accessory", 1000, 1100, 2000, 2062], ["dog", 1001, 1101, 3000, 3072],
   ]) {
@@ -616,7 +616,7 @@ test("a persisted successful receipt recovers after inventory refresh failure wi
   assert.equal(await storage.get("active"), undefined);
 });
 
-test("explicit empty exchange receipt rejects permanently instead of silently retrying", async () => {
+test("explicit transport rejection rejects permanently instead of silently retrying", async () => {
   const { service, steam, storage } = fixture();
   steam.rejectExchange = true;
   const input = { clientEventId: guid, boxType: "dog" };
@@ -647,8 +647,22 @@ test("documented Steam access/method rejections do not leave a permanent exchang
   }
 });
 
+test("Steam ExchangeItem distinguishes documented empty rejection from contradictory empty success", async () => {
+  const intent = { outputItemDefId: 1110, materials: [{ itemId: "1", consume: 500 }] };
+  const rejected = new SteamClient(config, async () => Response.json({ response: { item_json: "[]" } }));
+  assert.equal(await rejected.exchange(steamId, intent), null);
+  for (const success of [true, "true", 1, "1"]) {
+    const contradictory = new SteamClient(config, async () => Response.json({ response: { success, item_json: "[]" } }));
+    assert.deepEqual(await contradictory.exchange(steamId, intent), []);
+  }
+  for (const response of [{}, { item_json: "not-json" }, { item_json: "{}" }, { success: "invalid", item_json: "[]" }]) {
+    const malformed = new SteamClient(config, async () => Response.json({ response }));
+    await assert.rejects(malformed.exchange(steamId, intent));
+  }
+});
+
 test("Steam 5xx and malformed successful exchange replies remain ambiguous and cannot be retried", async () => {
-  for (const mode of ["server-error", "malformed", "missing-input-proof"]) {
+  for (const mode of ["server-error", "malformed", "missing-input-proof", "empty-success"]) {
     const storage = new DurableStorage();
     let exchangeCalls = 0;
     const steam = new SteamClient(config, async url => {
@@ -656,6 +670,7 @@ test("Steam 5xx and malformed successful exchange replies remain ambiguous and c
       exchangeCalls++;
       if (mode === "server-error") return new Response("Upstream error", { status: 503 });
       if (mode === "malformed") return Response.json({ response: { success: true } });
+      if (mode === "empty-success") return Response.json({ response: { success: true, item_json: "[]" } });
       return Response.json(steamResponse([rawItem("2", 1001, 1)]));
     });
     const service = new PlayerService(storage, steam, config);

@@ -5,6 +5,11 @@
   "compatibility_date": "2026-10-10",
   "workers_dev": true,
   "preview_urls": false,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "none"
+  },
   "observability": {
     "enabled": true,
     "logs": { "enabled": true }
@@ -12,7 +17,11 @@
   "vars": {
     "PDD_STEAM_APP_ID": "4817200",
     "PDD_STEAM_PETS_ITEMDEF_ID": "100",
-    "PDD_GRANTS_PER_MINUTE": "300"
+    "PDD_GRANTS_PER_MINUTE": "300",
+    "PDD_SHOP_ENABLED": "1",
+    "PDD_LEGACY_PURCHASES_ENABLED": "0",
+    "PDD_CASH_PURCHASES_ENABLED": "0",
+    "PDD_MARKET_ENABLED": "0"
   },
   "durable_objects": {
     "bindings": [{ "name": "PLAYER_INVENTORY", "class_name": "PlayerInventory" }]

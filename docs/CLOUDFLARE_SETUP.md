@@ -1,5 +1,11 @@
 # Cloudflare setup for Pet Da Dog
 
+For the new two-currency Shop, follow [the current Worker guide](../PetDaDog.Worker/README.md)
+and [coordinated Steam rollout](../SteamInventory/README.md). The 150-definition
+Golden Bones schema and Worker changes are prepared locally. Cash and Market
+capabilities default off. The deployment history below describes the last
+verified live release until a later verified publication is recorded.
+
 This guide connects the Godot client to the API in `PetDaDog.Worker`, using
 Steam AppID **4817200**. Steam Inventory holds the spendable Pets balance, boxes,
 and owned cosmetics. Cloudflare verifies Steam sign-ins and forwards accepted

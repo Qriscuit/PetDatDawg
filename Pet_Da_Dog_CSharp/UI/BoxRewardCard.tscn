@@ -1,0 +1,106 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/BoxRewardCard.cs" id="1_script"]
+[ext_resource type="Theme" path="res://UI/Theme/DefaultTheme.tres" id="2_theme"]
+[ext_resource type="StyleBox" path="res://UI/Theme/Panel.tres" id="3_panel"]
+
+[node name="BoxRewardCard" type="Window"]
+title = "Pet Da Dog · Your find"
+size = Vector2i(360, 360)
+visible = false
+unresizable = true
+borderless = true
+always_on_top = true
+transient = false
+wrap_controls = false
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+clip_contents = true
+theme_override_styles/panel = ExtResource("3_panel")
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="Content" type="VBoxContainer" parent="Panel/Margin"]
+theme_override_constants/separation = 10
+
+[node name="RewardBodyScroll" type="ScrollContainer" parent="Panel/Margin/Content"]
+unique_name_in_owner = true
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+follow_focus = true
+
+[node name="RewardBody" type="VBoxContainer" parent="Panel/Margin/Content/RewardBodyScroll"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="RewardHeading" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody"]
+unique_name_in_owner = true
+text = "Look what you found!"
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="RewardPreview" type="TextureRect" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 150)
+clip_contents = true
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="RewardName" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody"]
+unique_name_in_owner = true
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="RewardDetail" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody"]
+unique_name_in_owner = true
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="RewardActions" type="HBoxContainer" parent="Panel/Margin/Content"]
+unique_name_in_owner = true
+clip_contents = true
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="SkipReveal" type="Button" parent="Panel/Margin/Content/RewardActions"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 40)
+text = "Skip animation"
+clip_text = true
+tooltip_text = "Skip the opening animation"
+
+[node name="EquipReward" type="Button" parent="Panel/Margin/Content/RewardActions"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 40)
+text = "Equip"
+clip_text = true
+
+[node name="KeepReward" type="Button" parent="Panel/Margin/Content/RewardActions"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 40)
+text = "Keep"
+clip_text = true
