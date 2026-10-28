@@ -1,4 +1,4 @@
-[gd_resource type="StyleBoxTexture" format=3]
+[gd_resource type="StyleBoxTexture" format=3 uid="uid://cmt7skognijl3"]
 
 [ext_resource type="Texture2D" uid="uid://cwgjafmg0acsm" path="res://Art/UI/Paws/BorderBackground.png" id="1_gm0vf"]
 
@@ -13,4 +13,3 @@ texture_margin_left = 9.0
 texture_margin_top = 9.0
 texture_margin_right = 9.0
 texture_margin_bottom = 9.0
-modulate_color = Color(0.76, 0.82, 0.63, 1)

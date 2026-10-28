@@ -61,7 +61,7 @@ public partial class GlobalInputMonitor : Node
 		_monitorThread = new Thread(MonitorInput)
 		{
 			IsBackground = true,
-			Name = "PetDaDog desktop input observer"
+			Name = "PetThatDog desktop input observer"
 		};
 		try { _monitorThread.Start(); }
 		catch (Exception)

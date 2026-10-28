@@ -55,8 +55,8 @@ public partial class DesktopPet
 		_boxGroundFoot = new Vector2(Mathf.Clamp(_boxStartFoot.X, margin, _windowSize.X - margin),
 			_windowSize.Y - GroundMargin - extents.Bottom);
 		var prefix = _boxRevealKind == "dog" ? "Dog" : _boxRevealKind == "accessory" ? "Accessory" : "Dig";
-		_boxClosedTexture = ResourceLoader.Load<Texture2D>($"res://Art/UI/Shop/{prefix}BoxClosed.svg");
-		_boxOpenTexture = ResourceLoader.Load<Texture2D>($"res://Art/UI/Shop/{prefix}BoxOpen.svg");
+		_boxClosedTexture = ResourceLoader.Load<Texture2D>($"res://Art/UI/Shop/{prefix}Present1.svg");
+		_boxOpenTexture = ResourceLoader.Load<Texture2D>($"res://Art/UI/Shop/{prefix}Present3Bottom.svg");
 		ConfigureBoxTrajectory(extents.HalfWidth);
 		_boxSprite!.Texture = _boxClosedTexture;
 		_boxSprite.Visible = false;

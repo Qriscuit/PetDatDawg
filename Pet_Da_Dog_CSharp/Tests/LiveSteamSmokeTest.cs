@@ -48,7 +48,7 @@ public partial class LiveSteamSmokeTest : Node
 			GD.Print($"LIVE_SMOKE_TEST_BUILD: assembly={assembly.Location} module={assembly.ManifestModule.ModuleVersionId}");
 			Require(System.Environment.GetEnvironmentVariable("PDD_LIVE_STEAM_SMOKE") == "1",
 				"Set PDD_LIVE_STEAM_SMOKE=1 to explicitly enable real Steam and Worker requests.");
-			Require(System.Environment.GetEnvironmentVariable("PDD_STEAM_APP_ID") == "4817200", "The live test requires Pet Da Dog AppID 4817200.");
+			Require(System.Environment.GetEnvironmentVariable("PDD_STEAM_APP_ID") == "4817200", "The live test requires Pet that Dog AppID 4817200.");
 			Require(System.Environment.GetEnvironmentVariable("PDD_DISABLE_STEAM") != "1", "Steam must be enabled for the live test.");
 			_grantCount = ReadNumber("PDD_LIVE_SMOKE_GRANTS", 0, 0, 3);
 			var workerOnly = System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_WORKER_ONLY") == "1";

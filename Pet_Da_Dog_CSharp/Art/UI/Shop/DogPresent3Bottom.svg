@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Grafika (https://www.grafika.cc/) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2048" height="2048" viewBox="0 0 2048 2048" preserveAspectRatio="xMidYMid meet">
+	<defs>
+		<linearGradient id="gradient_1" gradientUnits="userSpaceOnUse" spreadMethod="pad" gradientTransform="matrix(54.0055814752208, 0, 0, 438.800640398747, 1691.2442862945, 1348.97935525817)" x1="-1" y1="0" x2="1" y2="0">
+			<stop offset="35.63%" stop-color="#FCB639" stop-opacity="1" />
+			<stop offset="100%" stop-color="#D8CEE2" stop-opacity="1" />
+		</linearGradient>
+		<linearGradient id="gradient_2" gradientUnits="userSpaceOnUse" spreadMethod="pad" gradientTransform="matrix(193.953548339033, 0, 0, 455.872238955823, 882.952325154933, 1464.66214859432)" x1="-1" y1="0" x2="1" y2="0">
+			<stop offset="42%" stop-color="#FCB639" stop-opacity="1" />
+			<stop offset="100%" stop-color="#D8CEE2" stop-opacity="1" />
+		</linearGradient>
+	</defs>
+	<path d="M260.83 984.91 L359.08 875.91 L483.94 976.87 L540.82 821.23 L658.33 928.41 L714.35 783.68 L807.86 910.18 L863.45 755.61 L934 868.8 L1010.74 718.42 L1005.27 1061.56 L1015.84 718.79 L1115.37 844.92 L1216.17 740.12 L1287.44 843.1 L1366.19 773.29 L1417.04 861.69 L1499.98 800.08 L1543.91 902.89 L1649.27 838.54 L1691.24 976.87 L1773.21 887.21 L1704.87 1532.1 L242.06 1581.87 L256.46 991.37" fill-rule="evenodd" id="Path 1" style="fill:#CAC9CD;stroke:#9B9A9C;stroke-linecap:round;stroke-linejoin:round;stroke-width:50;" />
+	<path d="M256.46 991.37 L462.98 1167.73 L623.75 1004.05 L804.58 1168.83 L983.4 1010.07 L1129.77 1181.35 L1313.45 1008.4 L1523.66 1128.63 L1510.09 1923.93 L240.91 1905.04 L256.46 991.37 Z M1518.03 1945.32" fill-rule="evenodd" id="Path 15" style="fill:#FFFFFF;stroke:#9B9A9C;stroke-linecap:round;stroke-linejoin:round;stroke-width:50;" />
+	<path d="M1515.29 1920.53 L1822.37 1586.97 L1835.38 958.48 L1769.03 904.53 L1736.58 989.47 L1676.79 933.87 L1652.37 1028.84 L1578.73 984.36 L1523.66 1128.63 L1515.29 1920.53 Z" fill-rule="evenodd" id="Path 16" style="fill:#FFFFFF;stroke:#9B9A9C;stroke-linecap:round;stroke-linejoin:round;stroke-width:50;" />
+	<path d="M279.45 1008.4 L462.47 1169.47 L621.48 1008.4 L805.34 1181.35 L982.1 1008.4 L1128.67 1181.35 L1313.45 1008.4 L1524.41 1126.71 L1580.68 981.93 L1647.77 1051.53 L1672.34 942.86 L1735.87 995.57 L1774.7 904.78 L1822.37 957.22" fill-rule="evenodd" id="Path 12" style="fill:none;stroke:#9B9A9C;stroke-linecap:round;stroke-linejoin:round;stroke-width:75;" />
+	<path d="M1637.24 1043.79 L1680.26 945.54 L1735.67 998.76 L1741.87 910.18 L1745.25 1670.74 L1637.51 1787.78 L1637.24 1043.79 Z" fill-rule="evenodd" id="Path 17" style="fill:url(#gradient_1);stroke:#8B6109;stroke-linecap:round;stroke-linejoin:round;stroke-width:50;" />
+	<path d="M703.22 1076.46 L805.31 1173.75 L980.48 1008.79 L1076.91 1122.17 L1065.6 1920.53 L689 1909.92 L703.22 1076.46 Z" fill-rule="evenodd" id="Path" style="fill:url(#gradient_2);stroke:#8B6109;stroke-linecap:round;stroke-linejoin:round;stroke-width:50;" />
+	<path d="M658.33 1043.07 L805.34 1181.35 L982.1 1008.4 L1094.29 1140.79" fill-rule="evenodd" id="Path 13" style="fill:none;stroke:#8A6108;stroke-linecap:round;stroke-linejoin:round;stroke-width:75;" />
+	<path d="M1647.77 1051.53 L1672.67 940.81 L1737.3 996.68 L1773.21 902.21" fill-rule="evenodd" id="Path 14" style="fill:none;stroke:#8A6108;stroke-linecap:round;stroke-linejoin:round;stroke-width:75;" />
+</svg>

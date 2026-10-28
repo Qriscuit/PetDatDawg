@@ -119,7 +119,7 @@ public partial class StatusWindow
 			_dogGrid.RemoveChild(removed);
 			removed.QueueFree();
 		}
-		EnsureDogCard(0, "Starter dog", "res://Sprites/Doggo.png", 0);
+		EnsureDogCard(0, "Corgi 3", "res://Art/Dogs/Corgi3.png", 0);
 		for (var index = 0; index < ownedDogs.Length; index++)
 		{
 			var dog = ownedDogs[index];

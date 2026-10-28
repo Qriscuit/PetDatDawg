@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://juc1y8hgq8kc"]
 
-[ext_resource type="Script" path="res://Scripts/PetCounterDisplay.cs" id="1_counter"]
+[ext_resource type="Script" uid="uid://bchg50fkgytcm" path="res://Scripts/PetCounterDisplay.cs" id="1_counter"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_counter"]
 content_margin_left = 10.0
@@ -15,20 +15,18 @@ border_width_bottom = 1
 border_color = Color(0.635, 0.537, 0.329, 1)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
-corner_radius_bottom_left = 5
 corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
-[node name="PetCounter" type="PanelContainer"]
-visible = false
+[node name="PetCounter" type="PanelContainer" unique_id=1581043494]
 z_index = 50
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBox_counter")
 script = ExtResource("1_counter")
 
-[node name="Value" type="Label" parent="."]
+[node name="Value" type="Label" parent="." unique_id=1813926562]
 layout_mode = 2
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.161, 0.235, 0.157, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 18
 text = "Pets: —"
 horizontal_alignment = 1

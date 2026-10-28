@@ -1,32 +1,30 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cuofx0h00lyqx"]
 
-[ext_resource type="Script" path="res://Scripts/BoxRewardCard.cs" id="1_script"]
-[ext_resource type="Theme" path="res://UI/Theme/DefaultTheme.tres" id="2_theme"]
-[ext_resource type="StyleBox" path="res://UI/Theme/Panel.tres" id="3_panel"]
+[ext_resource type="Script" uid="uid://cy8i3rgxfyffm" path="res://Scripts/BoxRewardCard.cs" id="1_script"]
+[ext_resource type="Theme" uid="uid://c2qo58y1i4pyu" path="res://UI/Theme/DefaultTheme.tres" id="2_theme"]
+[ext_resource type="StyleBox" uid="uid://dfl6oj2bmqyc5" path="res://UI/Theme/Panel.tres" id="3_panel"]
 
-[node name="BoxRewardCard" type="Window"]
-title = "Pet Da Dog · Your find"
+[node name="BoxRewardCard" type="Window" unique_id=744150882]
+oversampling_override = 1.0
+title = "Pet that Dog · Your find"
 size = Vector2i(360, 360)
-visible = false
 unresizable = true
 borderless = true
 always_on_top = true
-transient = false
-wrap_controls = false
 theme = ExtResource("2_theme")
 script = ExtResource("1_script")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=243118160]
+clip_contents = true
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-clip_contents = true
 theme_override_styles/panel = ExtResource("3_panel")
 
-[node name="Margin" type="MarginContainer" parent="Panel"]
-anchors_preset = 15
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=356992361]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -36,71 +34,82 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 16
 
-[node name="Content" type="VBoxContainer" parent="Panel/Margin"]
+[node name="Content" type="VBoxContainer" parent="Panel/Margin" unique_id=1383783356]
+layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="RewardBodyScroll" type="ScrollContainer" parent="Panel/Margin/Content"]
+[node name="RewardBodyScroll" type="ScrollContainer" parent="Panel/Margin/Content" unique_id=115636522]
 unique_name_in_owner = true
+layout_mode = 2
 size_flags_vertical = 3
-horizontal_scroll_mode = 0
-vertical_scroll_mode = 1
 follow_focus = true
+horizontal_scroll_mode = 0
 
-[node name="RewardBody" type="VBoxContainer" parent="Panel/Margin/Content/RewardBodyScroll"]
+[node name="RewardBody" type="VBoxContainer" parent="Panel/Margin/Content/RewardBodyScroll" unique_id=400037908]
 unique_name_in_owner = true
+layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
-[node name="RewardHeading" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody"]
+[node name="RewardHeading" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody" unique_id=1096214359]
 unique_name_in_owner = true
-text = "Look what you found!"
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "You got:"
 horizontal_alignment = 1
 autowrap_mode = 3
-theme_override_font_sizes/font_size = 20
 
-[node name="RewardPreview" type="TextureRect" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody"]
+[node name="RewardPreview" type="TextureRect" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody" unique_id=2131665203]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 150)
 clip_contents = true
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
-mouse_filter = 2
 
-[node name="RewardName" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody"]
+[node name="RewardName" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody" unique_id=2062417779]
 unique_name_in_owner = true
-horizontal_alignment = 1
-autowrap_mode = 3
-theme_override_font_sizes/font_size = 18
-
-[node name="RewardDetail" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody"]
-unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="RewardActions" type="HBoxContainer" parent="Panel/Margin/Content"]
+[node name="RewardDetail" type="Label" parent="Panel/Margin/Content/RewardBodyScroll/RewardBody" unique_id=987786660]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="RewardActions" type="HBoxContainer" parent="Panel/Margin/Content" unique_id=1598646357]
 unique_name_in_owner = true
 clip_contents = true
-alignment = 1
+layout_mode = 2
 theme_override_constants/separation = 10
+alignment = 1
 
-[node name="SkipReveal" type="Button" parent="Panel/Margin/Content/RewardActions"]
+[node name="SkipReveal" type="Button" parent="Panel/Margin/Content/RewardActions" unique_id=317719126]
 unique_name_in_owner = true
-size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 40)
-text = "Skip animation"
-clip_text = true
+layout_mode = 2
+size_flags_horizontal = 3
 tooltip_text = "Skip the opening animation"
+text = "Dismiss"
+clip_text = true
 
-[node name="EquipReward" type="Button" parent="Panel/Margin/Content/RewardActions"]
+[node name="EquipReward" type="Button" parent="Panel/Margin/Content/RewardActions" unique_id=1674097370]
 unique_name_in_owner = true
-size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Equip"
 clip_text = true
 
-[node name="KeepReward" type="Button" parent="Panel/Margin/Content/RewardActions"]
+[node name="KeepReward" type="Button" parent="Panel/Margin/Content/RewardActions" unique_id=772958609]
 unique_name_in_owner = true
-size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Keep"
 clip_text = true

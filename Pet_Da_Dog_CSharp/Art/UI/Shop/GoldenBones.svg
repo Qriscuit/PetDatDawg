@@ -1,9 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
-<g transform="rotate(-30 48 48)" stroke-linejoin="round">
-<path d="M27 34 C25 19 8 20 8 33 C-1 43 10 55 21 49 L75 49 C86 55 97 43 88 33 C88 20 71 19 69 34Z" transform="translate(0 8)" fill="#b77b25" opacity=".22"/>
-<path d="M27 34 C25 19 8 20 8 33 C-1 43 10 55 21 49 L75 49 C86 55 97 43 88 33 C88 20 71 19 69 34Z" fill="#e9b947" stroke="#805726" stroke-width="4"/>
-<path d="M26 37 L70 37 M12 30 Q17 25 22 32 M75 30 Q80 25 84 32" stroke="#fff0af" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path d="M26 45 L70 45" stroke="#cd9030" stroke-width="3" stroke-linecap="round"/>
-</g>
-<path d="M77 9 L79 15 L85 17 L79 19 L77 25 L75 19 L69 17 L75 15Z" fill="#e9b947"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Grafika (https://www.grafika.cc/) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1892.92" height="1269.83" viewBox="0 0 1892.92 1269.83" preserveAspectRatio="xMidYMid meet">
+	<defs>
+		<linearGradient id="gradient_1" gradientUnits="userSpaceOnUse" spreadMethod="pad" gradientTransform="matrix(293.969073928092, -698.717192848481, 331.619690383689, 139.521303148402, 1287.55037714449, 963.208955628949)" x1="-1" y1="0" x2="1" y2="0">
+			<stop offset="27.63%" stop-color="#FFD036" stop-opacity="1" />
+			<stop offset="97.16%" stop-color="#FFF3CC" stop-opacity="1" />
+		</linearGradient>
+		<linearGradient id="gradient_2" gradientUnits="userSpaceOnUse" spreadMethod="pad" gradientTransform="matrix(399.479326594693, -615.981555923427, 292.352349345562, 189.597754221492, 1244.77622263719, 925.932544713499)" x1="-1" y1="0" x2="1" y2="0">
+			<stop offset="0.98%" stop-color="#C37B00" stop-opacity="1" />
+			<stop offset="100%" stop-color="#FFD85B" stop-opacity="1" />
+		</linearGradient>
+	</defs>
+	<path transform="matrix(0.96322557222397, -0.268694058389474, 0.268694058389474, 0.963225572223969, -333.343167086743, 28.8959451175526)" d="M356.3 1319.28 C248.45 1261.54 216.73 1112.02 365.39 1055.01 C207.45 1020.78 182.45 900.74 254.77 794.68 C365 690.79 503.88 730.87 604.51 898.32 C890.57 817.28 1190.79 779.08 1499.48 768.31 C1453.97 576.83 1616.5 472.07 1743.45 546.47 C1848.18 595.11 1853.91 687.24 1794.06 815.29 C1963.69 870.81 1942.03 1001.11 1869.22 1105.15 C1746.22 1195.31 1571.97 1100.11 1534.63 953.18 C1245.64 1043.64 973.57 1079.94 643.31 1087.87 C609.72 1244.62 531.37 1376.29 356.3 1319.28 Z" fill-rule="evenodd" id="Path" style="fill:url(#gradient_1);stroke:url(#gradient_2);stroke-linecap:round;stroke-linejoin:round;stroke-width:24.67;" />
 </svg>

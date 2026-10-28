@@ -1,49 +1,49 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://diyq8lb67016g"]
 
-[node name="ShopCosmeticCard" type="PanelContainer"]
+[node name="ShopCosmeticCard" type="PanelContainer" unique_id=1758231522]
 custom_minimum_size = Vector2(160, 0)
 size_flags_horizontal = 3
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="." unique_id=1686636745]
 layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
-[node name="Content" type="VBoxContainer" parent="Margin"]
+[node name="Content" type="VBoxContainer" parent="Margin" unique_id=173275328]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 
-[node name="Preview" type="TextureRect" parent="Margin/Content"]
+[node name="Preview" type="TextureRect" parent="Margin/Content" unique_id=1570666636]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 100)
+custom_minimum_size = Vector2(140, 140)
 layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Title" type="Label" parent="Margin/Content"]
+[node name="Title" type="Label" parent="Margin/Content" unique_id=281139846]
 unique_name_in_owner = true
-layout_mode = 2
 custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "Cosmetic"
 horizontal_alignment = 1
 autowrap_mode = 3
-theme_override_font_sizes/font_size = 14
 
-[node name="Owned" type="Label" parent="Margin/Content"]
+[node name="Owned" type="Label" parent="Margin/Content" unique_id=670142673]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Owned: 0"
 horizontal_alignment = 1
 autowrap_mode = 3
-theme_override_font_sizes/font_size = 12
 
-[node name="Purchase" type="Button" parent="Margin/Content"]
+[node name="Purchase" type="Button" parent="Margin/Content" unique_id=1457909276]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Buy"
-autowrap_mode = 3
 theme_type_variation = &"ActionButton"
 disabled = true
+text = "Buy"
+autowrap_mode = 3

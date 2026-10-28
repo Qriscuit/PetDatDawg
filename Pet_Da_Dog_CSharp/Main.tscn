@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://bh33fq28ekwx6"]
 
 [ext_resource type="Script" uid="uid://dlre8osiaco3" path="res://Scripts/DesktopPet.cs" id="1_gxfhs"]
-[ext_resource type="PackedScene" path="res://UI/DesktopAccessoryControls.tscn" id="2_controls"]
+[ext_resource type="PackedScene" uid="uid://cbd5j5jpof3mx" path="res://UI/DesktopAccessoryControls.tscn" id="2_controls"]
 [ext_resource type="PackedScene" path="res://UI/DesktopPatrolEditor.tscn" id="3_patrol"]
+[ext_resource type="Texture2D" uid="uid://cvi3pv7acql7s" path="res://Art/Dogs/Corgi3.png" id="4_lgr22"]
 [ext_resource type="PackedScene" path="res://UI/PetTextAccessory.tscn" id="4_text"]
-[ext_resource type="PackedScene" path="res://StatusWindow.tscn" id="5_status"]
-[ext_resource type="Texture2D" path="res://Sprites/Doggo.png" id="6_dog"]
-[ext_resource type="PackedScene" path="res://UI/PetCounterDisplay.tscn" id="7_counter"]
+[ext_resource type="PackedScene" uid="uid://ttuitfcoslld" path="res://StatusWindow.tscn" id="5_status"]
+[ext_resource type="PackedScene" uid="uid://juc1y8hgq8kc" path="res://UI/PetCounterDisplay.tscn" id="7_counter"]
 
 [node name="DesktopPet" type="Node2D" unique_id=608897258]
 script = ExtResource("1_gxfhs")
@@ -20,16 +20,17 @@ position = Vector2(240, 220)
 scale = Vector2(0.171582, 0.171582)
 
 [node name="PetSprite" type="Sprite2D" parent="FootAnchor/VisualRoot" unique_id=641833253]
-texture = ExtResource("6_dog")
 position = Vector2(7, -370)
+texture = ExtResource("4_lgr22")
 
-[node name="AccessoryControls" parent="." instance=ExtResource("2_controls")]
+[node name="AccessoryControls" parent="." unique_id=1155539626 instance=ExtResource("2_controls")]
 ShowEditorPreview = false
 
-[node name="PatrolEditor" parent="." instance=ExtResource("3_patrol")]
+[node name="PatrolEditor" parent="." unique_id=1312583586 instance=ExtResource("3_patrol")]
 ShowEditorPreview = false
 
-[node name="PetCounter" parent="." instance=ExtResource("7_counter")]
+[node name="PetCounter" parent="." unique_id=16777529 instance=ExtResource("7_counter")]
+visible = false
 
 [editable path="AccessoryControls"]
 [editable path="PatrolEditor"]

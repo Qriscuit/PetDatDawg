@@ -63,7 +63,7 @@ public partial class NativeWindowBridge : Node
 	private const uint MenuStatus = 1001;
 	private const uint MenuExit = 1002;
 
-	private readonly string _trayWindowClassName = $"PetDaDogTrayWindow_{System.Environment.ProcessId}";
+	private readonly string _trayWindowClassName = $"PetThatDogTrayWindow_{System.Environment.ProcessId}";
 
 	private Thread? _trayThread;
 	private WindowProc? _trayWindowProc;
@@ -150,7 +150,7 @@ public partial class NativeWindowBridge : Node
 			_settings?.MenuHotkeyModifiers ?? MenuShortcut.DefaultModifiers));
 		var window = Interlocked.CompareExchange(ref _trayWindow, IntPtr.Zero, IntPtr.Zero);
 		if (window != IntPtr.Zero && !PostMessage(window, WmRefreshMenuHotkey, IntPtr.Zero, IntPtr.Zero))
-			Volatile.Write(ref _menuHotkeyStatus, "The menu shortcut could not be updated. Use the tray icon or restart Pet Da Dog.");
+			Volatile.Write(ref _menuHotkeyStatus, "The menu shortcut could not be updated. Use the tray icon or restart Pet that Dog.");
 	}
 
 	public void ApplyDesktopPetWindowStyles()
@@ -226,7 +226,7 @@ public partial class NativeWindowBridge : Node
 		_trayThread = new Thread(TrayThreadMain)
 		{
 			IsBackground = true,
-			Name = "Pet Da Dog Tray",
+			Name = "Pet that Dog Tray",
 		};
 		try { _trayThread.Start(); }
 		catch (Exception)
@@ -289,7 +289,7 @@ public partial class NativeWindowBridge : Node
 			};
 			classRegistered = RegisterClassEx(ref windowClass) != 0;
 			if (!classRegistered) throw new InvalidOperationException();
-			trayWindow = CreateWindowEx(0, _trayWindowClassName, "Pet Da Dog Tray", 0,
+			trayWindow = CreateWindowEx(0, _trayWindowClassName, "Pet that Dog Tray", 0,
 				0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, instance, IntPtr.Zero);
 			if (trayWindow == IntPtr.Zero) throw new InvalidOperationException();
 			Interlocked.Exchange(ref _trayWindow, trayWindow);
@@ -465,7 +465,7 @@ public partial class NativeWindowBridge : Node
 			UFlags = NifMessage | NifIcon | NifTip,
 			UCallbackMessage = TrayCallbackMessage,
 			HIcon = _trayIcon,
-			SzTip = "Pet Da Dog",
+			SzTip = "Pet that Dog",
 			SzInfo = string.Empty,
 			SzInfoTitle = string.Empty,
 			GuidItem = Guid.Empty,
@@ -483,8 +483,8 @@ public partial class NativeWindowBridge : Node
 
 		try
 		{
-			AppendMenu(menu, MfString, new UIntPtr(MenuStatus), "Open Pet Da Dog");
-			AppendMenu(menu, MfString, new UIntPtr(MenuExit), "Quit Pet Da Dog");
+			AppendMenu(menu, MfString, new UIntPtr(MenuStatus), "Open Pet that Dog");
+			AppendMenu(menu, MfString, new UIntPtr(MenuExit), "Quit Pet that Dog");
 
 			GetCursorPos(out var point);
 			SetForegroundWindow(hwnd);

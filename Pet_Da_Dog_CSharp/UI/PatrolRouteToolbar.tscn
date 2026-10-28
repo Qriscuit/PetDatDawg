@@ -1,21 +1,20 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://bes5xlnl7ltxn"]
 
-[ext_resource type="Script" path="res://Scripts/PatrolRouteToolbar.cs" id="1_script"]
-[ext_resource type="Theme" path="res://UI/Theme/DefaultTheme.tres" id="2_theme"]
-[ext_resource type="StyleBox" path="res://UI/Theme/Panel.tres" id="3_panel"]
+[ext_resource type="Script" uid="uid://ch0dhu7kerouh" path="res://Scripts/PatrolRouteToolbar.cs" id="1_script"]
+[ext_resource type="Theme" uid="uid://c2qo58y1i4pyu" path="res://UI/Theme/DefaultTheme.tres" id="2_theme"]
+[ext_resource type="StyleBox" uid="uid://dfl6oj2bmqyc5" path="res://UI/Theme/Panel.tres" id="3_panel"]
 
-[node name="PatrolRouteToolbar" type="Window"]
-transparent_bg = false
-transparent = false
-title = "Pet Da Dog · Patrol route"
-size = Vector2i(590, 178)
-visible = true
+[node name="PatrolRouteToolbar" type="Window" unique_id=677673595]
+oversampling_override = 1.0
+title = "Pet that Dog · Patrol route"
+initial_position = 2
+size = Vector2i(590, 150)
 unresizable = true
 always_on_top = true
 theme = ExtResource("2_theme")
 script = ExtResource("1_script")
 
-[node name="Background" type="PanelContainer" parent="."]
+[node name="Background" type="PanelContainer" parent="." unique_id=1093290623]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -23,34 +22,41 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = ExtResource("3_panel")
 
-[node name="Content" type="VBoxContainer" parent="Background"]
+[node name="MarginContainer" type="MarginContainer" parent="Background" unique_id=1856708820]
 layout_mode = 2
-theme_override_constants/separation = 7
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 10
 
-[node name="Heading" type="Label" parent="Background/Content"]
+[node name="Content" type="VBoxContainer" parent="Background/MarginContainer" unique_id=578664151]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Heading" type="Label" parent="Background/MarginContainer/Content" unique_id=865174039]
 layout_mode = 2
 theme_type_variation = &"WoodlandHeading"
 text = "Set your patrol route"
 
-[node name="Instructions" type="Label" parent="Background/Content"]
+[node name="Instructions" type="Label" parent="Background/MarginContainer/Content" unique_id=406884966]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 13
 text = "Click to add stops • Drag to move • Right-click to remove"
 autowrap_mode = 3
 
-[node name="PatrolDraftSummary" type="Label" parent="Background/Content"]
+[node name="PatrolDraftSummary" type="Label" parent="Background/MarginContainer/Content" unique_id=1042839627]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "3 stops · 1 → 2 → 3 → 1"
 autowrap_mode = 3
 
-[node name="Actions" type="HBoxContainer" parent="Background/Content"]
+[node name="Actions" type="HBoxContainer" parent="Background/MarginContainer/Content" unique_id=1824908369]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="PatrolUndoLast" type="Button" parent="Background/Content/Actions"]
+[node name="PatrolUndoLast" type="Button" parent="Background/MarginContainer/Content/Actions" unique_id=1692780527]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -58,7 +64,7 @@ tooltip_text = "Remove the last stop (Backspace)."
 theme_type_variation = &"SecondaryButton"
 text = "Undo last"
 
-[node name="PatrolClearDraft" type="Button" parent="Background/Content/Actions"]
+[node name="PatrolClearDraft" type="Button" parent="Background/MarginContainer/Content/Actions" unique_id=1582631801]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -66,12 +72,12 @@ tooltip_text = "Remove all stops from this draft."
 theme_type_variation = &"SecondaryButton"
 text = "Clear"
 
-[node name="Spacer" type="Control" parent="Background/Content/Actions"]
+[node name="Spacer" type="Control" parent="Background/MarginContainer/Content/Actions" unique_id=2002496497]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
-[node name="PatrolCancel" type="Button" parent="Background/Content/Actions"]
+[node name="PatrolCancel" type="Button" parent="Background/MarginContainer/Content/Actions" unique_id=487935785]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -79,7 +85,7 @@ tooltip_text = "Discard changes (Escape)."
 theme_type_variation = &"SecondaryButton"
 text = "Cancel"
 
-[node name="PatrolDone" type="Button" parent="Background/Content/Actions"]
+[node name="PatrolDone" type="Button" parent="Background/MarginContainer/Content/Actions" unique_id=1957540896]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -87,7 +93,7 @@ tooltip_text = "Save this route and start patrolling (Enter)."
 theme_type_variation = &"ActionButton"
 text = "Done"
 
-[node name="PatrolToolbarSaveStatus" type="Label" parent="Background/Content"]
+[node name="PatrolToolbarSaveStatus" type="Label" parent="Background/MarginContainer/Content" unique_id=1859584298]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

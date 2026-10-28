@@ -10,10 +10,13 @@ config_version=5
 
 [application]
 
-config/name="PetDaDogCSharp"
+config/name="PetThatDog"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
-config/icon="res://icon.svg"
+run/max_fps=30
+boot_splash/bg_color=Color(0.14, 0.14, 0.14, 0)
+boot_splash/show_image=false
+config/icon="uid://dl4gkvbs6tuoc"
 
 [autoload]
 
@@ -39,6 +42,10 @@ window/per_pixel_transparency/allowed=true
 
 project/assembly_name="PetDaDogCSharp"
 
+[editor]
+
+movie_writer/fps=30
+
 [gui]
 
 theme/custom="res://UI/Theme/DefaultTheme.tres"
@@ -49,6 +56,8 @@ backend_url="https://petdadawg.americlasagna.workers.dev"
 
 [physics]
 
+common/physics_ticks_per_second=20
+common/max_physics_steps_per_frame=1
 3d/physics_engine="Jolt Physics"
 
 [rendering]

@@ -1,13 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://v1gru5u1bcc3"]
 
-[ext_resource type="Texture2D" path="res://Sprites/Doggo.png" id="1_dog"]
+[ext_resource type="Texture2D" uid="uid://cvi3pv7acql7s" path="res://Art/Dogs/Corgi3.png" id="1_ikhq6"]
 
-[sub_resource type="AtlasTexture" id="Atlas_starter"]
-atlas = ExtResource("1_dog")
-region = Rect2(122, 136, 766, 746)
-filter_clip = true
-
-[node name="DogChoiceCard" type="Button"]
+[node name="DogChoiceCard" type="Button" unique_id=1571941395]
 custom_minimum_size = Vector2(160, 180)
 offset_right = 160.0
 offset_bottom = 180.0
@@ -16,7 +11,7 @@ theme_type_variation = &"CardButton"
 toggle_mode = true
 metadata/dog_itemdef_id = 0
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="." unique_id=855498202]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,37 +24,36 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="Content" type="VBoxContainer" parent="Margin"]
+[node name="Content" type="VBoxContainer" parent="Margin" unique_id=540396137]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 4
 
-[node name="DogChoicePreview" type="TextureRect" parent="Margin/Content"]
+[node name="DogChoicePreview" type="TextureRect" parent="Margin/Content" unique_id=625603114]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 104)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
-texture = SubResource("Atlas_starter")
+texture = ExtResource("1_ikhq6")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="DogChoiceName" type="Label" parent="Margin/Content"]
+[node name="DogChoiceName" type="Label" parent="Margin/Content" unique_id=837606555]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
-mouse_filter = 2
 theme_override_font_sizes/font_size = 13
-text = "Starter dog"
+text = "Corgi 3"
 horizontal_alignment = 1
 autowrap_mode = 3
 text_overrun_behavior = 3
 max_lines_visible = 2
 
-[node name="DogChoiceStatus" type="Label" parent="Margin/Content"]
+[node name="DogChoiceStatus" type="Label" parent="Margin/Content" unique_id=893649920]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 12
 text = "Choose dog"

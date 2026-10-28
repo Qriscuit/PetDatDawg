@@ -30,7 +30,7 @@ public partial class StatusWindow : Window
 	[Export] public string UnavailableStatusText { get; set; } = "Unavailable";
 	[ExportGroup("Connection summary text")]
 	[Export(PropertyHint.MultilineText)] public string SteamDisabledText { get; set; } = "Steam connection is disabled for this run.";
-	[Export(PropertyHint.MultilineText)] public string SteamUnavailableText { get; set; } = "Steam is unavailable. Open Steam, then restart Pet Da Dog.";
+	[Export(PropertyHint.MultilineText)] public string SteamUnavailableText { get; set; } = "Steam is unavailable. Open Steam, then restart Pet that Dog.";
 	[Export(PropertyHint.MultilineText)] public string SyncInterruptedText { get; set; } = "Pet syncing is interrupted. The app will retry while it is open.";
 	[Export(PropertyHint.MultilineText)] public string ConnectingText { get; set; } = "Connecting to the pet service…";
 	[Export(PropertyHint.MultilineText)] public string ConnectedText { get; set; } = "Connected to Steam and the pet service.";
@@ -169,7 +169,7 @@ public partial class StatusWindow : Window
 		_settingsTabButton!.Pressed += () => SetActiveTab(StatusTab.Settings);
 		GetNode<Button>("%CustomizeDog").Pressed += () => SetActiveTab(StatusTab.Items);
 		GetNode<Button>("%DismissWelcome").Pressed += () => { _settings?.DismissWelcome(); _welcomePanel!.Hide(); };
-		GetNode<Button>("%QuitPetDaDog").Pressed += () => GetTree().Quit();
+		GetNode<Button>("%QuitPetThatDog").Pressed += () => GetTree().Quit();
 		var detailsToggle = GetNode<Button>("%ConnectionDetailsToggle");
 		var details = GetNode<Control>("%ConnectionDetails");
 		detailsToggle.Toggled += expanded =>

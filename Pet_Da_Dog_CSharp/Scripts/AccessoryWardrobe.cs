@@ -8,6 +8,7 @@ public sealed record AccessoryDefinition(string Id, string Name, Texture2D Textu
 {
 	public bool IsText { get; init; }
 	public int SteamItemDefId { get; init; }
+	public string AssetPath { get; init; } = string.Empty;
 }
 public sealed record AccessoryPlacement(string Id, Vector2 Position)
 {
@@ -21,7 +22,7 @@ public sealed record AccessoryPlacement(string Id, Vector2 Position)
 // Local cosmetic preferences only. This never reads or writes the Steam pets balance.
 public partial class AccessoryWardrobe : Node
 {
-	private const string AssetDirectory = "res://Sprites/Accessories";
+	private const string AssetDirectory = "res://Art/Items";
 	private const string PlacementSection = "placements";
 	private const string ColorSection = "colors";
 	private const string ScaleSection = "sizes";
@@ -35,8 +36,8 @@ public partial class AccessoryWardrobe : Node
 	public const int MaxTextLength = 64;
 	public static readonly Vector2 TextMinPosition = new(-0.75f, -0.35f);
 	public static readonly Vector2 TextMaxPosition = new(1.75f, 1.25f);
-	public const float MinScale = 0.5f;
-	public const float MaxScale = 2f;
+	public const float MinScale = 0.1f;
+	public const float MaxScale = 4f;
 	public const float MinRotation = -180;
 	public const float MaxRotation = 180;
 	public const int MaxPlacements = 1024;
@@ -46,7 +47,7 @@ public partial class AccessoryWardrobe : Node
 	// Only neutral artwork explicitly prepared for tinting offers a color picker.
 	private static readonly HashSet<string> RecolorableIds = new(StringComparer.OrdinalIgnoreCase)
 	{
-		"DragonWing.jpg", "FairyWing.jpg", "SafetyGlasses.jpg"
+		"DragonWing.png", "FairyWing.png", "SafetyGlasses.png", "AngelWing.png", "AngryBrows.png", "Antennae.png", "Ball.png", "Bandana1.png", "BaseballHat.png", "Bone.png", "Boot.png", "Bow1.png", "BucketHat.png", "CatEars.png", "ChefHat.png", "CircleCharm.png", "Collar1.png", "CollarClip.png", "Crown1.png", "CyberVisor.png", "CyberWing.png", "DiamondCharm.png", "DizzyEye.png", "Headphones.png", "HeartCharm.png", "HeartGlasses.png", "Horn1.png", "HotDogBun.png", "Leaf.png", "Lily.png", "LoopCollar.png", "PawDecal.png", "Rose.png", "RoundGlasses.png", "RubberDuck.png", "Sauce.png", "Scarf.png", "Sock.png", "SquareCharm.png", "TenGallonHat.png", "Tiara.png", "Tie.png", "TriangleGlasses.png", "Tutu.png", "VisorHat.png", "WitchHat.png"
 	};
 	private readonly List<AccessoryDefinition> _catalog = new();
 	private readonly List<AccessoryPlacement> _equipped = new();
@@ -71,7 +72,7 @@ public partial class AccessoryWardrobe : Node
 	public IReadOnlyList<AccessoryPlacement> Equipped => VisiblePlacements().AsReadOnly();
 	public int SelectedDogItemDefId => OwnsSteamItem(_selectedDogItemDefId)
 		&& SteamCosmeticCatalog.Find(_selectedDogItemDefId)?.Kind == "dog" ? _selectedDogItemDefId : 0;
-	public string CurrentDogTexturePath => SteamCosmeticCatalog.Find(SelectedDogItemDefId)?.AssetPath ?? "res://Sprites/Doggo.png";
+	public string CurrentDogTexturePath => SteamCosmeticCatalog.Find(SelectedDogItemDefId)?.AssetPath ?? "res://Art/Dogs/Corgi3.png";
 	// Bottom-to-top drawing order. The dog is present even with an empty outfit.
 	public IReadOnlyList<string> LayerOrder => _layerOrder.AsReadOnly();
 	public event Action? Changed;
@@ -88,10 +89,29 @@ public partial class AccessoryWardrobe : Node
 			var texture = SteamCosmeticCatalog.CroppedTexture(item.AssetPath);
 			if (texture == null) continue;
 			var size = texture.GetSize() * (AccessorySize / Mathf.Max(texture.GetWidth(), texture.GetHeight()));
-			_catalog.Add(new AccessoryDefinition(item.AccessoryId, item.Name, texture, size) { SteamItemDefId = item.ItemDefId });
+			AddCatalogDefinition(new AccessoryDefinition(item.AccessoryId, item.Name, texture, size) { SteamItemDefId = item.ItemDefId, AssetPath = item.AssetPath });
 		}
 		LoadPlacements();
 		LoadPresets();
+	}
+
+	private void AddCatalogDefinition(AccessoryDefinition item)
+	{
+		if (item.AssetPath.Length > 0)
+		{
+			for (var i = 0; i < _catalog.Count; i++)
+			{
+				var existing = _catalog[i];
+				if (existing.AssetPath != item.AssetPath) continue;
+				if (existing.SteamItemDefId == 0 && item.SteamItemDefId > 0)
+				{
+					_catalog[i] = item;
+					return;
+				}
+				return;
+			}
+		}
+		_catalog.Add(item);
 	}
 
 	public override void _ExitTree()
@@ -547,16 +567,9 @@ public partial class AccessoryWardrobe : Node
 				continue;
 			}
 			var texture = ResourceLoader.Load<Texture2D>(path);
-			if (texture == null)
-			{
-				continue;
-			}
+			if (texture == null) continue;
 			var id = path[(AssetDirectory.Length + 1)..];
 			var canRecolor = RecolorableIds.Contains(id);
-			if (canRecolor && extension is (".jpg" or ".jpeg"))
-			{
-				texture = RemoveJpegBackground(texture);
-			}
 			var bounds = GetVisibleBounds(texture);
 			if (bounds.Size.X == 0 || bounds.Size.Y == 0)
 			{
@@ -567,34 +580,9 @@ public partial class AccessoryWardrobe : Node
 			var name = Path.GetFileNameWithoutExtension(entry);
 			name = Regex.Replace(name.Replace('_', ' ').Replace('-', ' '), "([a-z])([A-Z0-9])", "$1 $2");
 			name = Regex.Replace(name, "([A-Z])([A-Z][a-z])", "$1 $2");
-			_catalog.Add(new AccessoryDefinition(id, name, cropped, size, canRecolor));
+			AddCatalogDefinition(new AccessoryDefinition(id, name, cropped, size, canRecolor) { AssetPath = path });
 		}
 	}
-
-	private static Texture2D RemoveJpegBackground(Texture2D texture)
-	{
-		using var image = texture.GetImage();
-		if (image == null)
-		{
-			return texture;
-		}
-		image.Convert(Image.Format.Rgba8);
-		for (var y = 0; y < image.GetHeight(); y++)
-		{
-			for (var x = 0; x < image.GetWidth(); x++)
-			{
-				var pixel = image.GetPixel(x, y);
-				var brightness = Mathf.Max(pixel.R, Mathf.Max(pixel.G, pixel.B));
-				// White/gray art on black: remove JPEG noise and soften its antialiased edge.
-				var alpha = Mathf.SmoothStep(0.06f, 0.30f, brightness);
-				image.SetPixel(x, y, alpha <= 0
-					? new Color(1, 1, 1, 0)
-					: new Color(Mathf.Min(1, pixel.R / alpha), Mathf.Min(1, pixel.G / alpha), Mathf.Min(1, pixel.B / alpha), alpha));
-			}
-		}
-		return ImageTexture.CreateFromImage(image);
-	}
-
 	public static Rect2I GetVisibleBounds(Texture2D texture)
 	{
 		using var image = texture.GetImage();

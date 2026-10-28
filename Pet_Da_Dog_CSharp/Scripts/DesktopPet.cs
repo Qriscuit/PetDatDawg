@@ -8,7 +8,7 @@ public partial class DesktopPet : Node2D
 {
 	[Export] public PackedScene? StatusScene { get; set; }
 	[Export] public PackedScene? TextAccessoryScene { get; set; }
-	private const string DogTexturePath = "res://Sprites/Doggo.png";
+	private const string DogTexturePath = "res://Art/Dogs/Corgi3.png";
 	private const string HeartTexturePath = "res://Sprites/PetzHeart.png";
 	private const string PettingHandTexturePath = "res://Art/UI/Feedback/PetHand.png";
 	private const string FallbackTexturePath = "res://icon.svg";
@@ -371,7 +371,7 @@ public partial class DesktopPet : Node2D
 
 		if (_dogSprite.Texture == null)
 		{
-			GD.PushError("Could not load Doggo.png or the fallback icon.");
+			GD.PushError("Could not load Corgi3.png or the fallback icon.");
 			return;
 		}
 

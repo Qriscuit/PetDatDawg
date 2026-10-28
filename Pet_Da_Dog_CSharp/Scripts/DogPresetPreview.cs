@@ -5,7 +5,7 @@ using System.Collections.Generic;
 /// <summary>A read-only drawing of a saved outfit, independent of current ownership and equipment.</summary>
 public partial class DogPresetPreview : Control
 {
-	private const string StarterDogTexturePath = "res://Sprites/Doggo.png";
+	private const string StarterDogTexturePath = "res://Art/Dogs/Corgi3.png";
 	private const float ContentPadding = 8;
 	private sealed record Layer(string Id, Texture2D Texture, bool IsText, Vector2 Center, Vector2 Size,
 		float RotationDegrees, Color Tint, string Text, bool BackgroundVisible);

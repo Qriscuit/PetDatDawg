@@ -549,7 +549,7 @@ public partial class AccessoryEditor : VBoxContainer
 /// <summary>All preview input stays in its cosmetic viewport; it never enqueues a pet grant.</summary>
 public partial class AccessoryPreview : Control
 {
-	private const string DogTexturePath = "res://Sprites/Doggo.png";
+	private const string DogTexturePath = "res://Art/Dogs/Corgi3.png";
 	private static readonly Color Accent = WoodlandTheme.Accent;
 	private AccessoryWardrobe? _wardrobe;
 	private Texture2D? _dogTexture;

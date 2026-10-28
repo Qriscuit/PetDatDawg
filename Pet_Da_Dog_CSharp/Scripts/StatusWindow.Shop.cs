@@ -46,7 +46,7 @@ public partial class StatusWindow
 			_shopBoxButtons[id] = GetNode<Button>($"%{button}");
 			_shopBoxButtons[id].Pressed += () => _ = PurchaseShopOffer(id);
 			GetNode<Button>($"%{prefix}BoxOdds").Pressed += () => ShowBoxOdds(id);
-			GetNode<TextureRect>($"%{prefix}BoxArt").Texture = ResourceLoader.Load<Texture2D>($"res://Art/UI/Shop/{prefix}BoxClosed.svg");
+			GetNode<TextureRect>($"%{prefix}BoxArt").Texture = ResourceLoader.Load<Texture2D>($"res://Art/UI/Shop/{prefix}Present1.svg");
 		}
 		GetNode<Button>("%SteamMarket").Pressed += () => _shopSteam?.OpenMarket();
 		GetNode<Button>("%SteamInventoryLink").Pressed += () => _shopSteam?.OpenSteamInventory();
@@ -86,9 +86,9 @@ public partial class StatusWindow
 			GetNode<Button>($"%Shop{name}Tab").SetPressedNoSignal(name == section);
 		GetNode<Label>("%ShopDescription").Text = section switch
 		{
-			"Dogs" => "Choose exactly the dog you want. Extra copies are welcome.",
+			"Dogs" => "Choose exactly the dog you want.",
 			"Accessories" => "Pick your next accessory. Each owned copy can be placed on your dog.",
-			"Bones" => "Golden Bones buy premium boxes and specific cosmetics. Steam handles checkout in your local currency.",
+			"Bones" => "Golden Bones buy premium boxes and specific cosmetics.",
 			"Recycle" => "Turn one spare copy into Golden Bones. Your last copy and accessories in use are protected. Steam Market sales pay Steam Wallet funds instead.",
 			_ => "Find a new friend. One click buys a box and sends your dog digging."
 		};
@@ -321,7 +321,14 @@ public partial class StatusWindow
 		if (scroll)
 		{
 			var container = new ScrollContainer { CustomMinimumSize = new Vector2(400, 400), HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
-			container.AddChild(new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill });
+			container.AddThemeStyleboxOverride("panel", ResourceLoader.Load<StyleBox>("res://UI/Theme/Panel.tres"));
+			var marginContainer = new MarginContainer { CustomMinimumSize = new Vector2(400, 400) };
+			marginContainer.AddThemeConstantOverride("margin_left", 15);
+			marginContainer.AddThemeConstantOverride("margin_right", 15);
+			marginContainer.AddThemeConstantOverride("margin_top", 15);
+			marginContainer.AddThemeConstantOverride("margin_bottom", 150);
+			container.AddChild(marginContainer);
+			marginContainer.AddChild(new Label { Text = text, AutowrapMode = TextServer.AutowrapMode.WordSmart, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill });
 			dialog.AddChild(container);
 		}
 		else dialog.DialogText = text;

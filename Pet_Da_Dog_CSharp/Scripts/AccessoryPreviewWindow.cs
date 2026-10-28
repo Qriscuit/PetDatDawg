@@ -18,7 +18,7 @@ public partial class AccessoryPreviewWindow : Window
 
 	public override void _Ready()
 	{
-		Title = "Pet Da Dog · Preview";
+		Title = "Pet that Dog · Preview";
 		InitialPosition = WindowInitialPosition.Absolute;
 		Size = DefaultSize;
 		MinSize = DefaultMinimumSize;

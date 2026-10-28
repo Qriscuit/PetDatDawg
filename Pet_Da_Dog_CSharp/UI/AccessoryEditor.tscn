@@ -75,6 +75,7 @@ CategoryRowScene = ExtResource("3_row")
 ColorControlsScene = ExtResource("4_colors")
 
 [node name="InstructionsRow" type="HBoxContainer" parent="." unique_id=762991107]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 9
 
@@ -99,36 +100,36 @@ text = "Choose an item, then click your desktop dog to place it.
 Drag equipped items to move them; use the handles to resize or rotate."
 autowrap_mode = 3
 
-[node name="PresetActions" type="HFlowContainer" parent="."]
+[node name="PresetActions" type="HFlowContainer" parent="." unique_id=1808495543]
 layout_mode = 2
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 
-[node name="PresetName" type="LineEdit" parent="PresetActions"]
+[node name="PresetName" type="LineEdit" parent="PresetActions" unique_id=1237991948]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 40)
 layout_mode = 2
 size_flags_horizontal = 3
+tooltip_text = "Give this dog and its accessories a name."
 placeholder_text = "Preset name (optional)"
 max_length = 48
-tooltip_text = "Give this dog and its accessories a name."
 
-[node name="SavePreset" type="Button" parent="PresetActions"]
+[node name="SavePreset" type="Button" parent="PresetActions" unique_id=669586601]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"ActionButton"
-text = "Save Preset"
 tooltip_text = "Save your selected dog and its complete accessory look."
+theme_type_variation = &"ActionButton"
 disabled = true
+text = "Save Preset"
 
-[node name="OpenPresets" type="Button" parent="PresetActions"]
+[node name="OpenPresets" type="Button" parent="PresetActions" unique_id=1578838979]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SecondaryButton"
-text = "Presets"
 disabled = true
+text = "Presets"
 
-[node name="PresetSaveStatus" type="Label" parent="."]
+[node name="PresetSaveStatus" type="Label" parent="." unique_id=374354901]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -145,33 +146,39 @@ theme_override_constants/separation = 12
 custom_minimum_size = Vector2(164, 0)
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 1.15
 theme_override_styles/panel = ExtResource("5_panel")
 
-[node name="InspectorScroll" type="ScrollContainer" parent="Workspace/InspectorPanel" unique_id=1003201044]
+[node name="MarginContainer" type="MarginContainer" parent="Workspace/InspectorPanel" unique_id=1482151622]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_bottom = 10
+
+[node name="InspectorScroll" type="ScrollContainer" parent="Workspace/InspectorPanel/MarginContainer" unique_id=1003201044]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
+theme_override_constants/scrollbar_h_separation = 6
 horizontal_scroll_mode = 0
 
-[node name="AccessoryInspector" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll" unique_id=1312053594]
+[node name="AccessoryInspector" type="VBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll" unique_id=1312053594]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="AccessorySelectionLabel" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=1828199540]
+[node name="AccessorySelectionLabel" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=1828199540]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
 theme_override_font_sizes/font_size = 14
-text = "No accessory selected"
+text = "..."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="CancelAccessory" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=1554852003]
+[node name="CancelAccessory" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=1554852003]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -180,7 +187,7 @@ theme_type_variation = &"SecondaryButton"
 theme_override_font_sizes/font_size = 13
 text = "Cancel"
 
-[node name="RemoveAccessory" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=512509426]
+[node name="RemoveAccessory" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=512509426]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -191,7 +198,7 @@ theme_override_font_sizes/font_size = 13
 text = "Remove"
 icon = ExtResource("7_pkvd0")
 
-[node name="AccessoryCopyCount" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+[node name="AccessoryCopyCount" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=1820813285]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -199,21 +206,21 @@ theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="AddAccessoryCopy" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector"]
+[node name="AddAccessoryCopy" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=562083550]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
+tooltip_text = "Place another owned copy of this accessory."
 theme_type_variation = &"SecondaryButton"
 theme_override_font_sizes/font_size = 13
 text = "Add another"
-tooltip_text = "Place another owned copy of this accessory."
 
-[node name="OutfitActions" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=2101730394]
+[node name="OutfitActions" type="HBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=2101730394]
 layout_mode = 2
 theme_override_constants/separation = 7
 
-[node name="ClearOutfit" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/OutfitActions" unique_id=1223499979]
+[node name="ClearOutfit" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/OutfitActions" unique_id=1223499979]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -222,7 +229,7 @@ theme_type_variation = &"SecondaryButton"
 theme_override_font_sizes/font_size = 13
 text = "Clear all"
 
-[node name="UndoOutfit" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/OutfitActions" unique_id=719607940]
+[node name="UndoOutfit" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/OutfitActions" unique_id=719607940]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -231,12 +238,12 @@ theme_type_variation = &"SecondaryButton"
 theme_override_font_sizes/font_size = 13
 text = "Undo"
 
-[node name="AccessoryLayerControls" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=1087109998]
+[node name="AccessoryLayerControls" type="VBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=1087109998]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="AccessoryLayerLabel" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryLayerControls" unique_id=359769912]
+[node name="AccessoryLayerLabel" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryLayerControls" unique_id=359769912]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
@@ -244,10 +251,10 @@ theme_override_font_sizes/font_size = 12
 text = "Layers"
 autowrap_mode = 3
 
-[node name="LayerButtons" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryLayerControls" unique_id=655034575]
+[node name="LayerButtons" type="HBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryLayerControls" unique_id=655034575]
 layout_mode = 2
 
-[node name="MoveAccessoryLayerUp" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryLayerControls/LayerButtons" unique_id=1646922611]
+[node name="MoveAccessoryLayerUp" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryLayerControls/LayerButtons" unique_id=1646922611]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -257,7 +264,7 @@ theme_type_variation = &"SecondaryButton"
 theme_override_font_sizes/font_size = 13
 text = "↑ Up"
 
-[node name="MoveAccessoryLayerDown" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryLayerControls/LayerButtons" unique_id=838157074]
+[node name="MoveAccessoryLayerDown" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryLayerControls/LayerButtons" unique_id=838157074]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -267,28 +274,28 @@ theme_type_variation = &"SecondaryButton"
 theme_override_font_sizes/font_size = 13
 text = "↓ Down"
 
-[node name="AccessoryTransformControls" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=1586963688]
+[node name="AccessoryTransformControls" type="VBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=1586963688]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="TransformSliders" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls" unique_id=417213675]
+[node name="TransformSliders" type="HBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls" unique_id=417213675]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="SizeColumn" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders" unique_id=346374015]
+[node name="SizeColumn" type="VBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders" unique_id=346374015]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="SizeHeading" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn" unique_id=358818800]
+[node name="SizeHeading" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn" unique_id=358818800]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Size"
 horizontal_alignment = 1
 
-[node name="AccessorySizeValue" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn" unique_id=1890644079]
+[node name="AccessorySizeValue" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn" unique_id=1890644079]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
@@ -296,7 +303,7 @@ theme_override_font_sizes/font_size = 12
 text = "100%"
 horizontal_alignment = 1
 
-[node name="AccessorySizeSlider" type="VSlider" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn" unique_id=1649816520]
+[node name="AccessorySizeSlider" type="VSlider" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/SizeColumn" unique_id=1649816520]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 190)
 layout_mode = 2
@@ -306,19 +313,19 @@ min_value = 50.0
 max_value = 200.0
 value = 100.0
 
-[node name="RotationColumn" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders" unique_id=54383046]
+[node name="RotationColumn" type="VBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders" unique_id=54383046]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="RotationHeading" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn" unique_id=178426408]
+[node name="RotationHeading" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn" unique_id=178426408]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Rotation"
 horizontal_alignment = 1
 
-[node name="AccessoryRotationValue" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn" unique_id=259550772]
+[node name="AccessoryRotationValue" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn" unique_id=259550772]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.372549, 0.396078, 0.298039, 1)
@@ -326,7 +333,7 @@ theme_override_font_sizes/font_size = 12
 text = "0°"
 horizontal_alignment = 1
 
-[node name="AccessoryRotationSlider" type="VSlider" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn" unique_id=151213182]
+[node name="AccessoryRotationSlider" type="VSlider" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls/TransformSliders/RotationColumn" unique_id=151213182]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(28, 190)
 layout_mode = 2
@@ -335,7 +342,7 @@ theme = ExtResource("8_fvo2w")
 min_value = -180.0
 max_value = 180.0
 
-[node name="ResetAccessoryTransform" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryTransformControls" unique_id=58433182]
+[node name="ResetAccessoryTransform" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryTransformControls" unique_id=58433182]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
@@ -345,21 +352,21 @@ theme_type_variation = &"SecondaryButton"
 theme_override_font_sizes/font_size = 13
 text = "Reset fit"
 
-[node name="TextAccessoryControls" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=88367785]
+[node name="TextAccessoryControls" type="HBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=88367785]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="TextStack" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls" unique_id=1903828266]
+[node name="TextStack" type="VBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/TextAccessoryControls" unique_id=1903828266]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextHeading" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack" unique_id=1838302464]
+[node name="TextHeading" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack" unique_id=1838302464]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Text"
 
-[node name="AccessoryTextInput" type="LineEdit" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack" unique_id=464179348]
+[node name="AccessoryTextInput" type="LineEdit" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack" unique_id=464179348]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -367,7 +374,7 @@ tooltip_text = "Up to 64 characters. Changes save automatically."
 theme = ExtResource("8_fvo2w")
 placeholder_text = "What should your dog say?"
 
-[node name="TextBackgroundToggle" type="CheckBox" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack" unique_id=1505607296]
+[node name="TextBackgroundToggle" type="CheckBox" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/TextAccessoryControls/TextStack" unique_id=1505607296]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Show a bubble behind the text. Turn it off to show only the letters."
@@ -375,22 +382,22 @@ theme_override_font_sizes/font_size = 12
 button_pressed = true
 text = "Text background"
 
-[node name="AccessoryColorControls" type="HBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector" unique_id=120225206]
+[node name="AccessoryColorControls" type="HBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector" unique_id=120225206]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ColorStack" type="VBoxContainer" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls" unique_id=1231250783]
+[node name="ColorStack" type="VBoxContainer" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryColorControls" unique_id=1231250783]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AccessoryColorLabel" type="Label" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack" unique_id=1579493549]
+[node name="AccessoryColorLabel" type="Label" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack" unique_id=1579493549]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "Color"
 
-[node name="AccessoryColorPicker" type="ColorPickerButton" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack" unique_id=287900422]
+[node name="AccessoryColorPicker" type="ColorPickerButton" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack" unique_id=287900422]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(72, 30)
 layout_mode = 2
@@ -399,7 +406,7 @@ tooltip_text = "Open the color wheel. Changes apply to this accessory immediatel
 theme_type_variation = &"SecondaryButton"
 edit_alpha = false
 
-[node name="ResetAccessoryColor" type="Button" parent="Workspace/InspectorPanel/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack" unique_id=9366974]
+[node name="ResetAccessoryColor" type="Button" parent="Workspace/InspectorPanel/MarginContainer/InspectorScroll/AccessoryInspector/AccessoryColorControls/ColorStack" unique_id=9366974]
 unique_name_in_owner = true
 modulate = Color(0.28235295, 0.3764706, 0.21960784, 1)
 custom_minimum_size = Vector2(0, 30)

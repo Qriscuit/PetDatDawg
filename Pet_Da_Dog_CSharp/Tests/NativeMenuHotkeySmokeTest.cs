@@ -30,7 +30,7 @@ public partial class NativeMenuHotkeySmokeTest : Node
 			_bridge.StatusRequested += OnMenuOpened;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 			StopBridge();
-			probe = CreateWindowEx(0, "STATIC", "Pet Da Dog shortcut test", 0, 0, 0, 0, 0,
+			probe = CreateWindowEx(0, "STATIC", "Pet that Dog shortcut test", 0, 0, 0, 0, 0,
 				IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 			Require(probe != IntPtr.Zero, "An isolated conflict window is available.");
 			const int modifiers = MenuShortcut.Control | MenuShortcut.Alt | MenuShortcut.Shift;

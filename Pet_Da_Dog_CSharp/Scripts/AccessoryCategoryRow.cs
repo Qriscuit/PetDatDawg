@@ -129,17 +129,19 @@ public partial class AccessoryCategoryRow : VBoxContainer
 
 public static class AccessoryCategories
 {
-	public static readonly string[] OrderedNames = { "Wings", "Collars", "Glasses", "Decorations", "Text" };
+	public static readonly string[] OrderedNames = { "Hats", "Wings", "Collars", "Glasses", "Decals", "Other", "Text" };
 
 	public static string For(AccessoryDefinition accessory)
 	{
 		if (accessory.IsText) return "Text";
 		var name = $"{accessory.Id} {accessory.Name}";
+		if (name.Contains("hat", StringComparison.OrdinalIgnoreCase) || name.Contains("cap", StringComparison.OrdinalIgnoreCase) || name.Contains("halo", StringComparison.OrdinalIgnoreCase) || name.Contains("crown", StringComparison.OrdinalIgnoreCase) || name.Contains("ears", StringComparison.OrdinalIgnoreCase)) return "Hats";
 		if (name.Contains("wing", StringComparison.OrdinalIgnoreCase)) return "Wings";
-		if (name.Contains("collar", StringComparison.OrdinalIgnoreCase) || name.Contains("necklace", StringComparison.OrdinalIgnoreCase)) return "Collars";
+		if (name.Contains("collar", StringComparison.OrdinalIgnoreCase) || name.Contains("necklace", StringComparison.OrdinalIgnoreCase) || name.Contains("bandana", StringComparison.OrdinalIgnoreCase) || name.Contains("bow", StringComparison.OrdinalIgnoreCase) || name.Contains("Tie", StringComparison.OrdinalIgnoreCase) || name.Contains("scarf", StringComparison.OrdinalIgnoreCase)) return "Collars";
 		if (name.Contains("glasses", StringComparison.OrdinalIgnoreCase) || name.Contains("goggle", StringComparison.OrdinalIgnoreCase)
-			|| name.Contains("Cyber Visor", StringComparison.OrdinalIgnoreCase))
+			|| name.Contains("CyberVisor", StringComparison.OrdinalIgnoreCase) || name.Contains("eye", StringComparison.OrdinalIgnoreCase))
 			return "Glasses";
-		return "Decorations";
+		if (name.Contains("decal", StringComparison.OrdinalIgnoreCase) || name.Contains("charm", StringComparison.OrdinalIgnoreCase)) return "Decals";
+		return "Other";
 	}
 }

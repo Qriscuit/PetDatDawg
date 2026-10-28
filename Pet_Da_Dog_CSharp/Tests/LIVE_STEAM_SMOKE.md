@@ -9,7 +9,7 @@ Optional `-UseDogInput` instantiates the real dog scene and reuses that scene's
 Steam connection and backend client.
 
 Steam must be running and signed in to an account that owns the app. Close other
-Pet Da Dog clients and avoid purchases, grants, or inventory mutations while the
+Pet that Dog clients and avoid purchases, grants, or inventory mutations while the
 test runs, because it verifies exact totals.
 
 From the repository root, the default check performs **zero grants**:

@@ -1,8 +1,8 @@
-Pet Da Dog Windows build
+Pet that Dog Windows build
 Built at (UTC): 2026-10-19 22:49:38
 Godot: 4.6.3.stable.mono.official.7d41c59c4
 Worker: https://petdadawg.americlasagna.workers.dev/
 Steam AppID: 4817200
 Validation: Release build, resource import, complete export, Steam-disabled launch smoke passed.
-Keep this entire folder together. Launch PetDaDogCSharp.exe with Steam running.
+Keep this entire folder together. Launch PetThatDog.exe with Steam running.
 This package contains only the client; Steam publisher keys remain on the backend.
