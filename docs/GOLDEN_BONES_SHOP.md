@@ -15,9 +15,9 @@ windows while balances remain visible.
 | Recycle one spare cosmetic | Receive 5 Golden Bones |
 
 The basic pool contains 10 dogs and 10 accessories at 5% each. The premium
-boxes exclude them, with 63 equally likely dogs or 53 accessories. Contents
+boxes exclude them, with 67 equally likely dogs or 53 accessories. Contents
 and odds are available before purchase. Specific-item purchases support all
-136 cosmetics and repeated copies. Search and ownership filters narrow the
+140 cosmetics and repeated copies. Search and ownership filters narrow the
 grids. Recycling protects `max(1, equipped copies)` and always confirms the
 single-copy conversion; saved presets do not reserve copies.
 
@@ -75,9 +75,13 @@ OverlayRendering smoke scripts. Build the Windows export with
 
 The schema generator and icon staging do not publish to Steam. Follow the
 coordinated release in [SteamInventory/README.md](../SteamInventory/README.md):
-verify tests, host icons, freeze old purchases, publish/read back 150 definitions,
+verify tests, host icons, freeze old purchases, publish/read back 154 definitions,
 then enable the matching Worker offers. Public cash sales and Market require
 their separate Steam eligibility/pricing checks and stay disabled by default.
+The October 28 source sync prepares economy `golden-bones-v2` with four new
+dogs (3073–3076). It changes the premium dog pool from 63 to 67 outcomes and
+requires a new coordinated publication; the validation records below describe
+the earlier v1 release.
 
 ### Validation record — 2026-10-19
 

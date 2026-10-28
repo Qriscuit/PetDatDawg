@@ -1,6 +1,6 @@
 [gd_resource type="StyleBoxTexture" format=3 uid="uid://dfl6oj2bmqyc5"]
 
-[ext_resource type="Texture2D" uid="uid://dkqxsp0pvxk17" path="res://Art/UI/Paws/PanelBackground.png" id="1_mra3s"]
+[ext_resource type="Texture2D" uid="uid://hoi6mdi4c2pu" path="res://Art/UI/Paws/PanelBackground.png" id="1_mra3s"]
 
 [resource]
 resource_name = "Panel"

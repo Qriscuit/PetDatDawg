@@ -28,13 +28,13 @@ try {
     const result = await response.json(); assert.equal(response.status, expected, JSON.stringify(result)); return result;
   };
   token = (await send("/v1/auth/steam", { ticketHex: "aabb", identity: "petdadog-backend" })).sessionToken;
-  const buy = (id, offerId) => ({ clientEventId: guid(id), offerId, economyVersion: "golden-bones-v1" });
+  const buy = (id, offerId) => ({ clientEventId: guid(id), offerId, economyVersion: "golden-bones-v2" });
   const replies = await Promise.all([send("/v2/shop/purchase", buy(1, "dig")), send("/v2/shop/purchase", buy(1, "dig"))]);
   assert.ok(replies.every(r => r.pets === 1500 && r.status === "complete"));
   await send("/v2/shop/purchase", buy(2, "dig"), 409);
-  assert.equal((await send("/v2/shop/purchase", buy(3, "dog:3072"))).goldenBones, 800);
-  assert.equal((await send("/v2/shop/purchase", buy(4, "dog:3072"))).goldenBones, 600);
-  const recycled = await send("/v2/shop/recycle", { clientEventId: guid(5), itemDefId: 3072, quantity: 1, equippedQuantity: 0, economyVersion: "golden-bones-v1" });
+  assert.equal((await send("/v2/shop/purchase", buy(3, "dog:3076"))).goldenBones, 800);
+  assert.equal((await send("/v2/shop/purchase", buy(4, "dog:3076"))).goldenBones, 600);
+  const recycled = await send("/v2/shop/recycle", { clientEventId: guid(5), itemDefId: 3076, quantity: 1, equippedQuantity: 0, economyVersion: "golden-bones-v2" });
   assert.equal(recycled.goldenBones, 605); assert.equal(recycled.receivedItems[0].quantity, 5);
   const status = await send(`/v2/shop/operations/${guid(1)}`);
   assert.equal(status.receipts.length, 4); assert.equal(status.status, "complete");

@@ -29,12 +29,12 @@ function fixture({ pets = 2000, bones = 1000 } = {}) {
 }
 const count = (f, name) => f.calls.filter(path => path.includes(name)).length;
 
-test("single manifest validates 136 cosmetics and safe Steam schema, prices, pools and protected permit", () => {
+test("single manifest validates 140 cosmetics and safe Steam schema, prices, pools and protected permit", () => {
   execFileSync(process.execPath, ["../scripts/economy-generate.mjs", "--check"], { cwd: new URL("..", import.meta.url), stdio: "pipe" });
   const schema = JSON.parse(readFileSync(new URL("../../SteamInventory/itemdefs.json", import.meta.url), "utf8"));
-  assert.equal(schema.items.length, 150);
-  assert.equal(shopCatalog.offers.length, 139);
-  assert.deepEqual(shopCatalog.offers.slice(0, 3).map(o => [o.price, o.rewardItemDefIds.length]), [[500, 20], [50, 63], [25, 53]]);
+  assert.equal(schema.items.length, 154);
+  assert.equal(shopCatalog.offers.length, 143);
+  assert.deepEqual(shopCatalog.offers.slice(0, 3).map(o => [o.price, o.rewardItemDefIds.length]), [[500, 20], [50, 67], [25, 53]]);
   assert.ok(shopCatalog.offers.slice(1, 3).every(o => o.rewardItemDefIds.every(id => !economy.starterPool.includes(id))));
   assert.equal(schema.items.find(i => i.itemdefid === 1110).exchange, "100x500,102x1");
   assert.equal(schema.items.find(i => i.itemdefid === 1113).bundle, "101x5");

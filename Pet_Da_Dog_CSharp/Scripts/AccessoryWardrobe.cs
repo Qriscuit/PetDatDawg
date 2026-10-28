@@ -22,7 +22,6 @@ public sealed record AccessoryPlacement(string Id, Vector2 Position)
 // Local cosmetic preferences only. This never reads or writes the Steam pets balance.
 public partial class AccessoryWardrobe : Node
 {
-	private const string AssetDirectory = "res://Art/Items";
 	private const string PlacementSection = "placements";
 	private const string ColorSection = "colors";
 	private const string ScaleSection = "sizes";
@@ -44,10 +43,15 @@ public partial class AccessoryWardrobe : Node
 	private const string InstanceSeparator = "::";
 	private const int HistoryLimit = 30;
 	private const float AccessorySize = 0.26f;
-	// Only neutral artwork explicitly prepared for tinting offers a color picker.
-	private static readonly HashSet<string> RecolorableIds = new(StringComparer.OrdinalIgnoreCase)
+	// Keep saved starter IDs separate from Steam ownership even when artwork is shared.
+	private static readonly (string Id, string AssetPath, bool CanRecolor)[] StarterAccessories =
 	{
-		"DragonWing.png", "FairyWing.png", "SafetyGlasses.png", "AngelWing.png", "AngryBrows.png", "Antennae.png", "Ball.png", "Bandana1.png", "BaseballHat.png", "Bone.png", "Boot.png", "Bow1.png", "BucketHat.png", "CatEars.png", "ChefHat.png", "CircleCharm.png", "Collar1.png", "CollarClip.png", "Crown1.png", "CyberVisor.png", "CyberWing.png", "DiamondCharm.png", "DizzyEye.png", "Headphones.png", "HeartCharm.png", "HeartGlasses.png", "Horn1.png", "HotDogBun.png", "Leaf.png", "Lily.png", "LoopCollar.png", "PawDecal.png", "Rose.png", "RoundGlasses.png", "RubberDuck.png", "Sauce.png", "Scarf.png", "Sock.png", "SquareCharm.png", "TenGallonHat.png", "Tiara.png", "Tie.png", "TriangleGlasses.png", "Tutu.png", "VisorHat.png", "WitchHat.png"
+		("DragonWing.jpg", "res://Sprites/Accessories/DragonWing.jpg", true),
+		("FairyWing.jpg", "res://Sprites/Accessories/FairyWing.jpg", true),
+		("SafetyGlasses.jpg", "res://Sprites/Accessories/SafetyGlasses.jpg", true),
+		("SFlower1.png", "res://Art/Items/SFlower1.png", false),
+		("SFlower2.png", "res://Art/Items/SFlower2.png", false),
+		("SquareCharm.png", "res://Art/Items/SquareCharm.png", false)
 	};
 	private readonly List<AccessoryDefinition> _catalog = new();
 	private readonly List<AccessoryPlacement> _equipped = new();
@@ -81,7 +85,7 @@ public partial class AccessoryWardrobe : Node
 
 	public override void _Ready()
 	{
-		LoadCatalog(AssetDirectory);
+		LoadStarterCatalog();
 		_catalog.Add(new AccessoryDefinition(TextAccessoryId, "Text Box", WoodlandTheme.Icon("text-box")!, new Vector2(1.15f, 0.483f), true) { IsText = true });
 		foreach (var item in SteamCosmeticCatalog.All)
 		{
@@ -89,29 +93,10 @@ public partial class AccessoryWardrobe : Node
 			var texture = SteamCosmeticCatalog.CroppedTexture(item.AssetPath);
 			if (texture == null) continue;
 			var size = texture.GetSize() * (AccessorySize / Mathf.Max(texture.GetWidth(), texture.GetHeight()));
-			AddCatalogDefinition(new AccessoryDefinition(item.AccessoryId, item.Name, texture, size) { SteamItemDefId = item.ItemDefId, AssetPath = item.AssetPath });
+			_catalog.Add(new AccessoryDefinition(item.AccessoryId, item.Name, texture, size) { SteamItemDefId = item.ItemDefId, AssetPath = item.AssetPath });
 		}
 		LoadPlacements();
 		LoadPresets();
-	}
-
-	private void AddCatalogDefinition(AccessoryDefinition item)
-	{
-		if (item.AssetPath.Length > 0)
-		{
-			for (var i = 0; i < _catalog.Count; i++)
-			{
-				var existing = _catalog[i];
-				if (existing.AssetPath != item.AssetPath) continue;
-				if (existing.SteamItemDefId == 0 && item.SteamItemDefId > 0)
-				{
-					_catalog[i] = item;
-					return;
-				}
-				return;
-			}
-		}
-		_catalog.Add(item);
 	}
 
 	public override void _ExitTree()
@@ -548,28 +533,14 @@ public partial class AccessoryWardrobe : Node
 			if (seen.Add(item.Id)) _layerOrder.Add(item.Id);
 	}
 
-	private void LoadCatalog(string directory)
+	private void LoadStarterCatalog()
 	{
-		// ResourceLoader preserves the source names in exported PCKs too.
-		var entries = ResourceLoader.ListDirectory(directory);
-		Array.Sort(entries, StringComparer.OrdinalIgnoreCase);
-		foreach (var entry in entries)
+		foreach (var (id, path, canRecolor) in StarterAccessories)
 		{
-			var path = $"{directory}/{entry}";
-			if (entry.EndsWith('/'))
-			{
-				LoadCatalog(path.TrimEnd('/'));
-				continue;
-			}
-			var extension = Path.GetExtension(entry).ToLowerInvariant();
-			if (extension is not (".png" or ".webp" or ".svg" or ".jpg" or ".jpeg"))
-			{
-				continue;
-			}
 			var texture = ResourceLoader.Load<Texture2D>(path);
 			if (texture == null) continue;
-			var id = path[(AssetDirectory.Length + 1)..];
-			var canRecolor = RecolorableIds.Contains(id);
+			if (canRecolor && Path.GetExtension(path).ToLowerInvariant() is (".jpg" or ".jpeg"))
+				texture = RemoveJpegBackground(texture);
 			var bounds = GetVisibleBounds(texture);
 			if (bounds.Size.X == 0 || bounds.Size.Y == 0)
 			{
@@ -577,11 +548,32 @@ public partial class AccessoryWardrobe : Node
 			}
 			var cropped = new AtlasTexture { Atlas = texture, Region = bounds, FilterClip = true };
 			var size = (Vector2)bounds.Size * (AccessorySize / Mathf.Max(bounds.Size.X, bounds.Size.Y));
-			var name = Path.GetFileNameWithoutExtension(entry);
+			var name = Path.GetFileNameWithoutExtension(id);
 			name = Regex.Replace(name.Replace('_', ' ').Replace('-', ' '), "([a-z])([A-Z0-9])", "$1 $2");
 			name = Regex.Replace(name, "([A-Z])([A-Z][a-z])", "$1 $2");
-			AddCatalogDefinition(new AccessoryDefinition(id, name, cropped, size, canRecolor) { AssetPath = path });
+			_catalog.Add(new AccessoryDefinition(id, name, cropped, size, canRecolor) { AssetPath = path });
 		}
+	}
+
+	private static Texture2D RemoveJpegBackground(Texture2D texture)
+	{
+		using var image = texture.GetImage();
+		if (image == null) return texture;
+		image.Convert(Image.Format.Rgba8);
+		for (var y = 0; y < image.GetHeight(); y++)
+		{
+			for (var x = 0; x < image.GetWidth(); x++)
+			{
+				var pixel = image.GetPixel(x, y);
+				var brightness = Mathf.Max(pixel.R, Mathf.Max(pixel.G, pixel.B));
+				// White/gray art on black: remove JPEG noise and soften its antialiased edge.
+				var alpha = Mathf.SmoothStep(0.06f, 0.30f, brightness);
+				image.SetPixel(x, y, alpha <= 0
+					? new Color(1, 1, 1, 0)
+					: new Color(Mathf.Min(1, pixel.R / alpha), Mathf.Min(1, pixel.G / alpha), Mathf.Min(1, pixel.B / alpha), alpha));
+			}
+		}
+		return ImageTexture.CreateFromImage(image);
 	}
 	public static Rect2I GetVisibleBounds(Texture2D texture)
 	{

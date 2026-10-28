@@ -1,0 +1,1850 @@
+{
+  "auditedAtUtc": "2026-10-28",
+  "sourceFolder": "https://drive.google.com/drive/folders/1FuRSUheNvpy9rXZlQkTX8Rh3XpYCGfUV",
+  "scope": "All uploaded PNG/SVG art; spreadsheet is the roadmap/reference. Historical PTDBuild.zip is compiled output, not source.",
+  "sourceFileCount": 184,
+  "verifiedFileCount": 184,
+  "missingDownloads": [],
+  "files": [
+    {
+      "driveId": "1efAeOOygHfcgm6Rrm9jynTTWpxkUjNEa",
+      "drivePath": "Dogs/WirehairPointingGriffon2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1efAeOOygHfcgm6Rrm9jynTTWpxkUjNEa/view?usp=drivesdk",
+      "sourceBytes": 128335,
+      "sourceSha256": "cb887cfc3cfc361dff51beb73d162ae3fb6ffb81c425854d4c1b4edd4d5fe922",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/WirehairPointingGriffon2.png",
+      "projectSha256": "cb887cfc3cfc361dff51beb73d162ae3fb6ffb81c425854d4c1b4edd4d5fe922",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1rBMX8WPnDMC0AGFLEEMIuWJoj7UFm5rO",
+      "drivePath": "Dogs/WirehairPointingGriffon1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1rBMX8WPnDMC0AGFLEEMIuWJoj7UFm5rO/view?usp=drivesdk",
+      "sourceBytes": 380767,
+      "sourceSha256": "489ffcfb0d5d3ee5dc958e0cdc44bc21fa726fdfcfd78f4b9cd42d9d1b30b794",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/WirehairPointingGriffon1.png",
+      "projectSha256": "489ffcfb0d5d3ee5dc958e0cdc44bc21fa726fdfcfd78f4b9cd42d9d1b30b794",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1j01LOQlGdomx_5tXV7YdqfWipIA_M_eu",
+      "drivePath": "Dogs/IrishSetter2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1j01LOQlGdomx_5tXV7YdqfWipIA_M_eu/view?usp=drivesdk",
+      "sourceBytes": 92110,
+      "sourceSha256": "4552134216f875bfe6abafca30bb127eed7ccca7420f3ebe7be967ea28349f56",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/IrishSetter2.png",
+      "projectSha256": "4552134216f875bfe6abafca30bb127eed7ccca7420f3ebe7be967ea28349f56",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1C0Zrs_oo8z4tf97wMQa9_QTdEKD78u3l",
+      "drivePath": "Dogs/IrishSetter1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1C0Zrs_oo8z4tf97wMQa9_QTdEKD78u3l/view?usp=drivesdk",
+      "sourceBytes": 143888,
+      "sourceSha256": "f07a13bd9f97ad7786210bd42e6f95a352d6bcfd81401bf1db2f7fd2d194f84b",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/IrishSetter1.png",
+      "projectSha256": "f07a13bd9f97ad7786210bd42e6f95a352d6bcfd81401bf1db2f7fd2d194f84b",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1JSDh-kT0j6I1hQ2RbMiorJ3_8n7ESODp",
+      "drivePath": "Dogs/Dalmatian2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1JSDh-kT0j6I1hQ2RbMiorJ3_8n7ESODp/view?usp=drivesdk",
+      "sourceBytes": 291494,
+      "sourceSha256": "064ac85570c4fe6296d1e41dbb40369af55ed5561183fdfbddfe03a5d537f516",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Dalmatian2.png",
+      "projectSha256": "064ac85570c4fe6296d1e41dbb40369af55ed5561183fdfbddfe03a5d537f516",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1FX5TsqL35hYWNTvkRScgwVpH9s_bSF6G",
+      "drivePath": "Dogs/Dalmatian1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1FX5TsqL35hYWNTvkRScgwVpH9s_bSF6G/view?usp=drivesdk",
+      "sourceBytes": 142326,
+      "sourceSha256": "a01e4dca6cc8f5a6c13a5e5ce8d9f7da81ad3dd075a900674e6c3a6d1143661d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Dalmatian1.png",
+      "projectSha256": "a01e4dca6cc8f5a6c13a5e5ce8d9f7da81ad3dd075a900674e6c3a6d1143661d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1VA-VYz5x5LfCSxp69thtUL5TLLjYrPxU",
+      "drivePath": "Dogs/PortugeseWaterDog2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1VA-VYz5x5LfCSxp69thtUL5TLLjYrPxU/view?usp=drivesdk",
+      "sourceBytes": 119397,
+      "sourceSha256": "89213369b97e6f2b3c7b2fa9bc6b0c99f46a1d7ca7b24e785392fb796e5d9742",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/PortugeseWaterDog2.png",
+      "projectSha256": "89213369b97e6f2b3c7b2fa9bc6b0c99f46a1d7ca7b24e785392fb796e5d9742",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1pD1AcaCYVvE6lpqBBdm8tJi9eM6_BGjB",
+      "drivePath": "Dogs/PortugeseWaterDog1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1pD1AcaCYVvE6lpqBBdm8tJi9eM6_BGjB/view?usp=drivesdk",
+      "sourceBytes": 112565,
+      "sourceSha256": "8d124997d1c81f84678db99757b3df69da1290c84e5f70df626e972ee7ec5b29",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/PortugeseWaterDog1.png",
+      "projectSha256": "8d124997d1c81f84678db99757b3df69da1290c84e5f70df626e972ee7ec5b29",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1IsTsjlafA941OyEeuKoFW1dlWdkyCfLT",
+      "drivePath": "Dogs/ShibaInu2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1IsTsjlafA941OyEeuKoFW1dlWdkyCfLT/view?usp=drivesdk",
+      "sourceBytes": 221572,
+      "sourceSha256": "356a615fda8d4f482dcdc0bd13321f0deab3dde31a48070b4d50f361bafad7b6",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/ShibaInu2.png",
+      "projectSha256": "356a615fda8d4f482dcdc0bd13321f0deab3dde31a48070b4d50f361bafad7b6",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1TsFvRHjr2gJiWfFWaOcgz0Yo9ELSYtmm",
+      "drivePath": "Dogs/ShibaInu1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1TsFvRHjr2gJiWfFWaOcgz0Yo9ELSYtmm/view?usp=drivesdk",
+      "sourceBytes": 231365,
+      "sourceSha256": "f05ef9e2739d5c65848ebb74ecf57e3a1b566f0c0103ddfeedb4f21f9a2b7e79",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/ShibaInu1.png",
+      "projectSha256": "f05ef9e2739d5c65848ebb74ecf57e3a1b566f0c0103ddfeedb4f21f9a2b7e79",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1zuGe-l6nNA-lZLiztLzS372vVYoAj83z",
+      "drivePath": "Dogs/Daschund2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1zuGe-l6nNA-lZLiztLzS372vVYoAj83z/view?usp=drivesdk",
+      "sourceBytes": 107910,
+      "sourceSha256": "c23d59d0d2701fda703f3c6c359cdf1419472143fbbabf068057d5612ceb45ab",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Daschund2.png",
+      "projectSha256": "c23d59d0d2701fda703f3c6c359cdf1419472143fbbabf068057d5612ceb45ab",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1q5rBqS6RREN4l-BEitXybmqFTWzUQ-ue",
+      "drivePath": "Dogs/Daschund1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1q5rBqS6RREN4l-BEitXybmqFTWzUQ-ue/view?usp=drivesdk",
+      "sourceBytes": 97750,
+      "sourceSha256": "4653a93fe55607f1dacc29e0c224b45e2e249c143ddb40e97b3b8d0374a8c8ef",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Daschund1.png",
+      "projectSha256": "4653a93fe55607f1dacc29e0c224b45e2e249c143ddb40e97b3b8d0374a8c8ef",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1xx64eKINqw-j78k1Kh_JBF80BteGc6Cu",
+      "drivePath": "Dogs/Imported/BermeseMountainDog2MIX.png",
+      "sourceUrl": "https://drive.google.com/file/d/1xx64eKINqw-j78k1Kh_JBF80BteGc6Cu/view?usp=drivesdk",
+      "sourceBytes": 107395,
+      "sourceSha256": "71a14578f6c248fdef432caea08763502084346c818bd31e66dced83925e2272",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/BermeseMountainDog2MIX.png",
+      "projectSha256": "71a14578f6c248fdef432caea08763502084346c818bd31e66dced83925e2272",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1QQfWwQYrtN-ewM_bTZYwfoR5xvkamMTS",
+      "drivePath": "Dogs/Imported/BermeseMountainDog1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1QQfWwQYrtN-ewM_bTZYwfoR5xvkamMTS/view?usp=drivesdk",
+      "sourceBytes": 105681,
+      "sourceSha256": "20bc93f1cdb375bbad980ec38b1a1914addbeb6d8e1c5d99b83d4499c9d603ba",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/BermeseMountainDog1.png",
+      "projectSha256": "20bc93f1cdb375bbad980ec38b1a1914addbeb6d8e1c5d99b83d4499c9d603ba",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1oZDRIoAV5ESOR4LzCcDDI2E6yBuHD8eq",
+      "drivePath": "Dogs/Imported/Schnauzer2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1oZDRIoAV5ESOR4LzCcDDI2E6yBuHD8eq/view?usp=drivesdk",
+      "sourceBytes": 169553,
+      "sourceSha256": "2485dea3a6a938883b809ad100e9cb2217848737d43b7823be3eef5da2b72623",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Schnauzer2.png",
+      "projectSha256": "2485dea3a6a938883b809ad100e9cb2217848737d43b7823be3eef5da2b72623",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1z6dGvFFYLY96Ept3YWk9XZ0IKrHRCG47",
+      "drivePath": "Dogs/Imported/Schnauzer1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1z6dGvFFYLY96Ept3YWk9XZ0IKrHRCG47/view?usp=drivesdk",
+      "sourceBytes": 173993,
+      "sourceSha256": "9c5d5847f8369f2b1876e30ce6374e0743ea13ed4cdc8413f0fa42c229457891",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Schnauzer1.png",
+      "projectSha256": "9c5d5847f8369f2b1876e30ce6374e0743ea13ed4cdc8413f0fa42c229457891",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1kW2kNgBBcYT6t3edX6BxNtK-HKG1PAbB",
+      "drivePath": "Dogs/Imported/GermanShorthairPointer2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1kW2kNgBBcYT6t3edX6BxNtK-HKG1PAbB/view?usp=drivesdk",
+      "sourceBytes": 408717,
+      "sourceSha256": "666334aa0c16ffba14f19550e16236db760881add6a7eb20310367139a160c50",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/GermanShorthairPointer2.png",
+      "projectSha256": "666334aa0c16ffba14f19550e16236db760881add6a7eb20310367139a160c50",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1QlWDVxyCNi-JEuVIm7zGIYWYSfzBMeuA",
+      "drivePath": "Dogs/Imported/GermanShorthairPointer1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1QlWDVxyCNi-JEuVIm7zGIYWYSfzBMeuA/view?usp=drivesdk",
+      "sourceBytes": 444895,
+      "sourceSha256": "a87caaefd9acd1ec9a3c06a1d48dbc99da3b13f6bcd3b18abf1308f113d58f98",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/GermanShorthairPointer1.png",
+      "projectSha256": "a87caaefd9acd1ec9a3c06a1d48dbc99da3b13f6bcd3b18abf1308f113d58f98",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1m5gtaIxzXDZFd_-qvcNY049rB7cn99Oz",
+      "drivePath": "Dogs/Imported/FinnishSpitz2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1m5gtaIxzXDZFd_-qvcNY049rB7cn99Oz/view?usp=drivesdk",
+      "sourceBytes": 185621,
+      "sourceSha256": "2d06e6cd3fe38fff10d288c0b09cac00ed94c35dee7957b8e781bd901cef1049",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/FinnishSpitz2.png",
+      "projectSha256": "2d06e6cd3fe38fff10d288c0b09cac00ed94c35dee7957b8e781bd901cef1049",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1va3oGa7E20QF6GyYGFLbNQNKjg7xNA4e",
+      "drivePath": "Dogs/Imported/FinnishSpitz1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1va3oGa7E20QF6GyYGFLbNQNKjg7xNA4e/view?usp=drivesdk",
+      "sourceBytes": 248434,
+      "sourceSha256": "b5b9b760d9419baa4af8a503a9db213c629880608ca53ce5e3ad0530313cd674",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/FinnishSpitz1.png",
+      "projectSha256": "b5b9b760d9419baa4af8a503a9db213c629880608ca53ce5e3ad0530313cd674",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1_bUgQ0pHFsTgzwACmlIDAPms7Acl499t",
+      "drivePath": "Dogs/Imported/IndianPariah2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1_bUgQ0pHFsTgzwACmlIDAPms7Acl499t/view?usp=drivesdk",
+      "sourceBytes": 109368,
+      "sourceSha256": "cc9b1d6939a45ce3e04f7197a5597ac8deaf0314985c5d52dbb684d3e8e0a5fd",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/IndianPariah2.png",
+      "projectSha256": "cc9b1d6939a45ce3e04f7197a5597ac8deaf0314985c5d52dbb684d3e8e0a5fd",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1J0o3lrDvf8R5q7Hn3SNpQcs5MlMQDeaf",
+      "drivePath": "Dogs/Imported/IndianPariah1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1J0o3lrDvf8R5q7Hn3SNpQcs5MlMQDeaf/view?usp=drivesdk",
+      "sourceBytes": 164132,
+      "sourceSha256": "afceb157c98f7d61ba0d9a7e1178cff6026a19c03729390e87a4c26d10547fb1",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/IndianPariah1.png",
+      "projectSha256": "afceb157c98f7d61ba0d9a7e1178cff6026a19c03729390e87a4c26d10547fb1",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1HgNHW-fAds5zBtFSLtt2r-XiXWjAfteL",
+      "drivePath": "Dogs/Imported/Maltese1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1HgNHW-fAds5zBtFSLtt2r-XiXWjAfteL/view?usp=drivesdk",
+      "sourceBytes": 124202,
+      "sourceSha256": "866fbdefedc0fe166bd5470d13abb3570f560e585e563731b23b23128b369519",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Maltese1.png",
+      "projectSha256": "866fbdefedc0fe166bd5470d13abb3570f560e585e563731b23b23128b369519",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "13Bo-VR0Fljg4eqp_Tmmsi6XHAbTeDEft",
+      "drivePath": "Dogs/Imported/Maltese2.png",
+      "sourceUrl": "https://drive.google.com/file/d/13Bo-VR0Fljg4eqp_Tmmsi6XHAbTeDEft/view?usp=drivesdk",
+      "sourceBytes": 115666,
+      "sourceSha256": "191beb6c94b0275566b44dc230bf765358beabeaf53a1972798188e40e085db9",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Maltese2.png",
+      "projectSha256": "191beb6c94b0275566b44dc230bf765358beabeaf53a1972798188e40e085db9",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1DyyJTztVJXMt8B0ERASbdVpVixglCa5X",
+      "drivePath": "Dogs/Imported/Maltese.png",
+      "sourceUrl": "https://drive.google.com/file/d/1DyyJTztVJXMt8B0ERASbdVpVixglCa5X/view?usp=drivesdk",
+      "sourceBytes": 124186,
+      "sourceSha256": "b73714a630abaa380f9dcdb45db9acd2f1bef646137bab2e6623098555146ada",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Maltese1.png",
+      "projectSha256": "866fbdefedc0fe166bd5470d13abb3570f560e585e563731b23b23128b369519",
+      "verification": "pixel-identical alias (PNG encoding differs)"
+    },
+    {
+      "driveId": "1ljkh61B_tqGFc_7q_Qg6t-bvAwfZiLE_",
+      "drivePath": "Dogs/Imported/JackRusselTerrier1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1ljkh61B_tqGFc_7q_Qg6t-bvAwfZiLE_/view?usp=drivesdk",
+      "sourceBytes": 101889,
+      "sourceSha256": "1341a10e2b8e481be5538be009eb97c2e799a534cbb5b6fcc310db4e57a2a5e3",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/JackRusselTerrier1.png",
+      "projectSha256": "1341a10e2b8e481be5538be009eb97c2e799a534cbb5b6fcc310db4e57a2a5e3",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1OH6P50tkwTe8o6AIGGXQSpen-yXiNOm4",
+      "drivePath": "Dogs/Imported/JackRusselTerrier2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1OH6P50tkwTe8o6AIGGXQSpen-yXiNOm4/view?usp=drivesdk",
+      "sourceBytes": 197787,
+      "sourceSha256": "ed8ff0e36ab5e644baea5d4a16fe96baa1a17c76ee5232ccb05d11667c3ed982",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/JackRusselTerrier2.png",
+      "projectSha256": "ed8ff0e36ab5e644baea5d4a16fe96baa1a17c76ee5232ccb05d11667c3ed982",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1E1m9JaYyY7mnDQv9BU4VNWlwm9VjpTF6",
+      "drivePath": "Dogs/Imported/CaneCorso2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1E1m9JaYyY7mnDQv9BU4VNWlwm9VjpTF6/view?usp=drivesdk",
+      "sourceBytes": 174361,
+      "sourceSha256": "51fd779a79179b93e48e93513aec80841f3c9b829c382bba3931d1e93640fa7e",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/CaneCorso2.png",
+      "projectSha256": "51fd779a79179b93e48e93513aec80841f3c9b829c382bba3931d1e93640fa7e",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1gnHGUQWKuvHAeT39IqAfazfsJAlpFlWY",
+      "drivePath": "Dogs/Imported/CaneCorso1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1gnHGUQWKuvHAeT39IqAfazfsJAlpFlWY/view?usp=drivesdk",
+      "sourceBytes": 95270,
+      "sourceSha256": "e04e4f237fe00a4c6ee2a5a6e85dfc6740fe1ac79fcac8e5cb1f2e5621893938",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/CaneCorso1.png",
+      "projectSha256": "e04e4f237fe00a4c6ee2a5a6e85dfc6740fe1ac79fcac8e5cb1f2e5621893938",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "123YKSkkHZuLvqVp6LaK0mJ4Ze96hjtGG",
+      "drivePath": "Dogs/Imported/Doberman2.png",
+      "sourceUrl": "https://drive.google.com/file/d/123YKSkkHZuLvqVp6LaK0mJ4Ze96hjtGG/view?usp=drivesdk",
+      "sourceBytes": 107165,
+      "sourceSha256": "83774c3f75ea918a8815859a939057a24c88b4c60281e349072636ca703215e7",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Doberman2.png",
+      "projectSha256": "83774c3f75ea918a8815859a939057a24c88b4c60281e349072636ca703215e7",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "14SetIZKjwSwM8Dz0h45cSuN_Cc8MnAfU",
+      "drivePath": "Dogs/Imported/Doberman1.png",
+      "sourceUrl": "https://drive.google.com/file/d/14SetIZKjwSwM8Dz0h45cSuN_Cc8MnAfU/view?usp=drivesdk",
+      "sourceBytes": 109821,
+      "sourceSha256": "4000426f78c8619799444bcab6b9a30ae8040f3bf1f1036c9420f13f3cd8fd4c",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Doberman1.png",
+      "projectSha256": "4000426f78c8619799444bcab6b9a30ae8040f3bf1f1036c9420f13f3cd8fd4c",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "19V_3LQZ642UwcgBidcIxNPg52cRtY75e",
+      "drivePath": "Dogs/Imported/Corgi4.png",
+      "sourceUrl": "https://drive.google.com/file/d/19V_3LQZ642UwcgBidcIxNPg52cRtY75e/view?usp=drivesdk",
+      "sourceBytes": 134460,
+      "sourceSha256": "e08dce1216a5eb59ec0e196cc75e89dec88bd5e8cfe2634a953ff3adeccc05f9",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Corgi4.png",
+      "projectSha256": "e08dce1216a5eb59ec0e196cc75e89dec88bd5e8cfe2634a953ff3adeccc05f9",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "13KzbfFAxJqY0FaxbuLEh16oKK5IZgSOt",
+      "drivePath": "Dogs/Imported/Corgi3.png",
+      "sourceUrl": "https://drive.google.com/file/d/13KzbfFAxJqY0FaxbuLEh16oKK5IZgSOt/view?usp=drivesdk",
+      "sourceBytes": 130806,
+      "sourceSha256": "643a5be64ba572f7ebdd28ce140b932ef93d2e07a7b26b96795cbd1c3e22b939",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Corgi3.png",
+      "projectSha256": "643a5be64ba572f7ebdd28ce140b932ef93d2e07a7b26b96795cbd1c3e22b939",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "13Y2RLbSzjgfD_T9AOo0GKFHtDYKzCOZf",
+      "drivePath": "Dogs/Imported/Boxer2.png",
+      "sourceUrl": "https://drive.google.com/file/d/13Y2RLbSzjgfD_T9AOo0GKFHtDYKzCOZf/view?usp=drivesdk",
+      "sourceBytes": 104684,
+      "sourceSha256": "c693b2886dcf3d07d8242edb253d261460483b23ea6e034687a84556588539b8",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Boxer2.png",
+      "projectSha256": "c693b2886dcf3d07d8242edb253d261460483b23ea6e034687a84556588539b8",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1IliVE7Qv-_H_XA07zmL28kvNvwqIrxxF",
+      "drivePath": "Dogs/Imported/Boxer1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1IliVE7Qv-_H_XA07zmL28kvNvwqIrxxF/view?usp=drivesdk",
+      "sourceBytes": 125654,
+      "sourceSha256": "e1dae5517a262c48fecb1082a2c336c7d6e8ceb4d7c5956ace2795407fb88c3a",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Boxer1.png",
+      "projectSha256": "e1dae5517a262c48fecb1082a2c336c7d6e8ceb4d7c5956ace2795407fb88c3a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1x6Dl2LYC9luLTT3MDtqFXqeMJInVLnpP",
+      "drivePath": "Dogs/Imported/StBernard2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1x6Dl2LYC9luLTT3MDtqFXqeMJInVLnpP/view?usp=drivesdk",
+      "sourceBytes": 134496,
+      "sourceSha256": "409db02a9e83d0795d199175910972b96bcc94a47243f5fac2fa951b0e075a19",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/StBernard2.png",
+      "projectSha256": "409db02a9e83d0795d199175910972b96bcc94a47243f5fac2fa951b0e075a19",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1TNco4fs9pBjgzq22qZzeIgu0bOOaeAYV",
+      "drivePath": "Dogs/Imported/StBernard1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1TNco4fs9pBjgzq22qZzeIgu0bOOaeAYV/view?usp=drivesdk",
+      "sourceBytes": 145992,
+      "sourceSha256": "078171046ab64861f7a103c6b7fa7c3d3ce8fdbcf78cefc6d5e9e8306437aa61",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/StBernard1.png",
+      "projectSha256": "078171046ab64861f7a103c6b7fa7c3d3ce8fdbcf78cefc6d5e9e8306437aa61",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1gX0vHIPv9jNnUAwnOSaRAXA8-xhHbTZb",
+      "drivePath": "Dogs/Imported/RatTerrier2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1gX0vHIPv9jNnUAwnOSaRAXA8-xhHbTZb/view?usp=drivesdk",
+      "sourceBytes": 130802,
+      "sourceSha256": "b2072a5207870ade446e6115248d9c412b6733e5c78415339f2796cea539089c",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/RatTerrier2.png",
+      "projectSha256": "b2072a5207870ade446e6115248d9c412b6733e5c78415339f2796cea539089c",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1QqIPFSfHi8ld5sto4qC4a2Qd3ddUksjF",
+      "drivePath": "Dogs/Imported/RatTerrier1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1QqIPFSfHi8ld5sto4qC4a2Qd3ddUksjF/view?usp=drivesdk",
+      "sourceBytes": 118570,
+      "sourceSha256": "12f076c9917e79cff5d531435ec2491de0ac32d377396f3b942cba42ba157c47",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/RatTerrier1.png",
+      "projectSha256": "12f076c9917e79cff5d531435ec2491de0ac32d377396f3b942cba42ba157c47",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1raHYixNER-ZwpUy5rY1lGYIIp32X3ITU",
+      "drivePath": "Dogs/Imported/Pug2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1raHYixNER-ZwpUy5rY1lGYIIp32X3ITU/view?usp=drivesdk",
+      "sourceBytes": 104071,
+      "sourceSha256": "2bb4796cdf7d99408bf76891b5b70c295ee179908d3737268d44daf133583fbb",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Pug2.png",
+      "projectSha256": "2bb4796cdf7d99408bf76891b5b70c295ee179908d3737268d44daf133583fbb",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1kIzXK67_F98K45vH1JsNkBJ7z2rUoAU0",
+      "drivePath": "Dogs/Imported/Pug1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1kIzXK67_F98K45vH1JsNkBJ7z2rUoAU0/view?usp=drivesdk",
+      "sourceBytes": 158939,
+      "sourceSha256": "46f19095d06207d2c1fe11a7bee2b15a81b54b2117fd999441ad2535b3c3df09",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Pug1.png",
+      "projectSha256": "46f19095d06207d2c1fe11a7bee2b15a81b54b2117fd999441ad2535b3c3df09",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1WUhHzzbmCaluIS_7UXpl6l6lUTONjoby",
+      "drivePath": "Dogs/Imported/Lab3.png",
+      "sourceUrl": "https://drive.google.com/file/d/1WUhHzzbmCaluIS_7UXpl6l6lUTONjoby/view?usp=drivesdk",
+      "sourceBytes": 170979,
+      "sourceSha256": "76860a6208d470739c127d7a4125344f34dc14a52895b30078a18ce0bb4b72c9",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Lab3.png",
+      "projectSha256": "76860a6208d470739c127d7a4125344f34dc14a52895b30078a18ce0bb4b72c9",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1ZWqHNZD0jtj33DJSO_O4XTjnk9FfYisY",
+      "drivePath": "Dogs/Imported/Lab2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1ZWqHNZD0jtj33DJSO_O4XTjnk9FfYisY/view?usp=drivesdk",
+      "sourceBytes": 95576,
+      "sourceSha256": "785d424c230f96e08d06425c3cec8a429d1f62035b550f4cce695b3aeb386595",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Lab2.png",
+      "projectSha256": "785d424c230f96e08d06425c3cec8a429d1f62035b550f4cce695b3aeb386595",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1hoo2XGA8-1rEt3Dmh6IKzyXHslfmHqlV",
+      "drivePath": "Dogs/Imported/Lab1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1hoo2XGA8-1rEt3Dmh6IKzyXHslfmHqlV/view?usp=drivesdk",
+      "sourceBytes": 140826,
+      "sourceSha256": "316e2995feb8528663e196f0b9a04f701a81800fe27b6cd1e54b7d24d3478cf4",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Lab1.png",
+      "projectSha256": "316e2995feb8528663e196f0b9a04f701a81800fe27b6cd1e54b7d24d3478cf4",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "11U7JBr_pcNuBi3XGDrBDSV_jyNURn0Lo",
+      "drivePath": "Dogs/Imported/ShihTzu2.png",
+      "sourceUrl": "https://drive.google.com/file/d/11U7JBr_pcNuBi3XGDrBDSV_jyNURn0Lo/view?usp=drivesdk",
+      "sourceBytes": 240255,
+      "sourceSha256": "1ae62a014da4a9dc7fde5d2cba409a25ff8e53405c1ca39c20af16fe8da28fd4",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/ShihTzu2.png",
+      "projectSha256": "1ae62a014da4a9dc7fde5d2cba409a25ff8e53405c1ca39c20af16fe8da28fd4",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1IgvHUmDBYMbXXf0wnWK9qVeGB9fn1_Ab",
+      "drivePath": "Dogs/Imported/ShihTzu1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1IgvHUmDBYMbXXf0wnWK9qVeGB9fn1_Ab/view?usp=drivesdk",
+      "sourceBytes": 235721,
+      "sourceSha256": "58e04130911125650f7544f3fc2b460ee95e6bb87e8c85140d69b96872ea6129",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/ShihTzu1.png",
+      "projectSha256": "58e04130911125650f7544f3fc2b460ee95e6bb87e8c85140d69b96872ea6129",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1PNH_CRD-lGx9Ww_YqgydRjK3Gi83tZjn",
+      "drivePath": "Dogs/Imported/GreatDane2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1PNH_CRD-lGx9Ww_YqgydRjK3Gi83tZjn/view?usp=drivesdk",
+      "sourceBytes": 110920,
+      "sourceSha256": "d800c53195818bc829c11179e823444b935a09f59bf1c169b0faf02334a6e879",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/GreatDane2.png",
+      "projectSha256": "d800c53195818bc829c11179e823444b935a09f59bf1c169b0faf02334a6e879",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "13gGB9rLpiZXQfFPUtJnba2pEcSopo9ag",
+      "drivePath": "Dogs/Imported/GreatDane1.png",
+      "sourceUrl": "https://drive.google.com/file/d/13gGB9rLpiZXQfFPUtJnba2pEcSopo9ag/view?usp=drivesdk",
+      "sourceBytes": 200087,
+      "sourceSha256": "3b473631f453ebb362e6a8ce799132d20326ce3995e802b5a1ebef79b212d49c",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/GreatDane1.png",
+      "projectSha256": "3b473631f453ebb362e6a8ce799132d20326ce3995e802b5a1ebef79b212d49c",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1QGpZb5xdJhVde5b1PGyAfdlW9kMdCww3",
+      "drivePath": "Dogs/Imported/GreatPyranees2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1QGpZb5xdJhVde5b1PGyAfdlW9kMdCww3/view?usp=drivesdk",
+      "sourceBytes": 177924,
+      "sourceSha256": "5557f56c1faa95c9eb237cadd7041c30b1c11d38cb33964b3a249374d7515d13",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/GreatPyranees2.png",
+      "projectSha256": "5557f56c1faa95c9eb237cadd7041c30b1c11d38cb33964b3a249374d7515d13",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1nB534jxRzUYtm0z3QSh0jPzJVXyfF2DG",
+      "drivePath": "Dogs/Imported/GreatPyranees1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1nB534jxRzUYtm0z3QSh0jPzJVXyfF2DG/view?usp=drivesdk",
+      "sourceBytes": 103204,
+      "sourceSha256": "aed433f01e157cd24af78e0d7f69c1f946e98b48be9b13b54d49cacbc4799996",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/GreatPyranees1.png",
+      "projectSha256": "aed433f01e157cd24af78e0d7f69c1f946e98b48be9b13b54d49cacbc4799996",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1n-SUVxRXl2QroxjQXbUjKS1U2TU__bw4",
+      "drivePath": "Dogs/Imported/Poodle2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1n-SUVxRXl2QroxjQXbUjKS1U2TU__bw4/view?usp=drivesdk",
+      "sourceBytes": 109849,
+      "sourceSha256": "58b04ef70276733f9ea9582dffca7204a7f8a74b3713efd9ad93cda33c4c4e16",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Poodle2.png",
+      "projectSha256": "58b04ef70276733f9ea9582dffca7204a7f8a74b3713efd9ad93cda33c4c4e16",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1orPEUJMP8SbpFc17eD0rLurJmC1RlbIJ",
+      "drivePath": "Dogs/Imported/Poodle1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1orPEUJMP8SbpFc17eD0rLurJmC1RlbIJ/view?usp=drivesdk",
+      "sourceBytes": 118888,
+      "sourceSha256": "bfbb184658b7bfadc68ae93f3b33860fccc03c83473bb6e871d33f083ce5c1b5",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Poodle1.png",
+      "projectSha256": "bfbb184658b7bfadc68ae93f3b33860fccc03c83473bb6e871d33f083ce5c1b5",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1SSHWcRJCquQ5dGON-G9IK5shKQuUU0Q9",
+      "drivePath": "Dogs/Imported/Bassethound2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1SSHWcRJCquQ5dGON-G9IK5shKQuUU0Q9/view?usp=drivesdk",
+      "sourceBytes": 127386,
+      "sourceSha256": "d39235045c01e41067ae1e85650f795bcaa1c8052a6b1acaff5cc7f99383f7cb",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Bassethound2.png",
+      "projectSha256": "d39235045c01e41067ae1e85650f795bcaa1c8052a6b1acaff5cc7f99383f7cb",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "13SwGrVAuI1pZN7_jwk7B5afuIFYiLYsW",
+      "drivePath": "Dogs/Imported/Bassethound1.png",
+      "sourceUrl": "https://drive.google.com/file/d/13SwGrVAuI1pZN7_jwk7B5afuIFYiLYsW/view?usp=drivesdk",
+      "sourceBytes": 164552,
+      "sourceSha256": "e19805aa85ecc32ca3cf373bac7851f9bbd51c5e1a90d03e0d415fd37dfe9a2d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Bassethound1.png",
+      "projectSha256": "e19805aa85ecc32ca3cf373bac7851f9bbd51c5e1a90d03e0d415fd37dfe9a2d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "10ie9UeMMS3-NXY7e4ctjrPxkNoYOGSDG",
+      "drivePath": "Dogs/Imported/Borzoi2.png",
+      "sourceUrl": "https://drive.google.com/file/d/10ie9UeMMS3-NXY7e4ctjrPxkNoYOGSDG/view?usp=drivesdk",
+      "sourceBytes": 138010,
+      "sourceSha256": "6b00c23cfa04a4a8789048fd088c3f648070ecf3ac05f97d467820fb9a6fc42d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Borzoi2.png",
+      "projectSha256": "6b00c23cfa04a4a8789048fd088c3f648070ecf3ac05f97d467820fb9a6fc42d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Gd-go2JHU9zz2nhn3lOMVeOGAYiNeQCZ",
+      "drivePath": "Dogs/Imported/Borzoi1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Gd-go2JHU9zz2nhn3lOMVeOGAYiNeQCZ/view?usp=drivesdk",
+      "sourceBytes": 123827,
+      "sourceSha256": "c7518c3f52bd65897ec6980dfef3db5bd55a46a543aa4c2300ac630a4315f0d7",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Borzoi1.png",
+      "projectSha256": "c7518c3f52bd65897ec6980dfef3db5bd55a46a543aa4c2300ac630a4315f0d7",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1xtZ4X8riPY4UvluD6KXx4HwueMJpfjfo",
+      "drivePath": "Dogs/Imported/Bulldog2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1xtZ4X8riPY4UvluD6KXx4HwueMJpfjfo/view?usp=drivesdk",
+      "sourceBytes": 136268,
+      "sourceSha256": "33d45c14e252f2f1226fff8785bac6e248f993fca902f9214df5ffba1bfb0334",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Bulldog2.png",
+      "projectSha256": "33d45c14e252f2f1226fff8785bac6e248f993fca902f9214df5ffba1bfb0334",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1K7kPMdwTfz9Ee-dwBm12-2IOdmTUc3iM",
+      "drivePath": "Dogs/Imported/Bulldog1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1K7kPMdwTfz9Ee-dwBm12-2IOdmTUc3iM/view?usp=drivesdk",
+      "sourceBytes": 142460,
+      "sourceSha256": "6a4398657187d2197c69cb46b9a13404cd30b7de45fb50b58732e1017e87ad6f",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Bulldog1.png",
+      "projectSha256": "6a4398657187d2197c69cb46b9a13404cd30b7de45fb50b58732e1017e87ad6f",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1VufjO-CzU6kI5Ed0HMCm0XrsB1F-eMaF",
+      "drivePath": "Dogs/Imported/AustralianShepard2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1VufjO-CzU6kI5Ed0HMCm0XrsB1F-eMaF/view?usp=drivesdk",
+      "sourceBytes": 375031,
+      "sourceSha256": "a650a788c0462f3e1d2a2dcb6504e3032e91960a08d8dfe938a5fd26ca193af6",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/AustralianShepard2.png",
+      "projectSha256": "a650a788c0462f3e1d2a2dcb6504e3032e91960a08d8dfe938a5fd26ca193af6",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1LkOyw__jLQonPfC_h6mqlZ8MVX69tlsM",
+      "drivePath": "Dogs/Imported/AustralianShepard1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1LkOyw__jLQonPfC_h6mqlZ8MVX69tlsM/view?usp=drivesdk",
+      "sourceBytes": 229079,
+      "sourceSha256": "905c8e96d3d44a77deeffdfb91c78793e35aa2c5a86f45de577ca3cf9089190d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/AustralianShepard1.png",
+      "projectSha256": "905c8e96d3d44a77deeffdfb91c78793e35aa2c5a86f45de577ca3cf9089190d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1h3ZAYz_3yQI5-1wxYPt-VLacKfLUJUNd",
+      "drivePath": "Dogs/Imported/BorderCollie2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1h3ZAYz_3yQI5-1wxYPt-VLacKfLUJUNd/view?usp=drivesdk",
+      "sourceBytes": 127109,
+      "sourceSha256": "c33e30bdf43de18213e67e295aed06de94d492cc547f92697e09d82ac863165c",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/BorderCollie2.png",
+      "projectSha256": "c33e30bdf43de18213e67e295aed06de94d492cc547f92697e09d82ac863165c",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1IGe7mI92JoSXkpnMyBwPJJ4eRTNjxWXo",
+      "drivePath": "Dogs/Imported/BorderCollie1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1IGe7mI92JoSXkpnMyBwPJJ4eRTNjxWXo/view?usp=drivesdk",
+      "sourceBytes": 117609,
+      "sourceSha256": "6cf45fac88ccb0deb420563cd2075efc3fd4c3709f2c80dd2be0647f9d47a7b3",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/BorderCollie1.png",
+      "projectSha256": "6cf45fac88ccb0deb420563cd2075efc3fd4c3709f2c80dd2be0647f9d47a7b3",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1FmaJrJHo05qhh1z-cBrwbE2Qx4ybyeyu",
+      "drivePath": "Dogs/Imported/CockerSpaniel2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1FmaJrJHo05qhh1z-cBrwbE2Qx4ybyeyu/view?usp=drivesdk",
+      "sourceBytes": 154656,
+      "sourceSha256": "9fc712e0da75380385aac02d19222a72e73c4340efacf845a07b55b32a31d5d7",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/CockerSpaniel2.png",
+      "projectSha256": "9fc712e0da75380385aac02d19222a72e73c4340efacf845a07b55b32a31d5d7",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1ssdnzlkuXb96x88lHRv7NS-t3g8OrU9g",
+      "drivePath": "Dogs/Imported/CockerSpaniel1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1ssdnzlkuXb96x88lHRv7NS-t3g8OrU9g/view?usp=drivesdk",
+      "sourceBytes": 157756,
+      "sourceSha256": "880edc68cffc276257e79fef9a984a704b4a19bb7d1b42346736d76987559f2f",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/CockerSpaniel1.png",
+      "projectSha256": "880edc68cffc276257e79fef9a984a704b4a19bb7d1b42346736d76987559f2f",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1cESIC-5GqQ8MrNpGXwMu1N1KvPl6oue7",
+      "drivePath": "Dogs/Imported/Pomeranian1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1cESIC-5GqQ8MrNpGXwMu1N1KvPl6oue7/view?usp=drivesdk",
+      "sourceBytes": 113237,
+      "sourceSha256": "b57f8e1786ce7d31839a46f4c252ba9249e9735852580181711a9f2894d0a559",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Pomeranian1.png",
+      "projectSha256": "b57f8e1786ce7d31839a46f4c252ba9249e9735852580181711a9f2894d0a559",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1W5F_YNICmLsjZ-Icjaw4ToJl4qttz8Eg",
+      "drivePath": "Dogs/Imported/Pomeranian2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1W5F_YNICmLsjZ-Icjaw4ToJl4qttz8Eg/view?usp=drivesdk",
+      "sourceBytes": 188131,
+      "sourceSha256": "f31353507d248633f2de66e4464e6f15116093469809d7b1965e6faed6ceb353",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Pomeranian2.png",
+      "projectSha256": "f31353507d248633f2de66e4464e6f15116093469809d7b1965e6faed6ceb353",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Oyg5KCmlagPvMDRDGBlHOzBTWMX3X-8E",
+      "drivePath": "Dogs/Imported/EnglishSheepdog2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Oyg5KCmlagPvMDRDGBlHOzBTWMX3X-8E/view?usp=drivesdk",
+      "sourceBytes": 100052,
+      "sourceSha256": "175cdeb83780b4c02b5cff63b376ecfbb8dc3a78793668a711c89927d1c6e724",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/EnglishSheepdog2.png",
+      "projectSha256": "175cdeb83780b4c02b5cff63b376ecfbb8dc3a78793668a711c89927d1c6e724",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1DW0B8kUmThS2fO-x4BFyCZYrQZCuVad3",
+      "drivePath": "Dogs/Imported/EnglishSheepdog1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1DW0B8kUmThS2fO-x4BFyCZYrQZCuVad3/view?usp=drivesdk",
+      "sourceBytes": 100747,
+      "sourceSha256": "b83db0c5415c429654123f80b6ef13727ed448a1f62474089f1b432bc6a0e8e6",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/EnglishSheepdog1.png",
+      "projectSha256": "b83db0c5415c429654123f80b6ef13727ed448a1f62474089f1b432bc6a0e8e6",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "12wZ0qBsX4p4iGAIm1-1MKP7gkDXyKIWz",
+      "drivePath": "Dogs/Imported/Bloodhound2.png",
+      "sourceUrl": "https://drive.google.com/file/d/12wZ0qBsX4p4iGAIm1-1MKP7gkDXyKIWz/view?usp=drivesdk",
+      "sourceBytes": 184460,
+      "sourceSha256": "bebfc3f8873e5025f33912ed4c4a72df4e28f7cfd4d85ac401007fbcb0f37208",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Bloodhound2.png",
+      "projectSha256": "bebfc3f8873e5025f33912ed4c4a72df4e28f7cfd4d85ac401007fbcb0f37208",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1M_Ow2a-9S61JGr_GCoS4LNw6k4stapsL",
+      "drivePath": "Dogs/Imported/Bloodhound1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1M_Ow2a-9S61JGr_GCoS4LNw6k4stapsL/view?usp=drivesdk",
+      "sourceBytes": 129630,
+      "sourceSha256": "759bfd69b44d3d8bf6f4dce5b8c484275a0a46f6792eb0f791389abd6fe3584d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Bloodhound1.png",
+      "projectSha256": "759bfd69b44d3d8bf6f4dce5b8c484275a0a46f6792eb0f791389abd6fe3584d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1tNeAF2jLpWX7cNbA3RxQ4ksx0BhLzV4g",
+      "drivePath": "Dogs/Imported/Chihuahua2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1tNeAF2jLpWX7cNbA3RxQ4ksx0BhLzV4g/view?usp=drivesdk",
+      "sourceBytes": 97404,
+      "sourceSha256": "31b8c226e042980f486ab99df15ef73faa1a0c2cfdfcc1709c70ee0d1a7551f9",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Chihuahua2.png",
+      "projectSha256": "31b8c226e042980f486ab99df15ef73faa1a0c2cfdfcc1709c70ee0d1a7551f9",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1sq1IL1DW4x5GPOVRX7nKbASMLihD7X1_",
+      "drivePath": "Dogs/Imported/Chihuahua1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1sq1IL1DW4x5GPOVRX7nKbASMLihD7X1_/view?usp=drivesdk",
+      "sourceBytes": 106427,
+      "sourceSha256": "3ff97c1ead5c90d1bc5baf0a220a97dffd6a9ef2e7773bc202f102c6cf5c8faf",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Chihuahua1.png",
+      "projectSha256": "3ff97c1ead5c90d1bc5baf0a220a97dffd6a9ef2e7773bc202f102c6cf5c8faf",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "17IOJdfnYTPe23CUeR58lxstIaPyBZvXv",
+      "drivePath": "Dogs/Imported/Husky2.png",
+      "sourceUrl": "https://drive.google.com/file/d/17IOJdfnYTPe23CUeR58lxstIaPyBZvXv/view?usp=drivesdk",
+      "sourceBytes": 169142,
+      "sourceSha256": "366f3f5113454ff59df18c7676cdf0921ad53b56aaca75eee554207dc575c69f",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Husky2.png",
+      "projectSha256": "366f3f5113454ff59df18c7676cdf0921ad53b56aaca75eee554207dc575c69f",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1PoAPpmBTrmYTBZhzliz628hJbRI7Y7AN",
+      "drivePath": "Dogs/Imported/Husky1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1PoAPpmBTrmYTBZhzliz628hJbRI7Y7AN/view?usp=drivesdk",
+      "sourceBytes": 168419,
+      "sourceSha256": "6b8c20c1448aed473b79b4a812d25618fad3967f0221ef293e87afceb9d99f0f",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Husky1.png",
+      "projectSha256": "6b8c20c1448aed473b79b4a812d25618fad3967f0221ef293e87afceb9d99f0f",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1nm0X1L8w15P_dm1oUqPl0vsamD9jnnPx",
+      "drivePath": "Dogs/Imported/Greyhound2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1nm0X1L8w15P_dm1oUqPl0vsamD9jnnPx/view?usp=drivesdk",
+      "sourceBytes": 356591,
+      "sourceSha256": "ff469e2e078addd76d5174c3cf268d030323da5a795bd9809ce5c0674dd745f5",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Greyhound2.png",
+      "projectSha256": "ff469e2e078addd76d5174c3cf268d030323da5a795bd9809ce5c0674dd745f5",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1vyV0mjxpuozPRT7N2yDbTfHq_cAAcJvH",
+      "drivePath": "Dogs/Imported/Greyhound1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1vyV0mjxpuozPRT7N2yDbTfHq_cAAcJvH/view?usp=drivesdk",
+      "sourceBytes": 110886,
+      "sourceSha256": "095831f777b37c54a7b7e3ee636bbbe7f268c67ad85decb33e9c1ba2c58be828",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Greyhound1.png",
+      "projectSha256": "095831f777b37c54a7b7e3ee636bbbe7f268c67ad85decb33e9c1ba2c58be828",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1uPeXSgDSeq0qbTupGT0ktR6xSrfVJ0Oh",
+      "drivePath": "Dogs/Imported/Corgi2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1uPeXSgDSeq0qbTupGT0ktR6xSrfVJ0Oh/view?usp=drivesdk",
+      "sourceBytes": 141143,
+      "sourceSha256": "c18c20f710ea4ee4123fb61a0affb59e5bd09ed26292dbd531b9ee14b0b6bfe7",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Corgi2.png",
+      "projectSha256": "c18c20f710ea4ee4123fb61a0affb59e5bd09ed26292dbd531b9ee14b0b6bfe7",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1epHO0lnWpJUSq1b_Jvb9XZ-1AuHQe3HT",
+      "drivePath": "Dogs/Imported/Corgi1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1epHO0lnWpJUSq1b_Jvb9XZ-1AuHQe3HT/view?usp=drivesdk",
+      "sourceBytes": 136775,
+      "sourceSha256": "87ce283e1923e61bdb040e5b04ce15f2f82c9a8da9750e5feb680e67714bd3e3",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Dogs/Corgi1.png",
+      "projectSha256": "87ce283e1923e61bdb040e5b04ce15f2f82c9a8da9750e5feb680e67714bd3e3",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1VOHGbO39tgKm1Fo3UfyUT0Ga_11GsWg-",
+      "drivePath": "Items/DizzyEye.png",
+      "sourceUrl": "https://drive.google.com/file/d/1VOHGbO39tgKm1Fo3UfyUT0Ga_11GsWg-/view?usp=drivesdk",
+      "sourceBytes": 33141,
+      "sourceSha256": "d6696fff908d962dc2da5969c473e90754489cb6195638b903607342d34edc5c",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/DizzyEye.png",
+      "projectSha256": "d6696fff908d962dc2da5969c473e90754489cb6195638b903607342d34edc5c",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "198IRDBp8wnQnMecSlviN3zY15H_A-63R",
+      "drivePath": "Items/HeartEye.png",
+      "sourceUrl": "https://drive.google.com/file/d/198IRDBp8wnQnMecSlviN3zY15H_A-63R/view?usp=drivesdk",
+      "sourceBytes": 36881,
+      "sourceSha256": "18c220ef22ac73e38fff14fc2e39354ada3421c1db6c1301a8bb2bf6c4f546e5",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/HeartEye.png",
+      "projectSha256": "18c220ef22ac73e38fff14fc2e39354ada3421c1db6c1301a8bb2bf6c4f546e5",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "18oSXych7OGOyg_La_-h9YtXFtBw-4mLQ",
+      "drivePath": "Items/PropellerHat.png",
+      "sourceUrl": "https://drive.google.com/file/d/18oSXych7OGOyg_La_-h9YtXFtBw-4mLQ/view?usp=drivesdk",
+      "sourceBytes": 50426,
+      "sourceSha256": "2992eed127950f50137336c6f7584fcddbf64a60796c5e6796163558353b5b60",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/PropellerHat.png",
+      "projectSha256": "2992eed127950f50137336c6f7584fcddbf64a60796c5e6796163558353b5b60",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1h2WUAGdk__dzI-jWFyCHbg1Ky7ScTQs1",
+      "drivePath": "Items/BaseballCatHat.png",
+      "sourceUrl": "https://drive.google.com/file/d/1h2WUAGdk__dzI-jWFyCHbg1Ky7ScTQs1/view?usp=drivesdk",
+      "sourceBytes": 40184,
+      "sourceSha256": "dd0740981ff81af5cacf98140e7995a5459929ddddfd378d4acf0482df2b5692",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/BaseballHat.png",
+      "projectSha256": "dd0740981ff81af5cacf98140e7995a5459929ddddfd378d4acf0482df2b5692",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1-79n5Tmoao2O6DC23R5IYC4F8xjJkIZN",
+      "drivePath": "Items/VisorHat.png",
+      "sourceUrl": "https://drive.google.com/file/d/1-79n5Tmoao2O6DC23R5IYC4F8xjJkIZN/view?usp=drivesdk",
+      "sourceBytes": 31191,
+      "sourceSha256": "81b1208998fd39fb0130b9c263a361a192e7afa7c7a84f5e27a0243b8d365792",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/VisorHat.png",
+      "projectSha256": "81b1208998fd39fb0130b9c263a361a192e7afa7c7a84f5e27a0243b8d365792",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1DuIsYTfBgvqQs1MK8DlotInMAIwMQfI6",
+      "drivePath": "Items/CyberVisor.png",
+      "sourceUrl": "https://drive.google.com/file/d/1DuIsYTfBgvqQs1MK8DlotInMAIwMQfI6/view?usp=drivesdk",
+      "sourceBytes": 49013,
+      "sourceSha256": "24f98db4eb1ce176438ba69e00d8c842336ff5a72e8c8a42d6fdc90a46f8a22e",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/CyberVisor.png",
+      "projectSha256": "24f98db4eb1ce176438ba69e00d8c842336ff5a72e8c8a42d6fdc90a46f8a22e",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1CepgNRi2aN7RvOBL8sru_NfRPKL2l6Vc",
+      "drivePath": "Items/PawDecal.png",
+      "sourceUrl": "https://drive.google.com/file/d/1CepgNRi2aN7RvOBL8sru_NfRPKL2l6Vc/view?usp=drivesdk",
+      "sourceBytes": 56082,
+      "sourceSha256": "a64157315e9bbfea0cfa43d7e3bbaff986227856563a1b43f0086c65e4661a8f",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/PawDecal.png",
+      "projectSha256": "a64157315e9bbfea0cfa43d7e3bbaff986227856563a1b43f0086c65e4661a8f",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1i_Yuk-nHMP1hk5TGndcTF16yIpVvPHOg",
+      "drivePath": "Items/AngryBrows.png",
+      "sourceUrl": "https://drive.google.com/file/d/1i_Yuk-nHMP1hk5TGndcTF16yIpVvPHOg/view?usp=drivesdk",
+      "sourceBytes": 20834,
+      "sourceSha256": "f860e518a97d44f8e8965901b43b3f8103f4f70bb51c8f10329b71bb7b916f31",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/AngryBrows.png",
+      "projectSha256": "f860e518a97d44f8e8965901b43b3f8103f4f70bb51c8f10329b71bb7b916f31",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Rao8_9zEBYXlSDFP0fi3drX3OrVWLVO6",
+      "drivePath": "Items/Rose.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Rao8_9zEBYXlSDFP0fi3drX3OrVWLVO6/view?usp=drivesdk",
+      "sourceBytes": 62678,
+      "sourceSha256": "cade61e53de5d9e22eaf281ce5098ccac4be8efaf56ec23b64ca7cd417a3f4c6",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Rose.png",
+      "projectSha256": "cade61e53de5d9e22eaf281ce5098ccac4be8efaf56ec23b64ca7cd417a3f4c6",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1RD0U0nYfvHKrTDk_oHuzGB0gaVp2r19i",
+      "drivePath": "Items/Antennae.png",
+      "sourceUrl": "https://drive.google.com/file/d/1RD0U0nYfvHKrTDk_oHuzGB0gaVp2r19i/view?usp=drivesdk",
+      "sourceBytes": 39973,
+      "sourceSha256": "d0111c54fde254f6f683dd8bb6396ec0ffd6f3a79118414a35192283c4e25349",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Antennae.png",
+      "projectSha256": "d0111c54fde254f6f683dd8bb6396ec0ffd6f3a79118414a35192283c4e25349",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1erXZTgDD5KmgZDRM_BzN1E-qGuTX8BDG",
+      "drivePath": "Items/WitchHat.png",
+      "sourceUrl": "https://drive.google.com/file/d/1erXZTgDD5KmgZDRM_BzN1E-qGuTX8BDG/view?usp=drivesdk",
+      "sourceBytes": 55138,
+      "sourceSha256": "e4becabd963f37ad0c19bc654ddf463260d71d31d66b42f0f3d985839e616555",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/WitchHat.png",
+      "projectSha256": "e4becabd963f37ad0c19bc654ddf463260d71d31d66b42f0f3d985839e616555",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1uNufqTEAG6kL1QuoTfdOyq97HG_Ceg9n",
+      "drivePath": "Items/CatEars.png",
+      "sourceUrl": "https://drive.google.com/file/d/1uNufqTEAG6kL1QuoTfdOyq97HG_Ceg9n/view?usp=drivesdk",
+      "sourceBytes": 64177,
+      "sourceSha256": "0d792beb02fbee86c159f75e9a01b6219f601b6b7f9eadcb18d2c6da04eaa8e2",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/CatEars.png",
+      "projectSha256": "0d792beb02fbee86c159f75e9a01b6219f601b6b7f9eadcb18d2c6da04eaa8e2",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1i9J4lFDLKNf0wT8-_dLK1QaAoNJU1f44",
+      "drivePath": "Items/BucketHat.png",
+      "sourceUrl": "https://drive.google.com/file/d/1i9J4lFDLKNf0wT8-_dLK1QaAoNJU1f44/view?usp=drivesdk",
+      "sourceBytes": 45802,
+      "sourceSha256": "a54ec71422c1a75619229707591c138381adadfb222f26e649c874029a241d6d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/BucketHat.png",
+      "projectSha256": "a54ec71422c1a75619229707591c138381adadfb222f26e649c874029a241d6d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1dGTQzV6gZxu1Vo3BgT5wOdAqhXlaQ5wE",
+      "drivePath": "Items/Leaf.png",
+      "sourceUrl": "https://drive.google.com/file/d/1dGTQzV6gZxu1Vo3BgT5wOdAqhXlaQ5wE/view?usp=drivesdk",
+      "sourceBytes": 51291,
+      "sourceSha256": "3393cff1e42177f38870b6b8105e4a4305ef80c0937200fe70fe083f36f03cd3",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Leaf.png",
+      "projectSha256": "3393cff1e42177f38870b6b8105e4a4305ef80c0937200fe70fe083f36f03cd3",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1pkM-djPNb0UigQf1GDVQWkoK8Jjg4oOH",
+      "drivePath": "Items/Lily.png",
+      "sourceUrl": "https://drive.google.com/file/d/1pkM-djPNb0UigQf1GDVQWkoK8Jjg4oOH/view?usp=drivesdk",
+      "sourceBytes": 80330,
+      "sourceSha256": "ebb78b25ea6542dd6d2ce247764bd57c63e1960a68e966d83439eb5550bd95a3",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Lily.png",
+      "projectSha256": "ebb78b25ea6542dd6d2ce247764bd57c63e1960a68e966d83439eb5550bd95a3",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1epifTqSLqhY_spT6Co5iIuoiKIgWz9TK",
+      "drivePath": "Items/TenGallonHat.png",
+      "sourceUrl": "https://drive.google.com/file/d/1epifTqSLqhY_spT6Co5iIuoiKIgWz9TK/view?usp=drivesdk",
+      "sourceBytes": 57426,
+      "sourceSha256": "1f4fe05a6bbdc4eef6f983ac81adfdb6c268ab26384d1528e63f6d6e3f0fbf1a",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/TenGallonHat.png",
+      "projectSha256": "1f4fe05a6bbdc4eef6f983ac81adfdb6c268ab26384d1528e63f6d6e3f0fbf1a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Tv7QpJzQUWuR4j9MjZp4x32HGdjRV3xA",
+      "drivePath": "Items/Boot.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Tv7QpJzQUWuR4j9MjZp4x32HGdjRV3xA/view?usp=drivesdk",
+      "sourceBytes": 81357,
+      "sourceSha256": "18611740043e0fe83059307acdaf278cf107e3234891858b6903e4c66faa7a70",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Boot.png",
+      "projectSha256": "18611740043e0fe83059307acdaf278cf107e3234891858b6903e4c66faa7a70",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1PFIhT_7Zh9mwDYdgJRAPqiMTS4AyXEzl",
+      "drivePath": "Items/LoopCollar.png",
+      "sourceUrl": "https://drive.google.com/file/d/1PFIhT_7Zh9mwDYdgJRAPqiMTS4AyXEzl/view?usp=drivesdk",
+      "sourceBytes": 49253,
+      "sourceSha256": "0a993f924258f9b193039ce422c493a7a46f21c6a83026cc3ffdd8a11f827d7d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/LoopCollar.png",
+      "projectSha256": "0a993f924258f9b193039ce422c493a7a46f21c6a83026cc3ffdd8a11f827d7d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1f7DH2-me06uGp9tgRYe9mdBsA-9qvTyL",
+      "drivePath": "Items/CyberWing.png",
+      "sourceUrl": "https://drive.google.com/file/d/1f7DH2-me06uGp9tgRYe9mdBsA-9qvTyL/view?usp=drivesdk",
+      "sourceBytes": 78680,
+      "sourceSha256": "ec2876b76492fd6dc125b0d9f7a3939d328fc0a2963330d52b7873d8db12a128",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/CyberWing.png",
+      "projectSha256": "ec2876b76492fd6dc125b0d9f7a3939d328fc0a2963330d52b7873d8db12a128",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1aNoqfVGgD9SYZULBQ_8iQSBx3OwX5cke",
+      "drivePath": "Items/Headphones.png",
+      "sourceUrl": "https://drive.google.com/file/d/1aNoqfVGgD9SYZULBQ_8iQSBx3OwX5cke/view?usp=drivesdk",
+      "sourceBytes": 49105,
+      "sourceSha256": "e4045642db449a7305862f8094bd7cc3ae231a55a2510a5fe14ca226cb7f6de9",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Headphones.png",
+      "projectSha256": "e4045642db449a7305862f8094bd7cc3ae231a55a2510a5fe14ca226cb7f6de9",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1IwCXEaWGnqHjHB9M8enCwilG7NPcGoMI",
+      "drivePath": "Items/PetHand.png",
+      "sourceUrl": "https://drive.google.com/file/d/1IwCXEaWGnqHjHB9M8enCwilG7NPcGoMI/view?usp=drivesdk",
+      "sourceBytes": 461594,
+      "sourceSha256": "eac969273b78b07d3d48a936d4fdc909ea8667c5e21dc07bc7593ac96fff992f",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Feedback/PetHand.png",
+      "projectSha256": "eac969273b78b07d3d48a936d4fdc909ea8667c5e21dc07bc7593ac96fff992f",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1nX_ZBIVp6x5F1fQx5cO4ge7VcSnVAWcv",
+      "drivePath": "Items/Imported/Sock.png",
+      "sourceUrl": "https://drive.google.com/file/d/1nX_ZBIVp6x5F1fQx5cO4ge7VcSnVAWcv/view?usp=drivesdk",
+      "sourceBytes": 39732,
+      "sourceSha256": "3a3d6f4acf930b1c59322e1f2fc5993a4515034154f82693919eb56819fd4b50",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Sock.png",
+      "projectSha256": "3a3d6f4acf930b1c59322e1f2fc5993a4515034154f82693919eb56819fd4b50",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "19PGbT9rS7cFjjrKIwEPPu6gBnnk08Avi",
+      "drivePath": "Items/Imported/Eyepatch.png",
+      "sourceUrl": "https://drive.google.com/file/d/19PGbT9rS7cFjjrKIwEPPu6gBnnk08Avi/view?usp=drivesdk",
+      "sourceBytes": 24815,
+      "sourceSha256": "5f8d411e7f361508a7fa23afa2ce6454bdde6566fba6c84695cf212b22d7db62",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Eyepatch.png",
+      "projectSha256": "5f8d411e7f361508a7fa23afa2ce6454bdde6566fba6c84695cf212b22d7db62",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1xUve3W_7JXq8EKSIJgKhmC1XR9uqeeZ0",
+      "drivePath": "Items/Imported/SFlower2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1xUve3W_7JXq8EKSIJgKhmC1XR9uqeeZ0/view?usp=drivesdk",
+      "sourceBytes": 102639,
+      "sourceSha256": "56aa2072769844bd03f2e91fa81a1c14fc5db5e1839378a8b84f55470f31a4e0",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/SFlower2.png",
+      "projectSha256": "56aa2072769844bd03f2e91fa81a1c14fc5db5e1839378a8b84f55470f31a4e0",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "159cG0ImhGRHM675G3ooGOGj1Cb0XjLZa",
+      "drivePath": "Items/Imported/SFlower1.png",
+      "sourceUrl": "https://drive.google.com/file/d/159cG0ImhGRHM675G3ooGOGj1Cb0XjLZa/view?usp=drivesdk",
+      "sourceBytes": 111133,
+      "sourceSha256": "ac15f9bb21ae6610117d7a71a9e9bc427c84ced3f1cbc4e49e1a57de5cbe70dc",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/SFlower1.png",
+      "projectSha256": "ac15f9bb21ae6610117d7a71a9e9bc427c84ced3f1cbc4e49e1a57de5cbe70dc",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Ti9haf5iwqGCyWgxY0JxZ5NSIlrxt1Uv",
+      "drivePath": "Items/Imported/CircleCharm.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Ti9haf5iwqGCyWgxY0JxZ5NSIlrxt1Uv/view?usp=drivesdk",
+      "sourceBytes": 50398,
+      "sourceSha256": "9c10e39baa3c7f3b9c15a97adb47fae37bbda21b7d55dec4b366270d0f71aa4a",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/CircleCharm.png",
+      "projectSha256": "9c10e39baa3c7f3b9c15a97adb47fae37bbda21b7d55dec4b366270d0f71aa4a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "12a8n4IxiwAB6TK-3ecNp-K3OXxxaRCcd",
+      "drivePath": "Items/Imported/SquareCharm.png",
+      "sourceUrl": "https://drive.google.com/file/d/12a8n4IxiwAB6TK-3ecNp-K3OXxxaRCcd/view?usp=drivesdk",
+      "sourceBytes": 40465,
+      "sourceSha256": "105596c2933d38e8852403e2f3b668ea6accbfceb71f603925e5d76f0c414289",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/SquareCharm.png",
+      "projectSha256": "105596c2933d38e8852403e2f3b668ea6accbfceb71f603925e5d76f0c414289",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1XxtIFk7o9K28LnrwW5WbUh1nH4B6OeF0",
+      "drivePath": "Items/Imported/DiamondCharm.png",
+      "sourceUrl": "https://drive.google.com/file/d/1XxtIFk7o9K28LnrwW5WbUh1nH4B6OeF0/view?usp=drivesdk",
+      "sourceBytes": 39029,
+      "sourceSha256": "4e1d9cd18d49a1888c85f3f0e409e1a9cdc8b41f67d0c6ed5a3ca10dfbbfc3ed",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/DiamondCharm.png",
+      "projectSha256": "4e1d9cd18d49a1888c85f3f0e409e1a9cdc8b41f67d0c6ed5a3ca10dfbbfc3ed",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1uENnnCePPr7TGImaeyyO6u0TQHqRjBvl",
+      "drivePath": "Items/Imported/StrawHat2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1uENnnCePPr7TGImaeyyO6u0TQHqRjBvl/view?usp=drivesdk",
+      "sourceBytes": 51414,
+      "sourceSha256": "6e3c7a6d297b1edb1ea5437067d3963e3326e38db28a1dac5333ebb8f794a5a7",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/StrawHat2.png",
+      "projectSha256": "6e3c7a6d297b1edb1ea5437067d3963e3326e38db28a1dac5333ebb8f794a5a7",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1R7usLRhx5f_5TT-GEJXOYG1r3QDnRMCt",
+      "drivePath": "Items/Imported/StrawHat1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1R7usLRhx5f_5TT-GEJXOYG1r3QDnRMCt/view?usp=drivesdk",
+      "sourceBytes": 55877,
+      "sourceSha256": "7c6cec23cac83dba77964fa9fb43ed62ca8b74047e6cddb16d4ec94a90a190ca",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/StrawHat1.png",
+      "projectSha256": "7c6cec23cac83dba77964fa9fb43ed62ca8b74047e6cddb16d4ec94a90a190ca",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1V1d2Hn0x840FmCD72ARRxUxekqufwxJr",
+      "drivePath": "Items/Imported/JesterHat2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1V1d2Hn0x840FmCD72ARRxUxekqufwxJr/view?usp=drivesdk",
+      "sourceBytes": 66622,
+      "sourceSha256": "e7085b7859a6b1e88e5b6719120fd414994fbc4e5579c1538443d88745fa281a",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/JesterHat2.png",
+      "projectSha256": "e7085b7859a6b1e88e5b6719120fd414994fbc4e5579c1538443d88745fa281a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1GKBelescjTGUL4_8KeScPFEFSQupdL2R",
+      "drivePath": "Items/Imported/JesterHat1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1GKBelescjTGUL4_8KeScPFEFSQupdL2R/view?usp=drivesdk",
+      "sourceBytes": 66095,
+      "sourceSha256": "9c55ffc08481fc8d2671e355856e458352d2b82e8c824740eab13b106216fe09",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/JesterHat1.png",
+      "projectSha256": "9c55ffc08481fc8d2671e355856e458352d2b82e8c824740eab13b106216fe09",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1EjgrvCNQ4XkTXmMZuJK1ZNX9jlqKCVy0",
+      "drivePath": "Items/Imported/RubberDuck.png",
+      "sourceUrl": "https://drive.google.com/file/d/1EjgrvCNQ4XkTXmMZuJK1ZNX9jlqKCVy0/view?usp=drivesdk",
+      "sourceBytes": 54888,
+      "sourceSha256": "a6dfbac47e6d4b14c11547aabc7ccdc133f6e9f08be7ae2687665249d920bf49",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/RubberDuck.png",
+      "projectSha256": "a6dfbac47e6d4b14c11547aabc7ccdc133f6e9f08be7ae2687665249d920bf49",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "19A9PmfHCYrRYMNcjjvwSmGQB48sdZ4LC",
+      "drivePath": "Items/Imported/Tiara.png",
+      "sourceUrl": "https://drive.google.com/file/d/19A9PmfHCYrRYMNcjjvwSmGQB48sdZ4LC/view?usp=drivesdk",
+      "sourceBytes": 74390,
+      "sourceSha256": "786bfd04933fc7c0fa12e1ab2a4b36873b021e198b92c40d4e9231e53b189a7d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Tiara.png",
+      "projectSha256": "786bfd04933fc7c0fa12e1ab2a4b36873b021e198b92c40d4e9231e53b189a7d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1904pygSXDLZtIKU27gXoPBCB4DxWA8HZ",
+      "drivePath": "Items/Imported/HeartGlasses.png",
+      "sourceUrl": "https://drive.google.com/file/d/1904pygSXDLZtIKU27gXoPBCB4DxWA8HZ/view?usp=drivesdk",
+      "sourceBytes": 49107,
+      "sourceSha256": "55a52db1bced24989b3651b8cfc46364132727c691652126fd06a3f97b43fe94",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/HeartGlasses.png",
+      "projectSha256": "55a52db1bced24989b3651b8cfc46364132727c691652126fd06a3f97b43fe94",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1BKnmXaGHw880B9BzM-FgpLTTjo_m-pqa",
+      "drivePath": "Items/Imported/HeartCharm.png",
+      "sourceUrl": "https://drive.google.com/file/d/1BKnmXaGHw880B9BzM-FgpLTTjo_m-pqa/view?usp=drivesdk",
+      "sourceBytes": 50460,
+      "sourceSha256": "592b0e33dea30a1895bbba0b432b2145d14ffa1d377026d5cad2d18e08e2332a",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/HeartCharm.png",
+      "projectSha256": "592b0e33dea30a1895bbba0b432b2145d14ffa1d377026d5cad2d18e08e2332a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1FpzK6qX7_V4ZzzMqFpGnXjsshE4HvrKo",
+      "drivePath": "Items/Imported/FairyWing.png",
+      "sourceUrl": "https://drive.google.com/file/d/1FpzK6qX7_V4ZzzMqFpGnXjsshE4HvrKo/view?usp=drivesdk",
+      "sourceBytes": 232560,
+      "sourceSha256": "879da15355796c866119da08d34f2b431eaedc6531c694b662880eff8176acf2",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/FairyWing.png",
+      "projectSha256": "879da15355796c866119da08d34f2b431eaedc6531c694b662880eff8176acf2",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1IEf8JB85ux-qv0mXn8icsbJR_gpsDKBR",
+      "drivePath": "Items/Imported/DragonWing.png",
+      "sourceUrl": "https://drive.google.com/file/d/1IEf8JB85ux-qv0mXn8icsbJR_gpsDKBR/view?usp=drivesdk",
+      "sourceBytes": 85633,
+      "sourceSha256": "511a5fe0ae761b6441feb0ce3593541c87d72c8cc0ff41db00b1549f9cf14a61",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/DragonWing.png",
+      "projectSha256": "511a5fe0ae761b6441feb0ce3593541c87d72c8cc0ff41db00b1549f9cf14a61",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1_9GjCJYPSLbZdQ1yRytPzfJxuPNirujG",
+      "drivePath": "Items/Imported/AngelWing.png",
+      "sourceUrl": "https://drive.google.com/file/d/1_9GjCJYPSLbZdQ1yRytPzfJxuPNirujG/view?usp=drivesdk",
+      "sourceBytes": 77530,
+      "sourceSha256": "4f2d77d234330eac192f73a2e945bf25588b8fd899d40927d4ad094e2298bfef",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/AngelWing.png",
+      "projectSha256": "4f2d77d234330eac192f73a2e945bf25588b8fd899d40927d4ad094e2298bfef",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1J4h4qOkkElUGmeGyqgKpurD7s3RNsAyl",
+      "drivePath": "Items/Imported/GooglyEye.png",
+      "sourceUrl": "https://drive.google.com/file/d/1J4h4qOkkElUGmeGyqgKpurD7s3RNsAyl/view?usp=drivesdk",
+      "sourceBytes": 47119,
+      "sourceSha256": "98c25695b7e11220034dd781013e39ddb9d63f9ef362f54707c9286111dd3925",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/GooglyEye.png",
+      "projectSha256": "98c25695b7e11220034dd781013e39ddb9d63f9ef362f54707c9286111dd3925",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1BYkFWmkCv0BaiEizyoEyExTsph5JzUuJ",
+      "drivePath": "Items/Imported/Tie.png",
+      "sourceUrl": "https://drive.google.com/file/d/1BYkFWmkCv0BaiEizyoEyExTsph5JzUuJ/view?usp=drivesdk",
+      "sourceBytes": 42199,
+      "sourceSha256": "7e5b8ac7ae62e3862bd654b41b0d3d9c24b41e87c8e5f8d1964211e478941709",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Tie.png",
+      "projectSha256": "7e5b8ac7ae62e3862bd654b41b0d3d9c24b41e87c8e5f8d1964211e478941709",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1uA2aQMipUlLE_CbkXPZfHAnFF8m_6Vr5",
+      "drivePath": "Items/Imported/Tutu.png",
+      "sourceUrl": "https://drive.google.com/file/d/1uA2aQMipUlLE_CbkXPZfHAnFF8m_6Vr5/view?usp=drivesdk",
+      "sourceBytes": 109170,
+      "sourceSha256": "8957f642ebeab8b849dfac3bc4e3387280a039426ab2d47d0e51464c351efa9b",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Tutu.png",
+      "projectSha256": "8957f642ebeab8b849dfac3bc4e3387280a039426ab2d47d0e51464c351efa9b",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1A7wayZMw1uVF4Xd5bzaxViXxcnBY1Xiw",
+      "drivePath": "Items/Imported/SafetyGlasses.png",
+      "sourceUrl": "https://drive.google.com/file/d/1A7wayZMw1uVF4Xd5bzaxViXxcnBY1Xiw/view?usp=drivesdk",
+      "sourceBytes": 49234,
+      "sourceSha256": "6b34a0eb81b00022d124c99381815a5327bcd8011ce75500cc66c61083346dc5",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/SafetyGlasses.png",
+      "projectSha256": "6b34a0eb81b00022d124c99381815a5327bcd8011ce75500cc66c61083346dc5",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "15OIjUTFGQ85eST4wSj7Tln4XUM8ZfTni",
+      "drivePath": "Items/Imported/Scarf.png",
+      "sourceUrl": "https://drive.google.com/file/d/15OIjUTFGQ85eST4wSj7Tln4XUM8ZfTni/view?usp=drivesdk",
+      "sourceBytes": 87132,
+      "sourceSha256": "a50a5bacdd976cf50b2b8584795fcc3e479b63b92e8f47662b7c2d69fc361f3a",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Scarf.png",
+      "projectSha256": "a50a5bacdd976cf50b2b8584795fcc3e479b63b92e8f47662b7c2d69fc361f3a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1fGf_wVA1eFl1uU0i8QXGw1s-XP9qavvm",
+      "drivePath": "Items/Imported/ChefHat.png",
+      "sourceUrl": "https://drive.google.com/file/d/1fGf_wVA1eFl1uU0i8QXGw1s-XP9qavvm/view?usp=drivesdk",
+      "sourceBytes": 57833,
+      "sourceSha256": "07475d161e6d9fc3bd8a5271fa098f533dea83ccdc495531009afde982f8da2b",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/ChefHat.png",
+      "projectSha256": "07475d161e6d9fc3bd8a5271fa098f533dea83ccdc495531009afde982f8da2b",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1XzIKb7WFSzpTh8Q_HPGHHQH-al1gqW3r",
+      "drivePath": "Items/Imported/Ball.png",
+      "sourceUrl": "https://drive.google.com/file/d/1XzIKb7WFSzpTh8Q_HPGHHQH-al1gqW3r/view?usp=drivesdk",
+      "sourceBytes": 45409,
+      "sourceSha256": "4ea2790b010bc2636ffe95faabb7daa08b43e0d5034bb2e0303723a9f4e0e064",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Ball.png",
+      "projectSha256": "4ea2790b010bc2636ffe95faabb7daa08b43e0d5034bb2e0303723a9f4e0e064",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Gn8PRvP1XlGLLLmEd_ui15oMcjYRenvd",
+      "drivePath": "Items/Imported/CollarClip.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Gn8PRvP1XlGLLLmEd_ui15oMcjYRenvd/view?usp=drivesdk",
+      "sourceBytes": 24630,
+      "sourceSha256": "ae198a21280b3b8ba0de9819676b15b547610946d5c735af9000081f493c5744",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/CollarClip.png",
+      "projectSha256": "ae198a21280b3b8ba0de9819676b15b547610946d5c735af9000081f493c5744",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1LOI5AEXHcPCG4LMbQBBZiOxvEiW8kRsS",
+      "drivePath": "Items/Imported/Bone.png",
+      "sourceUrl": "https://drive.google.com/file/d/1LOI5AEXHcPCG4LMbQBBZiOxvEiW8kRsS/view?usp=drivesdk",
+      "sourceBytes": 57776,
+      "sourceSha256": "f5d3ade71316538e3f4b80a8640878c72ade9838a2f254278580d56d111bedeb",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Bone.png",
+      "projectSha256": "f5d3ade71316538e3f4b80a8640878c72ade9838a2f254278580d56d111bedeb",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1ZFHGcCvX5ckbheHSuMKlPY_n2ehqz3BA",
+      "drivePath": "Items/Imported/ExtraEyeHalf2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1ZFHGcCvX5ckbheHSuMKlPY_n2ehqz3BA/view?usp=drivesdk",
+      "sourceBytes": 22827,
+      "sourceSha256": "83b321c612286b8d6073a61bbffe0949c768e6bf8cf8d2f9b3a2ea97b4ec7cef",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/ExtraEyeHalf2.png",
+      "projectSha256": "83b321c612286b8d6073a61bbffe0949c768e6bf8cf8d2f9b3a2ea97b4ec7cef",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1csXtefaBBO15ACONiaNmn6i0fpgAA87P",
+      "drivePath": "Items/Imported/ExtraEyeHalf1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1csXtefaBBO15ACONiaNmn6i0fpgAA87P/view?usp=drivesdk",
+      "sourceBytes": 23166,
+      "sourceSha256": "11e6aba0131360ea58c1508295b0c4c8bc4caed2b54ad36ae9c9765cdb99eaa3",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/ExtraEyeHalf1.png",
+      "projectSha256": "11e6aba0131360ea58c1508295b0c4c8bc4caed2b54ad36ae9c9765cdb99eaa3",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1wJVDPRMphSFJCaGw-uXjeI3c-pS5oEo7",
+      "drivePath": "Items/Imported/ExtraEyeOpen2.png",
+      "sourceUrl": "https://drive.google.com/file/d/1wJVDPRMphSFJCaGw-uXjeI3c-pS5oEo7/view?usp=drivesdk",
+      "sourceBytes": 22561,
+      "sourceSha256": "8728414ec0107ac0b02f40ea02a125e31b9dfb67e0a8b88e6bb0368665b26e8d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/ExtraEyeOpen2.png",
+      "projectSha256": "8728414ec0107ac0b02f40ea02a125e31b9dfb67e0a8b88e6bb0368665b26e8d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "16lCFPGSsOqknZAc8NPWa6zpdGxQ4VAGA",
+      "drivePath": "Items/Imported/ExtraEyeOpen1.png",
+      "sourceUrl": "https://drive.google.com/file/d/16lCFPGSsOqknZAc8NPWa6zpdGxQ4VAGA/view?usp=drivesdk",
+      "sourceBytes": 22856,
+      "sourceSha256": "317e27a51a08ebeab702196e0a20f3ae9477ce3c55dfe6f85e37d667c27b2caf",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/ExtraEyeOpen1.png",
+      "projectSha256": "317e27a51a08ebeab702196e0a20f3ae9477ce3c55dfe6f85e37d667c27b2caf",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Sow6_QfuaAQGa4JijJ3MmLzqyp5vB7dn",
+      "drivePath": "Items/Imported/TriangleGlasses.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Sow6_QfuaAQGa4JijJ3MmLzqyp5vB7dn/view?usp=drivesdk",
+      "sourceBytes": 47356,
+      "sourceSha256": "6858f4946c590e41af1cce9cd89ee61a7262a60eb6d9f9c570cd2068c7c43701",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/TriangleGlasses.png",
+      "projectSha256": "6858f4946c590e41af1cce9cd89ee61a7262a60eb6d9f9c570cd2068c7c43701",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1gAyY3q-T2-sB5z3h34XKI_EY3CaiXwnN",
+      "drivePath": "Items/Imported/RoundGlasses.png",
+      "sourceUrl": "https://drive.google.com/file/d/1gAyY3q-T2-sB5z3h34XKI_EY3CaiXwnN/view?usp=drivesdk",
+      "sourceBytes": 50326,
+      "sourceSha256": "ede8e1be6b8472613841c0b752417becc887dd7046042a58c2863d82c222c8e5",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/RoundGlasses.png",
+      "projectSha256": "ede8e1be6b8472613841c0b752417becc887dd7046042a58c2863d82c222c8e5",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1GhCSDyf_txn5VEI13aRILIoSx-MuvLVP",
+      "drivePath": "Items/Imported/Sauce.png",
+      "sourceUrl": "https://drive.google.com/file/d/1GhCSDyf_txn5VEI13aRILIoSx-MuvLVP/view?usp=drivesdk",
+      "sourceBytes": 33447,
+      "sourceSha256": "a994333baf1d98e7e5d427fde2d3de49855666ff3551b426795ce9b3157d67bb",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Sauce.png",
+      "projectSha256": "a994333baf1d98e7e5d427fde2d3de49855666ff3551b426795ce9b3157d67bb",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1nw3mIVPy2ktHV3OfI7UxGd0DoHFoBWm5",
+      "drivePath": "Items/Imported/HotDogBun.png",
+      "sourceUrl": "https://drive.google.com/file/d/1nw3mIVPy2ktHV3OfI7UxGd0DoHFoBWm5/view?usp=drivesdk",
+      "sourceBytes": 35490,
+      "sourceSha256": "285deb7a4957b3cd7ad11b2a6c52ed9140a030346ff51b94984a2b61ceaf3320",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/HotDogBun.png",
+      "projectSha256": "285deb7a4957b3cd7ad11b2a6c52ed9140a030346ff51b94984a2b61ceaf3320",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1pYAKpHulJhZoaasqTU_rv0W2hQ8zox36",
+      "drivePath": "Items/Imported/Crown1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1pYAKpHulJhZoaasqTU_rv0W2hQ8zox36/view?usp=drivesdk",
+      "sourceBytes": 102235,
+      "sourceSha256": "9e563eba173dd5a13d2fc6cd12440369031b6badb648ed09443b05e452915f6a",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Crown1.png",
+      "projectSha256": "9e563eba173dd5a13d2fc6cd12440369031b6badb648ed09443b05e452915f6a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1oJZqdWTi0VTTaN-hge6YFXldYos7egPs",
+      "drivePath": "Items/Imported/Horn1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1oJZqdWTi0VTTaN-hge6YFXldYos7egPs/view?usp=drivesdk",
+      "sourceBytes": 60190,
+      "sourceSha256": "f195e7f1d77385dcac1dccf86c663fec33d063f9cd133d33bcd26cf898953bd4",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Horn1.png",
+      "projectSha256": "f195e7f1d77385dcac1dccf86c663fec33d063f9cd133d33bcd26cf898953bd4",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1AodxxFpqK6FIde8gojHzvli5hkhhNULD",
+      "drivePath": "Items/Imported/Bow1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1AodxxFpqK6FIde8gojHzvli5hkhhNULD/view?usp=drivesdk",
+      "sourceBytes": 58245,
+      "sourceSha256": "305e1ed08570ebb217bdeb39d0cebf38977613f24853cfc81c64d40a787a8a6f",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Bow1.png",
+      "projectSha256": "305e1ed08570ebb217bdeb39d0cebf38977613f24853cfc81c64d40a787a8a6f",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1oqOsJ7yisPa_aUiZtAIayZJP6bBlGXsZ",
+      "drivePath": "Items/Imported/Halo.png",
+      "sourceUrl": "https://drive.google.com/file/d/1oqOsJ7yisPa_aUiZtAIayZJP6bBlGXsZ/view?usp=drivesdk",
+      "sourceBytes": 58908,
+      "sourceSha256": "bbe639e25dd87a5e2e655520e5c7d6d694aedf32cf935e7fe62a129f05beec1a",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Halo.png",
+      "projectSha256": "bbe639e25dd87a5e2e655520e5c7d6d694aedf32cf935e7fe62a129f05beec1a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "13bAvhL_YNqX5ACwe3XjglHbNTNfY0VgJ",
+      "drivePath": "Items/Imported/TopHat2.png",
+      "sourceUrl": "https://drive.google.com/file/d/13bAvhL_YNqX5ACwe3XjglHbNTNfY0VgJ/view?usp=drivesdk",
+      "sourceBytes": 65872,
+      "sourceSha256": "ae0e07ebc3a4280bb58f0a3d466f85cbaa60fbd131355b25ae17ee29bca313e5",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/TopHat2.png",
+      "projectSha256": "ae0e07ebc3a4280bb58f0a3d466f85cbaa60fbd131355b25ae17ee29bca313e5",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Dp94rG474sWqrX7q_p4o2__6nqG1oCaG",
+      "drivePath": "Items/Imported/TopHat1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Dp94rG474sWqrX7q_p4o2__6nqG1oCaG/view?usp=drivesdk",
+      "sourceBytes": 65055,
+      "sourceSha256": "34278adf4822d144a2d1a7c0201a1ae9e28c630bdc57efdfd46e6fa8492607db",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/TopHat1.png",
+      "projectSha256": "34278adf4822d144a2d1a7c0201a1ae9e28c630bdc57efdfd46e6fa8492607db",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1jS3SdHxKAKDuaOrz3G09uuu_ROzBrAIw",
+      "drivePath": "Items/Imported/Bandana1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1jS3SdHxKAKDuaOrz3G09uuu_ROzBrAIw/view?usp=drivesdk",
+      "sourceBytes": 75411,
+      "sourceSha256": "5c98a361a6dfd4a4dc2fa320b0f6243dcc889e9084adae0d680a9eb5a5abb002",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Bandana1.png",
+      "projectSha256": "5c98a361a6dfd4a4dc2fa320b0f6243dcc889e9084adae0d680a9eb5a5abb002",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Mb2RI6YeyxVKgdGz04hbSQdXzRjGFA--",
+      "drivePath": "Items/Imported/Collar1.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Mb2RI6YeyxVKgdGz04hbSQdXzRjGFA--/view?usp=drivesdk",
+      "sourceBytes": 41120,
+      "sourceSha256": "f5147dd26db81963f844fb538e7ed1c5d8af5606b62d3425832cd655c485ccc2",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Items/Collar1.png",
+      "projectSha256": "f5147dd26db81963f844fb538e7ed1c5d8af5606b62d3425832cd655c485ccc2",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1C8SP_dtxBZDsxqFdLOcOJLmG4624QTg-",
+      "drivePath": "Vector/GoldenBone.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1C8SP_dtxBZDsxqFdLOcOJLmG4624QTg-/view?usp=drivesdk",
+      "sourceBytes": 1905,
+      "sourceSha256": "8ed0c327949e59e9380fa0acf66cb8c3f5c7a80ec01f72fc97b31753db5eeb08",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/GoldenBones.svg",
+      "projectSha256": "8ed0c327949e59e9380fa0acf66cb8c3f5c7a80ec01f72fc97b31753db5eeb08",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1ikrVQG-dfT3gR110YziaV5if4cpPJHo4",
+      "drivePath": "Vector/Rock7.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1ikrVQG-dfT3gR110YziaV5if4cpPJHo4/view?usp=drivesdk",
+      "sourceBytes": 701,
+      "sourceSha256": "dab73448862157ee0b3585085a2e81bc039746b41675b5888d7ac18b719b3d03",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/Rock7.svg",
+      "projectSha256": "dab73448862157ee0b3585085a2e81bc039746b41675b5888d7ac18b719b3d03",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1JOPhKd1zKJux-MBUAfqKgRm9QH_fg-bn",
+      "drivePath": "Vector/Rock6.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1JOPhKd1zKJux-MBUAfqKgRm9QH_fg-bn/view?usp=drivesdk",
+      "sourceBytes": 633,
+      "sourceSha256": "68b3b7e377d6ad13c7a05b2dc1c0e91e11e49c3b402f0bf23813cf88ad9e0707",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/Rock6.svg",
+      "projectSha256": "68b3b7e377d6ad13c7a05b2dc1c0e91e11e49c3b402f0bf23813cf88ad9e0707",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1kc9g-IA0YMoEDoMe-sRgIqxb-eDMEnEG",
+      "drivePath": "Vector/Rock5.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1kc9g-IA0YMoEDoMe-sRgIqxb-eDMEnEG/view?usp=drivesdk",
+      "sourceBytes": 625,
+      "sourceSha256": "5b7faefa0e9256955430216659ebde5bd18b0b0c2ac24cc6c39652decd9f5fee",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/Rock5.svg",
+      "projectSha256": "5b7faefa0e9256955430216659ebde5bd18b0b0c2ac24cc6c39652decd9f5fee",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1iXZiP5wbQE-n_5OoqHbGd8jXlvHn7npb",
+      "drivePath": "Vector/Rock4.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1iXZiP5wbQE-n_5OoqHbGd8jXlvHn7npb/view?usp=drivesdk",
+      "sourceBytes": 602,
+      "sourceSha256": "e1e08dbbcc8b3d39a027490bd7d6af4ba5fa80a6f39a053af89b6c5222b32b9b",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/Rock4.svg",
+      "projectSha256": "e1e08dbbcc8b3d39a027490bd7d6af4ba5fa80a6f39a053af89b6c5222b32b9b",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "15Igc1S5-kKwYi99Rf9hHyiyVk8yy_xrc",
+      "drivePath": "Vector/Rock3.svg",
+      "sourceUrl": "https://drive.google.com/file/d/15Igc1S5-kKwYi99Rf9hHyiyVk8yy_xrc/view?usp=drivesdk",
+      "sourceBytes": 598,
+      "sourceSha256": "e34c7f1b9770fc7ade96db9dd38956bfd7765fda8c7eb9c4514d3d2a83aa73ec",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/Rock3.svg",
+      "projectSha256": "e34c7f1b9770fc7ade96db9dd38956bfd7765fda8c7eb9c4514d3d2a83aa73ec",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1se4E9_6Bpwh44a2cAJNHIsNxLKw9yiiU",
+      "drivePath": "Vector/Rock2.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1se4E9_6Bpwh44a2cAJNHIsNxLKw9yiiU/view?usp=drivesdk",
+      "sourceBytes": 693,
+      "sourceSha256": "b55a13038c8ce806c6f2f1173c1b75365278f3cba54bdbb02147aaaa398ee60b",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/Rock2.svg",
+      "projectSha256": "b55a13038c8ce806c6f2f1173c1b75365278f3cba54bdbb02147aaaa398ee60b",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1n6j4XFTisUqin3V5Ix_jf69l5OhiJAL3",
+      "drivePath": "Vector/Rock1.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1n6j4XFTisUqin3V5Ix_jf69l5OhiJAL3/view?usp=drivesdk",
+      "sourceBytes": 627,
+      "sourceSha256": "5e36da5c5ca1f50c72da1a0d539a4a37bd03ca7ffe4d1352a3be6dc7cd05c2d1",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/Rock1.svg",
+      "projectSha256": "5e36da5c5ca1f50c72da1a0d539a4a37bd03ca7ffe4d1352a3be6dc7cd05c2d1",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1en3HcZALrb4PH8faNgOfT0tb-mZYdiun",
+      "drivePath": "Vector/RedPresent1.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1en3HcZALrb4PH8faNgOfT0tb-mZYdiun/view?usp=drivesdk",
+      "sourceBytes": 4968,
+      "sourceSha256": "44a52d4e37ac558f352bc99f335e31f8edb3c36885e553cd791eeaceac4b9576",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/DigPresent1.svg",
+      "projectSha256": "44a52d4e37ac558f352bc99f335e31f8edb3c36885e553cd791eeaceac4b9576",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "13Vo1IUZAbNmFaPyf5PBNQy8jqHCLCgkX",
+      "drivePath": "Vector/PurplePresent3Bottom.svg",
+      "sourceUrl": "https://drive.google.com/file/d/13Vo1IUZAbNmFaPyf5PBNQy8jqHCLCgkX/view?usp=drivesdk",
+      "sourceBytes": 2769,
+      "sourceSha256": "4e4134c881554500680b86873dabefa834f739260653753dab3f433b74917628",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/AccessoryPresent3Bottom.svg",
+      "projectSha256": "4e4134c881554500680b86873dabefa834f739260653753dab3f433b74917628",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Et5u5n9Ik6Dee4Tjw5kToluoQXzxlZd3",
+      "drivePath": "Vector/GoldPresent2.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1Et5u5n9Ik6Dee4Tjw5kToluoQXzxlZd3/view?usp=drivesdk",
+      "sourceBytes": 8861,
+      "sourceSha256": "98401dae7eb09245768059c47fa5b298054010d0c86505b65010ef608d33716b",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/DogPresent2.svg",
+      "projectSha256": "98401dae7eb09245768059c47fa5b298054010d0c86505b65010ef608d33716b",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1BG2J0Xu_lrPeoJzLlzNJENbsrNlXS1ts",
+      "drivePath": "Vector/GoldPresent3Top.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1BG2J0Xu_lrPeoJzLlzNJENbsrNlXS1ts/view?usp=drivesdk",
+      "sourceBytes": 8381,
+      "sourceSha256": "8255b359d6df21d3e2d0cd68fca30ca15dadcd874ff797294fd3c798cae36c65",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/DogPresent3Top.svg",
+      "projectSha256": "8255b359d6df21d3e2d0cd68fca30ca15dadcd874ff797294fd3c798cae36c65",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "16Muj9KfREhI3crXMjIwxFVpUzfdXbFlc",
+      "drivePath": "Vector/RedPresent3Top.svg",
+      "sourceUrl": "https://drive.google.com/file/d/16Muj9KfREhI3crXMjIwxFVpUzfdXbFlc/view?usp=drivesdk",
+      "sourceBytes": 5186,
+      "sourceSha256": "265b30dd201a10c66618bffcab471188c0ee34e45d7664a55a9e61b311bc4637",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/DigPresent3Top.svg",
+      "projectSha256": "265b30dd201a10c66618bffcab471188c0ee34e45d7664a55a9e61b311bc4637",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "17hv1raD7ZReqpSy8bgyG4uyBKMsOIkLl",
+      "drivePath": "Vector/PurplePresent3Top.svg",
+      "sourceUrl": "https://drive.google.com/file/d/17hv1raD7ZReqpSy8bgyG4uyBKMsOIkLl/view?usp=drivesdk",
+      "sourceBytes": 5186,
+      "sourceSha256": "35d562bcdfabfcc912e893bc01d1c875444e87796716bc1e65c566ef101e3a37",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/AccessoryPresent3Top.svg",
+      "projectSha256": "35d562bcdfabfcc912e893bc01d1c875444e87796716bc1e65c566ef101e3a37",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "16Pof-KoTndjz974T2s-RThxkyzkV3l-q",
+      "drivePath": "Vector/GoldPresent3Bottom.svg",
+      "sourceUrl": "https://drive.google.com/file/d/16Pof-KoTndjz974T2s-RThxkyzkV3l-q/view?usp=drivesdk",
+      "sourceBytes": 3538,
+      "sourceSha256": "eaa3e463047a50b65b0668e885a66ab3395538616a0d7154bb244af997184385",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/DogPresent3Bottom.svg",
+      "projectSha256": "eaa3e463047a50b65b0668e885a66ab3395538616a0d7154bb244af997184385",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "19pL37jmquz4ACx1btZAfmC7P7mqLIF1V",
+      "drivePath": "Vector/RedPresent3Bottom.svg",
+      "sourceUrl": "https://drive.google.com/file/d/19pL37jmquz4ACx1btZAfmC7P7mqLIF1V/view?usp=drivesdk",
+      "sourceBytes": 2769,
+      "sourceSha256": "e52750752082ad61b041f0fdd8216a8b2974df08f671280b8418222b96e54889",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/DigPresent3Bottom.svg",
+      "projectSha256": "e52750752082ad61b041f0fdd8216a8b2974df08f671280b8418222b96e54889",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Fk5Wta7ke0CJdlsVY1tXRVcEyg7ko2u6",
+      "drivePath": "Vector/RedPresent2.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1Fk5Wta7ke0CJdlsVY1tXRVcEyg7ko2u6/view?usp=drivesdk",
+      "sourceBytes": 5743,
+      "sourceSha256": "f3c3ad1bde3b5777066af8a414cef1d8b1991f1d7231e216d308a9eec4e64822",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/DigPresent2.svg",
+      "projectSha256": "f3c3ad1bde3b5777066af8a414cef1d8b1991f1d7231e216d308a9eec4e64822",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Fr3nW96qBeFZpr9jl_ZI4iTGulyVq0GZ",
+      "drivePath": "Vector/PurplePresent2.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1Fr3nW96qBeFZpr9jl_ZI4iTGulyVq0GZ/view?usp=drivesdk",
+      "sourceBytes": 5743,
+      "sourceSha256": "c965cd7b248d815707e01357529eeca083ad3e021d4ba11732b4d514a2b35000",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/AccessoryPresent2.svg",
+      "projectSha256": "c965cd7b248d815707e01357529eeca083ad3e021d4ba11732b4d514a2b35000",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "15rIh-TNM_dn3IxjcCMK2nIOKghYRsonH",
+      "drivePath": "Vector/GoldPresent1.svg",
+      "sourceUrl": "https://drive.google.com/file/d/15rIh-TNM_dn3IxjcCMK2nIOKghYRsonH/view?usp=drivesdk",
+      "sourceBytes": 8092,
+      "sourceSha256": "1d1d470a4440fa9609b31f42bf5f9517dad35bce060d29468d2c7e6ef0803166",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/DogPresent1.svg",
+      "projectSha256": "1d1d470a4440fa9609b31f42bf5f9517dad35bce060d29468d2c7e6ef0803166",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1mehe2TZ93VRTlIdIaNYawwrNjjAsdjHC",
+      "drivePath": "Vector/PurplePresent1.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1mehe2TZ93VRTlIdIaNYawwrNjjAsdjHC/view?usp=drivesdk",
+      "sourceBytes": 4968,
+      "sourceSha256": "a45617688b9548cc5d7f795a4c5bc2168d5204ffa78bf54975646bd1406bab60",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/UI/Shop/AccessoryPresent1.svg",
+      "projectSha256": "a45617688b9548cc5d7f795a4c5bc2168d5204ffa78bf54975646bd1406bab60",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1ZqI5EI358NHf44nbOHjOsVi5t-IaxTrF",
+      "drivePath": "Vector/Imported/Gear.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1ZqI5EI358NHf44nbOHjOsVi5t-IaxTrF/view?usp=drivesdk",
+      "sourceBytes": 1053,
+      "sourceSha256": "beeb0c15316b512a77c0adea54cd2ced9bc8519a33d696b34709a7649bb35267",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/Gear.svg",
+      "projectSha256": "beeb0c15316b512a77c0adea54cd2ced9bc8519a33d696b34709a7649bb35267",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1L3UZYq11NReQ7FCGiE2RxuNjPjFvHSdn",
+      "drivePath": "Vector/Imported/TextBox.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1L3UZYq11NReQ7FCGiE2RxuNjPjFvHSdn/view?usp=drivesdk",
+      "sourceBytes": 4166,
+      "sourceSha256": "7ff9e0bc230e56a65dafbf3658c282ca33c0f81e0027e35c6c7a90774bb07f5d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/TextBox.svg",
+      "projectSha256": "7ff9e0bc230e56a65dafbf3658c282ca33c0f81e0027e35c6c7a90774bb07f5d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1eT7rT96hrU-AakN7mYEzl923JfH02iv2",
+      "drivePath": "Vector/Imported/SliderHandleG.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1eT7rT96hrU-AakN7mYEzl923JfH02iv2/view?usp=drivesdk",
+      "sourceBytes": 3789,
+      "sourceSha256": "6b3bb5b2c61c1cf70b243d1a6549ea894a9789e51394bda51369c7087a0ece16",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/SliderHandleG.svg",
+      "projectSha256": "6b3bb5b2c61c1cf70b243d1a6549ea894a9789e51394bda51369c7087a0ece16",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "13Wu_irk9Yk4GYiK165s_2X2ZdGO7gR_o",
+      "drivePath": "Vector/Imported/UncheckedBox.svg",
+      "sourceUrl": "https://drive.google.com/file/d/13Wu_irk9Yk4GYiK165s_2X2ZdGO7gR_o/view?usp=drivesdk",
+      "sourceBytes": 3040,
+      "sourceSha256": "375b34f973a44ff22d24f792f912c55ee1a455b278f2b47d498ed9ba4976c96e",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/UncheckedBox.svg",
+      "projectSha256": "375b34f973a44ff22d24f792f912c55ee1a455b278f2b47d498ed9ba4976c96e",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1_fVsO4VQj8LK-QulUZrBrL2oypCNvIUb",
+      "drivePath": "Vector/Imported/UpDownCarrot.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1_fVsO4VQj8LK-QulUZrBrL2oypCNvIUb/view?usp=drivesdk",
+      "sourceBytes": 1472,
+      "sourceSha256": "8b3cff01e45f0206bdc795b4fab98ab81cabc84a5f603159ea69541b0539a05c",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/UpDownCarrot.svg",
+      "projectSha256": "8b3cff01e45f0206bdc795b4fab98ab81cabc84a5f603159ea69541b0539a05c",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1KbzGMhGfso9-f2iLFLI7dfvZOjUEM9hT",
+      "drivePath": "Vector/Imported/CheckedBox.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1KbzGMhGfso9-f2iLFLI7dfvZOjUEM9hT/view?usp=drivesdk",
+      "sourceBytes": 8322,
+      "sourceSha256": "95eb006092ef4b3409ca53a7bdf45caaccebe1a73e7d70af7fc5ed49c4ac9a8d",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/CheckedBox.svg",
+      "projectSha256": "95eb006092ef4b3409ca53a7bdf45caaccebe1a73e7d70af7fc5ed49c4ac9a8d",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "15_1ka-A3YJxNHF9Yw33SgOzOWzsmNwIK",
+      "drivePath": "Vector/Imported/Trashcan.svg",
+      "sourceUrl": "https://drive.google.com/file/d/15_1ka-A3YJxNHF9Yw33SgOzOWzsmNwIK/view?usp=drivesdk",
+      "sourceBytes": 5134,
+      "sourceSha256": "123ea7689bb5f18717d765ae99baab2d7a4f83b692f50abb6d1024325718a081",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/Trashcan.svg",
+      "projectSha256": "123ea7689bb5f18717d765ae99baab2d7a4f83b692f50abb6d1024325718a081",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1sDA8Fd7_k_YW0MSy4oFOhTDQKi1ySTmF",
+      "drivePath": "Vector/Imported/Refresh.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1sDA8Fd7_k_YW0MSy4oFOhTDQKi1ySTmF/view?usp=drivesdk",
+      "sourceBytes": 2591,
+      "sourceSha256": "7618c845b9ae04f50fc35796b636ffc132531d47d66989bbb49e4588386f4333",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/Refresh.svg",
+      "projectSha256": "7618c845b9ae04f50fc35796b636ffc132531d47d66989bbb49e4588386f4333",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "12X_gD1i55sRRUax-A9EgKcyRcGv7YQBM",
+      "drivePath": "Vector/Imported/PawPrint.svg",
+      "sourceUrl": "https://drive.google.com/file/d/12X_gD1i55sRRUax-A9EgKcyRcGv7YQBM/view?usp=drivesdk",
+      "sourceBytes": 19442,
+      "sourceSha256": "0099dc41936e031b30765401a39e208f563ac6157c938da4a2a2b1ecce50304c",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/PawPrint.svg",
+      "projectSha256": "0099dc41936e031b30765401a39e208f563ac6157c938da4a2a2b1ecce50304c",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1fTEDaDQiofzOaAXfIA5l2sxHQowFhJPu",
+      "drivePath": "Vector/Imported/DownCarrot.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1fTEDaDQiofzOaAXfIA5l2sxHQowFhJPu/view?usp=drivesdk",
+      "sourceBytes": 992,
+      "sourceSha256": "b7c09b0354d6500e25117b63755aed7600bdbd2590ed2de547a7f147e98823b4",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/DownCarrot.svg",
+      "projectSha256": "b7c09b0354d6500e25117b63755aed7600bdbd2590ed2de547a7f147e98823b4",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1nP4dG6UZDyHprCFaOMARcto1p2aHNQSx",
+      "drivePath": "Vector/Imported/Diamond.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1nP4dG6UZDyHprCFaOMARcto1p2aHNQSx/view?usp=drivesdk",
+      "sourceBytes": 769,
+      "sourceSha256": "224cc9c8a5c7a00a34c9af71a6a0ff96686cdb35a125ecdf65f05dc0e64f9076",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/Diamond.svg",
+      "projectSha256": "224cc9c8a5c7a00a34c9af71a6a0ff96686cdb35a125ecdf65f05dc0e64f9076",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1VZXnwRP3T6yBIHo3muX0OGTVKgj2VYSR",
+      "drivePath": "Vector/Imported/UpCarrot.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1VZXnwRP3T6yBIHo3muX0OGTVKgj2VYSR/view?usp=drivesdk",
+      "sourceBytes": 980,
+      "sourceSha256": "0f52eb5aafbb0b2f43f4e26dd7011682f21ccd3fdd4a2a83cd69d722c60796c5",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/UpCarrot.svg",
+      "projectSha256": "0f52eb5aafbb0b2f43f4e26dd7011682f21ccd3fdd4a2a83cd69d722c60796c5",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1MNXKQ4tUT925J0AZCrsWaUk_MgrVUijH",
+      "drivePath": "Vector/Imported/X.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1MNXKQ4tUT925J0AZCrsWaUk_MgrVUijH/view?usp=drivesdk",
+      "sourceBytes": 989,
+      "sourceSha256": "e54e0ed3a9e50e7d0bac6b12ec2457b548d135e1db6ad60c1e5087fbf61dcbb4",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/X.svg",
+      "projectSha256": "e54e0ed3a9e50e7d0bac6b12ec2457b548d135e1db6ad60c1e5087fbf61dcbb4",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1QIJzdy-zJEEpss0H-QpNpixpZhvOTtzK",
+      "drivePath": "Vector/Imported/SliderHandle.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1QIJzdy-zJEEpss0H-QpNpixpZhvOTtzK/view?usp=drivesdk",
+      "sourceBytes": 1485,
+      "sourceSha256": "5b184baf2a635bc05fcf2edba0b607cf64627498234e3300da7f96ae266116f7",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/SliderHandle.svg",
+      "projectSha256": "5b184baf2a635bc05fcf2edba0b607cf64627498234e3300da7f96ae266116f7",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1TeLp78426H3LZG_4aXBFbRD2XHI2D54M",
+      "drivePath": "Vector/Imported/ScaleArrow.svg",
+      "sourceUrl": "https://drive.google.com/file/d/1TeLp78426H3LZG_4aXBFbRD2XHI2D54M/view?usp=drivesdk",
+      "sourceBytes": 1199,
+      "sourceSha256": "856ac6f0614b97dc1d12c9b0aa643a678ffd5aec4fe7ad6c12d3c306bbf27b2f",
+      "projectPath": "Pet_Da_Dog_CSharp/Art/Vector/ScaleArrow.svg",
+      "projectSha256": "856ac6f0614b97dc1d12c9b0aa643a678ffd5aec4fe7ad6c12d3c306bbf27b2f",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1i56lzrDrw8VLqufDmCpmL0zCoqaNKKrz",
+      "drivePath": "StoreAssets/SmallCapsule.png",
+      "sourceUrl": "https://drive.google.com/file/d/1i56lzrDrw8VLqufDmCpmL0zCoqaNKKrz/view?usp=drivesdk",
+      "sourceBytes": 123578,
+      "sourceSha256": "8d7be33640188be2d2f928709d036f9957465a0d5964827984d9ccdb402bb131",
+      "projectPath": "SteamStore/Art/SmallCapsule.png",
+      "projectSha256": "8d7be33640188be2d2f928709d036f9957465a0d5964827984d9ccdb402bb131",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1i-3keAn84UyoA49b_MWdDx2WXUa7Sic4",
+      "drivePath": "StoreAssets/HeaderCapsule.png",
+      "sourceUrl": "https://drive.google.com/file/d/1i-3keAn84UyoA49b_MWdDx2WXUa7Sic4/view?usp=drivesdk",
+      "sourceBytes": 471750,
+      "sourceSha256": "0c3083a3e2bc328b7a7d4cc5c33a37c37895c117a36439318adb25c43e10968a",
+      "projectPath": "SteamStore/Art/HeaderCapsule.png",
+      "projectSha256": "0c3083a3e2bc328b7a7d4cc5c33a37c37895c117a36439318adb25c43e10968a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1_nz9YdJsmJ30SSBvoaCQwPX_JtYO0Nke",
+      "drivePath": "StoreAssets/LibraryCapsule.png",
+      "sourceUrl": "https://drive.google.com/file/d/1_nz9YdJsmJ30SSBvoaCQwPX_JtYO0Nke/view?usp=drivesdk",
+      "sourceBytes": 564796,
+      "sourceSha256": "346db4dc02a62f90978949620589bc5d7e74d59e8b9d5a99552a7e629d24df03",
+      "projectPath": "SteamStore/Art/LibraryCapsule.png",
+      "projectSha256": "346db4dc02a62f90978949620589bc5d7e74d59e8b9d5a99552a7e629d24df03",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1puVBEjG1g0Bk2XbHqdEG1kGKnO6KJsjq",
+      "drivePath": "StoreAssets/VerticalCapsule.png",
+      "sourceUrl": "https://drive.google.com/file/d/1puVBEjG1g0Bk2XbHqdEG1kGKnO6KJsjq/view?usp=drivesdk",
+      "sourceBytes": 671817,
+      "sourceSha256": "af25ab666de4bd5629c2f639395493a604e85936c2399a2b6558a28d6242e839",
+      "projectPath": "SteamStore/Art/VerticalCapsule.png",
+      "projectSha256": "af25ab666de4bd5629c2f639395493a604e85936c2399a2b6558a28d6242e839",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Zik6fuc5HIaHSYR11LX_v7KZAjZoPOO2",
+      "drivePath": "StoreAssets/MainCapsule.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Zik6fuc5HIaHSYR11LX_v7KZAjZoPOO2/view?usp=drivesdk",
+      "sourceBytes": 841763,
+      "sourceSha256": "92a1379896f05e2e284c6de4fbd5ab8bc5754122d0c4b03a1ffc232c9842f28a",
+      "projectPath": "SteamStore/Art/MainCapsule.png",
+      "projectSha256": "92a1379896f05e2e284c6de4fbd5ab8bc5754122d0c4b03a1ffc232c9842f28a",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1Akf-QPXXUmtXkZ7wY257qsPMpKuh9Fjw",
+      "drivePath": "StoreAssets/LibraryHeroPTD.png",
+      "sourceUrl": "https://drive.google.com/file/d/1Akf-QPXXUmtXkZ7wY257qsPMpKuh9Fjw/view?usp=drivesdk",
+      "sourceBytes": 2348831,
+      "sourceSha256": "d719fb892578a2f057756051ebbe588b96049703710f445311c696cb46f440a6",
+      "projectPath": "SteamStore/Art/LibraryHeroPTD.png",
+      "projectSha256": "d719fb892578a2f057756051ebbe588b96049703710f445311c696cb46f440a6",
+      "verification": "byte-identical"
+    },
+    {
+      "driveId": "1QrdkYRJSIdjDONXrw7ZjgvBv2b6ycHmX",
+      "drivePath": "StoreAssets/TxtLogo.png",
+      "sourceUrl": "https://drive.google.com/file/d/1QrdkYRJSIdjDONXrw7ZjgvBv2b6ycHmX/view?usp=drivesdk",
+      "sourceBytes": 419972,
+      "sourceSha256": "43f92b5250f5d2dbbf9d9bced0e23b6d9efc533a57310e104034e289decc48f1",
+      "projectPath": "SteamStore/Art/TxtLogo.png",
+      "projectSha256": "43f92b5250f5d2dbbf9d9bced0e23b6d9efc533a57310e104034e289decc48f1",
+      "verification": "byte-identical"
+    }
+  ]
+}

@@ -17,7 +17,7 @@ All routes use the existing `/v1/auth/steam` bearer session.
 | `POST /v2/shop/ack` | `{clientEventId}` acknowledges a completed reward presentation, idempotently |
 
 Purchase offers are `dig`, `dog`, `accessory`, `dog:{itemDefId}`, and
-`accessory:{itemDefId}`. Version is currently `golden-bones-v1`.
+`accessory:{itemDefId}`. The local candidate version is `golden-bones-v2` (140 direct cosmetics, 67 premium dogs); v1 remains the last verified live release until coordinated Steam publication and Worker deployment.
 
 The state envelope contains `pets`, `goldenBones`, `items`, `economyVersion`,
 `serverTime`, nullable `nextDigAt`, `catalog`, `capabilities`, optional

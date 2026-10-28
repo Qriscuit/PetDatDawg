@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve, dirname } from "node:path";
 import assert from "node:assert/strict";
@@ -16,8 +16,8 @@ const m = manifest;
 const cosmetics = m.cosmetics;
 const dogs = cosmetics.filter(c => c.kind === "dog").map(c => c.itemDefId);
 const accessories = cosmetics.filter(c => c.kind === "accessory").map(c => c.itemDefId);
-assert.equal(new Set(cosmetics.map(c => c.itemDefId)).size, 136);
-assert.equal(dogs.length, 73); assert.equal(accessories.length, 63);
+assert.equal(new Set(cosmetics.map(c => c.itemDefId)).size, 140);
+assert.equal(dogs.length, 77); assert.equal(accessories.length, 63);
 assert.equal(m.starterPool.length, 20); assert.equal(new Set(m.starterPool).size, 20);
 assert.equal(m.starterPool.filter(id => dogs.includes(id)).length, 10);
 assert.equal(m.starterPool.filter(id => accessories.includes(id)).length, 10);
@@ -48,6 +48,10 @@ const client = readFileSync(resolve(root, "Pet_Da_Dog_CSharp/Scripts/SteamCosmet
 for (const c of cosmetics) {
   const exact = `new(${c.itemDefId}, ${JSON.stringify(c.name)}, ${JSON.stringify(c.kind)}, ${JSON.stringify(c.assetPath)}, ${JSON.stringify(c.uiAssetPath)})`;
   assert.ok(client.includes(exact), `Client catalog mismatch for ${c.itemDefId}`);
+  for (const path of new Set([c.assetPath, c.uiAssetPath])) {
+    assert.ok(/^res:\/\/Art\/(Dogs|Items)\/[^/]+\.png$/.test(path), `Invalid cosmetic asset path for ${c.itemDefId}: ${path}`);
+    assert.ok(existsSync(resolve(root, "Pet_Da_Dog_CSharp", path.slice(6))), `Missing cosmetic asset for ${c.itemDefId}: ${path}`);
+  }
 }
 function output(path, content) {
   if (check) assert.equal(readFileSync(resolve(root, path), "utf8").replaceAll("\r\n", "\n"), content, `Regenerate ${path} with node scripts/economy-generate.mjs`);
@@ -59,4 +63,4 @@ if (!sandboxPrices && !market) {
   const runtime = { ...m, cosmetics: m.cosmetics.map(({ itemDefId, kind, name }) => ({ itemDefId, kind, name })) };
   output("PetDaDog.Worker/src/economy.generated.js", "// Generated from SteamInventory/economy.json. Run node scripts/economy-generate.mjs.\nexport default " + JSON.stringify(runtime, null, 2) + ";\n");
 }
-console.log(`${check ? "Verified" : "Generated"} ${items.length} definitions, 136 cosmetics, starter 20 / premium dogs 63 / premium accessories 53. Cash sales ${sandboxPrices ? "PRICED CANDIDATE ONLY" : "disabled"}; Market ${market ? "candidate enabled" : "disabled"}.`);
+console.log(`${check ? "Verified" : "Generated"} ${items.length} definitions, ${cosmetics.length} cosmetics, starter ${m.starterPool.length} / premium dogs ${dogs.filter(id => !m.starterPool.includes(id)).length} / premium accessories ${accessories.filter(id => !m.starterPool.includes(id)).length}. Cash sales ${sandboxPrices ? "PRICED CANDIDATE ONLY" : "disabled"}; Market ${market ? "candidate enabled" : "disabled"}.`);

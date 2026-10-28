@@ -208,16 +208,25 @@ public partial class AccessoryEditor : VBoxContainer
 	{
 		if (_wardrobe == null) return;
 		var shelves = GetNode<VBoxContainer>("%AccessoryShelves");
-		foreach (var row in shelves.GetChildren().OfType<AccessoryCategoryRow>()) _categoryRows[row.Category] = row;
+		var authoredRows = shelves.GetChildren().OfType<AccessoryCategoryRow>().ToDictionary(row => row.Category);
+		// Reuse the old general shelf's authored style while adopting the current categories.
+		if (authoredRows.Remove("Decorations", out var generalRow))
+		{
+			if (!authoredRows.ContainsKey("Other")) authoredRows.Add("Other", generalRow);
+			else { shelves.RemoveChild(generalRow); generalRow.QueueFree(); }
+		}
+		var rowIndex = 0;
 		foreach (var category in AccessoryCategories.OrderedNames)
 		{
 			var items = _wardrobe.Catalog.Where(item => AccessoryCategories.For(item) == category).ToArray();
-			if (!_categoryRows.TryGetValue(category, out var row))
+			if (!authoredRows.TryGetValue(category, out var row))
 			{
 				if (CategoryRowScene == null) throw new InvalidOperationException("Assign the category row scene in the AccessoryEditor inspector.");
 				row = CategoryRowScene.Instantiate<AccessoryCategoryRow>();
-				row.Category = category; shelves.AddChild(row); _categoryRows.Add(category, row);
+				row.Category = category; shelves.AddChild(row);
 			}
+			_categoryRows.Add(category, row);
+			shelves.MoveChild(row, rowIndex++);
 			row.Configure(category, items.Length);
 			foreach (var item in items) row.AddCard(CreateCard(item));
 		}

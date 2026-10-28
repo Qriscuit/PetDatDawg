@@ -21,7 +21,7 @@ const STEAM_FAILURE_CATEGORIES = new Set([
 ]);
 const MAX_UINT64 = 18446744073709551615n;
 const BOXES = Object.freeze({
-  dog: { itemDefId: 1001, cost: 1, generator: 1101, firstReward: 3000, lastReward: 3072 },
+  dog: { itemDefId: 1001, cost: 1, generator: 1101, firstReward: 3000, lastReward: 3076 },
   accessory: { itemDefId: 1000, cost: 2, generator: 1100, firstReward: 2000, lastReward: 2062 },
 });
 const encoder = new TextEncoder();

@@ -79,9 +79,19 @@ public partial class AccessorySmokeTest : Node
 		}
 		Require(wardrobe.Catalog.Count == 70 && wardrobe.Find(AccessoryWardrobe.TextAccessoryId)?.IsText == true,
 			"Catalog includes six starter accessories, the editable Text Box, and 63 Steam accessories.");
+		Require(wardrobe.Catalog.Count(item => item.SteamItemDefId == 0 && !item.IsText) == 6
+			&& wardrobe.Find("BaseballHat.png") == null && wardrobe.Find("steam:2045")?.SteamItemDefId == 2045,
+			"Only the six explicit starters are free; the renamed baseball hat remains Steam-owned.");
+		foreach (var id in new[] { "SFlower1.png", "SFlower2.png", "SquareCharm.png" })
+		{
+			var starter = wardrobe.Find(id)!;
+			Require(starter.SteamItemDefId == 0 && starter.AssetPath == $"res://Art/Items/{id}"
+				&& wardrobe.CanEquip(id) && wardrobe.Catalog.Count(item => item.AssetPath == starter.AssetPath) == 2,
+				$"Saved starter ID {id} shares canonical art with its distinct Steam item without losing availability.");
+		}
 		Require(AccessoryCategories.For(wardrobe.Find("steam:2056")!) == "Collars"
 			&& AccessoryCategories.For(wardrobe.Find("steam:2049")!) == "Glasses"
-			&& AccessoryCategories.For(wardrobe.Find("steam:2061")!) == "Decorations",
+			&& AccessoryCategories.For(wardrobe.Find("steam:2061")!) == "Other",
 			"Chain Necklace, Cyber Visor and Sun Visor appear on their matching shelves.");
 		foreach (var id in new[] { "DragonWing.jpg", "FairyWing.jpg", "SafetyGlasses.jpg" })
 		{
@@ -182,10 +192,10 @@ public partial class AccessorySmokeTest : Node
 		Require(!wardrobe.CanUndo && wardrobe.GetScale(id) == 1 && wardrobe.GetRotationDegrees(id) == 0,
 			"Unknown and nonfinite transforms do not create cosmetic changes or history.");
 		wardrobe.SetTransform(id, 100, 999);
-		Require(wardrobe.GetScale(id) == 2 && wardrobe.GetRotationDegrees(id) == 180, "Size and rotation clamp at the upper finite limits.");
+		Require(wardrobe.GetScale(id) == 4 && wardrobe.GetRotationDegrees(id) == 180, "Size and rotation clamp at the upper finite limits.");
 		Require(wardrobe.Undo() && wardrobe.GetScale(id) == 1 && wardrobe.GetRotationDegrees(id) == 0, "Undo restores pre-placement transform preferences.");
 		wardrobe.SetTransform(id, -9, -999);
-		Require(wardrobe.GetScale(id) == 0.5f && wardrobe.GetRotationDegrees(id) == -180, "Size and rotation clamp at the lower finite limits.");
+		Require(wardrobe.GetScale(id) == 0.1f && wardrobe.GetRotationDegrees(id) == -180, "Size and rotation clamp at the lower finite limits.");
 		wardrobe.SetTransform(id, 1.6f, 37);
 		wardrobe.SetTint(id, Colors.CornflowerBlue);
 		wardrobe.Equip(id, new Vector2(0.3f, 0.4f));
@@ -216,7 +226,7 @@ public partial class AccessorySmokeTest : Node
 		config.SetValue("sizes", id, 999f); config.SetValue("rotations", id, -999f);
 		Require(config.Save(_storagePath) == Error.Ok, "Out-of-range transform fixture saves.");
 		restored = LoadIsolatedWardrobe();
-		Require(restored.Equipped.Single().Scale == 2 && restored.Equipped.Single().RotationDegrees == -180,
+		Require(restored.Equipped.Single().Scale == 4 && restored.Equipped.Single().RotationDegrees == -180,
 			"Saved transforms are clamped on load."); restored.Free();
 		config.SetValue("sizes", id, "bad size"); config.SetValue("rotations", id, new Vector2(1, 2));
 		Require(config.Save(_storagePath) == Error.Ok, "Invalid transform fixture saves.");
@@ -1132,9 +1142,12 @@ public partial class AccessorySmokeTest : Node
 		var grants = backend.PendingGrantCount;
 		var expectedCounts = new Dictionary<string, int>
 		{
-			["Wings"] = 6, ["Collars"] = 3, ["Glasses"] = 6, ["Decorations"] = 54, ["Text"] = 1
+			["Hats"] = 15, ["Wings"] = 6, ["Collars"] = 7, ["Glasses"] = 15, ["Decals"] = 6, ["Other"] = 20, ["Text"] = 1
 		};
-		Require(rows.Keys.SequenceEqual(expectedCounts.Keys), "The browser stacks Wings, Collars, Glasses, Decorations and Text in order.");
+		Require(rows.Keys.SequenceEqual(expectedCounts.Keys), "The browser stacks Hats, Wings, Collars, Glasses, Decals, Other and Text in order.");
+		Require(editor.GetNode<VBoxContainer>("%AccessoryShelves").GetChildren().OfType<AccessoryCategoryRow>()
+			.Select(row => row.Category).SequenceEqual(expectedCounts.Keys),
+			"The visible scene uses the seven current shelves in order without a stale Decorations preview row.");
 		Require(!rows["Collars"].Expanded && !rows["Collars"].Scroll.Visible, "The populated Collars shelf retains its authored collapsed state.");
 		var displayedCards = new HashSet<Button>();
 		foreach (var (category, row) in rows)
@@ -1179,7 +1192,7 @@ public partial class AccessorySmokeTest : Node
 
 		var originalSize = window.Size;
 		var originalOwnership = SteamCosmeticCatalog.All.Where(item => _wardrobe.OwnsSteamItem(item.ItemDefId)).Select(item => item.ItemDefId).ToArray();
-		var scrollItems = _wardrobe.Catalog.Where(item => item.SteamItemDefId > 0 && AccessoryCategories.For(item) == "Decorations")
+		var scrollItems = _wardrobe.Catalog.Where(item => item.SteamItemDefId > 0 && AccessoryCategories.For(item) == "Other")
 			.Take(8).Select(item => item.SteamItemDefId);
 		try
 		{
@@ -1187,14 +1200,14 @@ public partial class AccessorySmokeTest : Node
 			_wardrobe.SetSteamOwnership(originalOwnership.Concat(scrollItems));
 			window.Size = window.MinSize;
 			await SettleFrames();
-			var decorations = rows["Decorations"];
-			Require(decorations.Scroll.GetHScrollBar().MaxValue > decorations.Scroll.GetHScrollBar().Page,
+			var other = rows["Other"];
+			Require(other.Scroll.GetHScrollBar().MaxValue > other.Scroll.GetHScrollBar().Page,
 				"The narrow browser exposes horizontal scrolling for overflowing owned accessory cards.");
-			decorations.Scroll.ScrollHorizontal = 80;
+			other.Scroll.ScrollHorizontal = 80;
 			await SettleFrames();
-			Require(decorations.Scroll.ScrollHorizontal > 0 && decorations.Cards.GetGlobalRect().Position.X < decorations.Scroll.GetGlobalRect().Position.X,
+			Require(other.Scroll.ScrollHorizontal > 0 && other.Cards.GetGlobalRect().Position.X < other.Scroll.GetGlobalRect().Position.X,
 				"Scrolling the shelf reveals later owned cards without wrapping them into another row.");
-			decorations.Scroll.ScrollHorizontal = 0;
+			other.Scroll.ScrollHorizontal = 0;
 		}
 		finally
 		{

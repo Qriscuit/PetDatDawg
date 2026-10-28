@@ -19,7 +19,7 @@ internal static class LocalEconomyScenario
 		Check(await client.AuthenticateTestEconomyAsync(token), $"Developer bootstrap failed: {client.ShopStatus}");
 		Check(client.ShopCapabilities.DeveloperControls && client.ShopCapabilities.ShopEnabled && !client.ShopCapabilities.CashPurchasesEnabled && !client.ShopCapabilities.MarketEnabled,
 			"Only fake economy capabilities may be enabled.");
-		Check(client.ShopCatalog.Offers.Length == 139 && client.ShopCatalog.Packs.Length == 3 && client.ShopCatalog.MaxRecycleQuantity == 1,
+		Check(client.ShopCatalog.Offers.Length == 143 && client.ShopCatalog.Packs.Length == 3 && client.ShopCatalog.MaxRecycleQuantity == 1,
 			"Actual Worker catalog must deserialize all offers and packs.");
 		Check(client.ConfirmedPets == 0 && client.ConfirmedGoldenBones == 0 && client.UnacknowledgedReceipts.Count == 0,
 			"This test requires fresh isolated persistence and a fresh fake-Steam process.");
@@ -28,11 +28,11 @@ internal static class LocalEconomyScenario
 		Check(client.ConfirmedPets == 1500 && client.DigCooldownRemaining.TotalMinutes > 19 && client.UnacknowledgedReceipts.Count == 1,
 			"The permit-backed Dig Box must confirm spending, cooldown, and one receipt.");
 		Check(!await client.PurchaseOfferAsync("dig", token) && client.ConfirmedPets == 1500, "Cooldown must reject another immediate Dig Box.");
-		Check(await client.PurchaseOfferAsync("dog:3072", token) && await client.PurchaseOfferAsync("dog:3072", token), $"Repeat direct dog purchase failed: {client.ShopStatus}");
-		Check(client.ConfirmedGoldenBones == 600 && client.InventoryItems.Where(item => item.ItemDefId == 3072).Sum(item => item.Quantity) == 2 && client.UnacknowledgedReceipts.Last().IsDuplicate,
+		Check(await client.PurchaseOfferAsync("dog:3076", token) && await client.PurchaseOfferAsync("dog:3076", token), $"Repeat direct dog purchase failed: {client.ShopStatus}");
+		Check(client.ConfirmedGoldenBones == 600 && client.InventoryItems.Where(item => item.ItemDefId == 3076).Sum(item => item.Quantity) == 2 && client.UnacknowledgedReceipts.Last().IsDuplicate,
 			"Direct purchases must permit duplicates and decode duplicate receipt metadata.");
-		Check(await client.RecycleAsync(3072, 1, 0, token) && client.ConfirmedGoldenBones == 605, $"Recycle failed: {client.ShopStatus}");
-		Check(!await client.RecycleAsync(3072, 1, 0, token), "Recycling must protect the remaining copy.");
+		Check(await client.RecycleAsync(3076, 1, 0, token) && client.ConfirmedGoldenBones == 605, $"Recycle failed: {client.ShopStatus}");
+		Check(!await client.RecycleAsync(3076, 1, 0, token), "Recycling must protect the remaining copy.");
 		foreach (var receipt in client.UnacknowledgedReceipts.ToArray()) Check(await client.AcknowledgeReceiptAsync(receipt.ClientEventId, token), "A durable receipt acknowledgment failed.");
 		Check(client.UnacknowledgedReceipts.Count == 0, "All acknowledged receipts must disappear from the actual Worker response.");
 		Check(await client.TestResetCooldownAsync(token) && client.NextDigAt == null && await client.PurchaseOfferAsync("dig", token),
@@ -44,7 +44,7 @@ internal static class LocalEconomyScenario
 		while (recovered.IsOperationInFlight) await Task.Delay(10, token);
 		Check(recovered.PendingGrantCount == 0 && recovered.ConfirmedPets == 1001 && recovered.ConfirmedGoldenBones == 605,
 			"Background earning must preserve both actual Worker currency balances.");
-		Check(!await recovered.BuyBoxAsync("dog", token) && !recovered.HasPendingExchange && recovered.ShopCatalog.Offers.Length == 139,
+		Check(!await recovered.BuyBoxAsync("dog", token) && !recovered.HasPendingExchange && recovered.ShopCatalog.Offers.Length == 143,
 			"A retired legacy purchase must not wedge the updated client.");
 		Console.WriteLine($"LOCAL_ECONOMY_CLIENT_PASS: {checks} checks; actual C# client -> local Wrangler -> SQLite -> fake Steam; no real Steam or purchases.");
 	}

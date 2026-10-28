@@ -1,13 +1,13 @@
 # Pet Da Dog Steam Inventory
 
 The upload schema is `SteamInventory/itemdefs.json` for Steam AppID **4817200**.
-The current Golden Bones implementation prepares **150 definitions** from
-`SteamInventory/economy.json`: both currencies, all 136 cosmetics, legacy boxes,
+The current Golden Bones implementation prepares **154 definitions** from
+`SteamInventory/economy.json`: both currencies, all 140 cosmetics, legacy boxes,
 new generators, a server-issued permit, recycling, and gated currency packs.
 Use [the current schema/release guide](../SteamInventory/README.md) and
 [Shop behavior](GOLDEN_BONES_SHOP.md). Publication is a separate operation;
 the historical release record below is not evidence that the new schema is live.
-Matching `Art/UI` images are previews of each cosmetic.
+Shop previews and Steam icons use the same canonical `Art/Dogs` and `Art/Items` images as the desktop pet; byte-identical UI copies have been removed.
 
 The October 18, 2026 [source asset sync](https://drive.google.com/drive/folders/1FuRSUheNvpy9rXZlQkTX8Rh3XpYCGfUV)
 adds 20 accessories and 20 dog variants while preserving every existing ID.
@@ -25,12 +25,14 @@ native client also omits the generator bundles and container-content references,
 so the publisher readback supplies the pool verification. No live box purchase
 or opening was used for validation.
 
-The subsequent Drive sync prepares eight more dog variants locally, using IDs
-3065–3072. The client catalog, item definitions, and Worker reward range now
-include them. The Golden Bones implementation now supersedes that prepared
-catalog with 150 definitions; it requires Steam publication and Worker deployment.
-The verified live release above remains the
-133-definition release with 65 dog outcomes until those publication steps finish.
+The October 19 Golden Bones release subsequently published 150 definitions
+and 136 cosmetics, including dogs 3065–3072; its verified readback is recorded
+in [the release guide](../SteamInventory/README.md). The October 28 Drive sync
+adds dogs 3073–3076 locally, bringing the candidate to 154 definitions, 77 dogs
+and 63 accessories under `golden-bones-v2`. The premium dog pool grows to 67
+outcomes. Steam publication, public icons, and matching Worker deployment for
+this new candidate remain separate steps; local generation does not enable
+these four rewards on the live service.
 
 ## Definition IDs
 
@@ -42,7 +44,7 @@ The verified live release above remains the
 | Accessories Box Contents generator | 1100 |
 | Dog Box Contents generator | 1101 |
 | Accessories | 2000–2062 |
-| Dog variants | 3000–3072 |
+| Dog variants | 3000–3076 |
 
 IDs are permanent inventory identities once uploaded or granted. Keep existing
 asset-to-ID mappings when adding items. Use new unused IDs for additions.
@@ -62,6 +64,10 @@ The latest additions preserve the source filenames, including their spelling:
 | Portuguese Water Dog 2 | 3070 | `PortugeseWaterDog2.png` |
 | Shiba Inu 1 | 3071 | `ShibaInu1.png` |
 | Shiba Inu 2 | 3072 | `ShibaInu2.png` |
+| Irish Setter 1 | 3073 | `IrishSetter1.png` |
+| Irish Setter 2 | 3074 | `IrishSetter2.png` |
+| Wirehaired Pointing Griffon 1 | 3075 | `WirehairPointingGriffon1.png` |
+| Wirehaired Pointing Griffon 2 | 3076 | `WirehairPointingGriffon2.png` |
 
 ## Earning Pets and buying boxes
 

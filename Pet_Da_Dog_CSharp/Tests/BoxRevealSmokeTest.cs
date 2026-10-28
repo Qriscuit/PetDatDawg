@@ -33,12 +33,13 @@ public partial class BoxRevealSmokeTest : Node
 			foreach (var width in new[] { 1920, 3440, 5120 })
 				foreach (var flip in new[] { false, true })
 					await VerifySequence(width, flip);
+			VerifyBoxArtwork();
 			await VerifyTrajectoryGeometry();
 			await VerifyWalkingStrip();
 			VerifyWaitingAndFailure();
 			VerifyDirectRewards(wardrobe);
 			await VerifyRewardWindowBounds();
-			foreach (var path in new[] { "DigBoxClosed", "DigBoxOpen", "DogBoxClosed", "DogBoxOpen", "AccessoryBoxClosed", "AccessoryBoxOpen", "GoldenBones" })
+			foreach (var path in new[] { "DigPresent1", "DigPresent2", "DigPresent3Bottom", "DigPresent3Top", "DogPresent1", "DogPresent2", "DogPresent3Bottom", "DogPresent3Top", "AccessoryPresent1", "AccessoryPresent2", "AccessoryPresent3Bottom", "AccessoryPresent3Top", "GoldenBones" })
 			{
 				var texture = ResourceLoader.Load<Texture2D>($"res://Art/UI/Shop/{path}.svg");
 				using var image = texture.GetImage();
@@ -113,6 +114,25 @@ public partial class BoxRevealSmokeTest : Node
 		Require(!_pet.IsBoxRevealActive && !card.Visible, "Failure or uncertainty restores control without a fake reward.");
 	}
 
+	private void VerifyBoxArtwork()
+	{
+		foreach (var (kind, prefix) in new[] { ("dig", "Dig"), ("dog", "Dog"), ("accessory", "Accessory") })
+		{
+			_pet.BeginBoxReveal(kind);
+			var box = Field<Sprite2D>(_pet, "_boxSprite");
+			Set("_boxRevealAge", RevealConstant("BoxOpeningStarts") + RevealConstant("BoxOpenSeconds"));
+			Call("AnimateDog");
+			Require(box.Texture?.ResourcePath == $"res://Art/UI/Shop/{prefix}Present1.svg",
+				$"The {kind} offer retains its closed artwork while no confirmed reward exists.");
+			_pet.FinishBoxReveal(new BoxReward(2004));
+			Set("_boxRevealAge", RevealConstant("BoxOpeningStarts") + RevealConstant("BoxOpenSeconds") * 0.6f);
+			Call("AnimateDog");
+			Require(box.Texture?.ResourcePath == $"res://Art/UI/Shop/{prefix}Present3Bottom.svg",
+				$"The {kind} offer switches to its matching opened artwork after confirmation.");
+			_pet.FailBoxReveal("Fixture complete");
+		}
+	}
+
 	private async Task VerifyTrajectoryGeometry()
 	{
 		var travel = RevealConstant("BoxTravelSeconds");
@@ -148,7 +168,7 @@ public partial class BoxRevealSmokeTest : Node
 						var airborne = SpriteVisibleRect(box);
 						Require(box.Visible && airborne.End.Y < surface.Y - 3 && !card.ShowingReward,
 							"The closed box bounces above the floor before any reward appears.");
-						Require(box.Texture.ResourcePath.Contains("Closed"), "The airborne box remains closed.");
+						Require(box.Texture.ResourcePath == "res://Art/UI/Shop/DigPresent1.svg", "The airborne box remains closed.");
 						if (width == 1920 && scale == PetSettings.MaxDogScale && !flip && horizontal == 0.5f)
 							await CapturePet("box-ejection-smoke.png");
 						Set("_boxRevealAge", travel + dig + flight + land * 0.5f); Call("AnimateDog");
@@ -168,7 +188,7 @@ public partial class BoxRevealSmokeTest : Node
 						_pet.FinishBoxReveal(new BoxReward(2004));
 						Require(!card.ShowingReward, "Landing completes before the confirmed reward is revealed.");
 						Set("_boxRevealAge", opening + (duration - opening) * 0.6f); Call("AnimateDog");
-						Require(box.Texture.ResourcePath.Contains("Open") && !card.ShowingReward,
+						Require(box.Texture.ResourcePath == "res://Art/UI/Shop/DigPresent3Bottom.svg" && !card.ShowingReward,
 							"The grounded box opens with stretch before the reward card.");
 						Set("_boxRevealAge", duration); Call("UpdateBoxReveal", 0f); Call("AnimateDog");
 						Require(card.ShowingReward && DisplayServer.WindowGetSize(0) == surface,

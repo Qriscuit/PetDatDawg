@@ -491,9 +491,9 @@ test("buying and opening each box uses schema-defined costs/generators and produ
 
 test("box reward ranges match the Steam schema and accept new upper-bound rewards while rejecting items outside their pool", () => {
   const schema = JSON.parse(readFileSync(new URL("../../SteamInventory/itemdefs.json", import.meta.url), "utf8"));
-  assert.equal(schema.items.length, 150);
+  assert.equal(schema.items.length, 154);
   for (const [kind, boxDef, generatorDef, firstReward, lastReward] of [
-    ["accessory", 1000, 1100, 2000, 2062], ["dog", 1001, 1101, 3000, 3072],
+    ["accessory", 1000, 1100, 2000, 2062], ["dog", 1001, 1101, 3000, 3076],
   ]) {
     const rewards = schema.items.filter(row => row.pdd_kind === kind).map(row => row.itemdefid);
     assert.deepEqual(rewards, Array.from({ length: lastReward - firstReward + 1 }, (_, index) => firstReward + index));

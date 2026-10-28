@@ -13,9 +13,9 @@
 [ext_resource type="Texture2D" uid="uid://cb8rpat8qy6yl" path="res://Sprites/Accessories/DragonWing.jpg" id="asset_0"]
 [ext_resource type="Texture2D" uid="uid://df1riaycnp6n3" path="res://Sprites/Accessories/FairyWing.jpg" id="asset_1"]
 [ext_resource type="Texture2D" uid="uid://dif3rh22vyl6h" path="res://Sprites/Accessories/SafetyGlasses.jpg" id="asset_2"]
-[ext_resource type="Texture2D" uid="uid://c1i8kia048pew" path="res://Sprites/Accessories/SFlower1.png" id="asset_3"]
-[ext_resource type="Texture2D" uid="uid://bu6psl42okn5m" path="res://Sprites/Accessories/SFlower2.png" id="asset_4"]
-[ext_resource type="Texture2D" uid="uid://c47qyqcue61lv" path="res://Sprites/Accessories/SquareCharm.png" id="asset_5"]
+[ext_resource type="Texture2D" uid="uid://dc7d4vd8r2xjm" path="res://Art/Items/SFlower1.png" id="asset_3"]
+[ext_resource type="Texture2D" uid="uid://bm6oa8o858lny" path="res://Art/Items/SFlower2.png" id="asset_4"]
+[ext_resource type="Texture2D" uid="uid://c22ixw3uqucks" path="res://Art/Items/SquareCharm.png" id="asset_5"]
 
 [sub_resource type="AtlasTexture" id="Sample_0"]
 atlas = ExtResource("asset_0")

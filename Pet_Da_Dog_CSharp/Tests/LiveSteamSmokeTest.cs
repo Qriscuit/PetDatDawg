@@ -213,11 +213,11 @@ public partial class LiveSteamSmokeTest : Node
 	private async Task VerifyLiveShopAsync()
 	{
 		Require(await _backend!.RefreshShopAsync(_timeout!.Token), $"Live Shop refresh failed: {_backend.ShopStatus}");
-		Require(_backend.EconomyVersion == "golden-bones-v1", "The deployed Shop uses an unexpected economy version.");
+		Require(_backend.EconomyVersion == "golden-bones-v2", "The deployed Shop uses an unexpected economy version.");
 		var offers = _backend.ShopCatalog.Offers;
-		Require(offers.Length == 139 && offers.Count(offer => offer.Kind is "dog" or "accessory") == 136,
-			"The deployed Shop must contain three boxes and all 136 direct cosmetic offers.");
-		foreach (var (id, price, size, currency) in new[] { ("dig", 500L, 20, 100), ("dog", 50L, 63, 101), ("accessory", 25L, 53, 101) })
+		Require(offers.Length == 143 && offers.Count(offer => offer.Kind is "dog" or "accessory") == 140,
+			"The deployed Shop must contain three boxes and all 140 direct cosmetic offers.");
+		foreach (var (id, price, size, currency) in new[] { ("dig", 500L, 20, 100), ("dog", 50L, 67, 101), ("accessory", 25L, 53, 101) })
 		{
 			var offer = offers.SingleOrDefault(candidate => candidate.Id == id);
 			Require(offer != null && offer.Kind == "box" && offer.Price == price && offer.CurrencyItemDefId == currency && offer.RewardItemDefIds.Length == size && offer.RewardItemDefIds.Distinct().Count() == size,
@@ -240,7 +240,7 @@ public partial class LiveSteamSmokeTest : Node
 		var expectedEnabled = System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_EXPECT_SHOP_ENABLED");
 		Require(string.IsNullOrEmpty(expectedEnabled) || expectedEnabled is "0" or "1", "Expected Shop enabled state must be 0, 1, or omitted.");
 		if (!string.IsNullOrEmpty(expectedEnabled)) Require(capabilities.ShopEnabled == (expectedEnabled == "1"), "The live Shop availability differs from the expected rollout state.");
-		GD.Print($"LIVE_SHOP_READ_ONLY_PASS: version={_backend.EconomyVersion} offers={offers.Length} direct=136 pools=20/63/53 goldenBones={_backend.ConfirmedGoldenBones} shopEnabled={capabilities.ShopEnabled} cash=false market=false developer=false purchases=0");
+		GD.Print($"LIVE_SHOP_READ_ONLY_PASS: version={_backend.EconomyVersion} offers={offers.Length} direct=140 pools=20/67/53 goldenBones={_backend.ConfirmedGoldenBones} shopEnabled={capabilities.ShopEnabled} cash=false market=false developer=false purchases=0");
 	}
 
 	private async Task CompareNativeInventoryAsync(string stage, long expected)

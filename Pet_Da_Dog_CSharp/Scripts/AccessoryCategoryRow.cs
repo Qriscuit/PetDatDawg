@@ -139,7 +139,8 @@ public static class AccessoryCategories
 		if (name.Contains("wing", StringComparison.OrdinalIgnoreCase)) return "Wings";
 		if (name.Contains("collar", StringComparison.OrdinalIgnoreCase) || name.Contains("necklace", StringComparison.OrdinalIgnoreCase) || name.Contains("bandana", StringComparison.OrdinalIgnoreCase) || name.Contains("bow", StringComparison.OrdinalIgnoreCase) || name.Contains("Tie", StringComparison.OrdinalIgnoreCase) || name.Contains("scarf", StringComparison.OrdinalIgnoreCase)) return "Collars";
 		if (name.Contains("glasses", StringComparison.OrdinalIgnoreCase) || name.Contains("goggle", StringComparison.OrdinalIgnoreCase)
-			|| name.Contains("CyberVisor", StringComparison.OrdinalIgnoreCase) || name.Contains("eye", StringComparison.OrdinalIgnoreCase))
+			|| name.Contains("CyberVisor", StringComparison.OrdinalIgnoreCase) || name.Contains("Cyber Visor", StringComparison.OrdinalIgnoreCase)
+			|| name.Contains("eye", StringComparison.OrdinalIgnoreCase))
 			return "Glasses";
 		if (name.Contains("decal", StringComparison.OrdinalIgnoreCase) || name.Contains("charm", StringComparison.OrdinalIgnoreCase)) return "Decals";
 		return "Other";

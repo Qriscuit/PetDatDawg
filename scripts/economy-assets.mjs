@@ -1,4 +1,4 @@
-// Stage the existing preview artwork unchanged for Steam's public icon URLs.
+// Stage canonical cosmetic artwork unchanged for Steam's public icon URLs.
 import { mkdirSync, readFileSync, copyFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,7 +8,7 @@ if (!/^[a-z0-9-]+$/.test(economy.version)) throw new Error('Invalid icon version
 const destination = resolve(root, 'PetDaDog.Worker/public/icons', economy.version);
 mkdirSync(destination, { recursive: true });
 for (const cosmetic of economy.cosmetics) {
-  if (!cosmetic.uiAssetPath.startsWith('res://Art/UI/') || cosmetic.uiAssetPath.includes('..')) throw new Error('Invalid icon source.');
+  if (!/^res:\/\/Art\/(Dogs|Items)\/[^/]+\.png$/.test(cosmetic.uiAssetPath) || cosmetic.uiAssetPath.includes('..')) throw new Error('Invalid icon source.');
   copyFileSync(resolve(root, 'Pet_Da_Dog_CSharp', cosmetic.uiAssetPath.slice(6)), resolve(destination, `${cosmetic.itemDefId}.png`));
 }
 writeFileSync(resolve(root, 'PetDaDog.Worker/public/_headers'), '/icons/*\n  Cache-Control: public, max-age=3600\n  X-Content-Type-Options: nosniff\n');

@@ -23,9 +23,9 @@ public partial class SteamInventorySmokeTest : Node
 			wardrobe.StoragePath = _savePath;
 			wardrobe.Clear();
 			wardrobe.SetSteamOwnership(Array.Empty<int>());
-			Require(SteamCosmeticCatalog.All.Count == 136 && SteamCosmeticCatalog.All.Select(item => item.ItemDefId).Distinct().Count() == 136,
-				"All 136 Steam cosmetics have unique definition IDs.");
-			Require(SteamCosmeticCatalog.All.Count(item => item.Kind == "dog") == 73
+			Require(SteamCosmeticCatalog.All.Count == 140 && SteamCosmeticCatalog.All.Select(item => item.ItemDefId).Distinct().Count() == 140,
+				"All 140 Steam cosmetics have unique definition IDs.");
+			Require(SteamCosmeticCatalog.All.Count(item => item.Kind == "dog") == 77
 				&& SteamCosmeticCatalog.All.Count(item => item.Kind == "accessory") == 63, "Both complete reward pools are mapped.");
 			Require(SteamCosmeticCatalog.All.All(item => ResourceLoader.Exists(item.AssetPath) && ResourceLoader.Exists(item.UiAssetPath)),
 				"Every mapped source and preview resource exists.");
@@ -193,7 +193,7 @@ public partial class SteamInventorySmokeTest : Node
 		wardrobe.SetSteamOwnership(new[] { accessory.ItemDefId, firstDog.ItemDefId });
 		await Settle();
 		RequireDogChoices(dogs, new[] { 0, firstDog.ItemDefId }, "A lost selected dog disappears while other owned dogs remain available.");
-		Require(wardrobe.SelectedDogItemDefId == 0 && SelectedDogId(dogs) == 0 && pet.EditableDog.Texture.ResourcePath == "res://Sprites/Doggo.png",
+		Require(wardrobe.SelectedDogItemDefId == 0 && SelectedDogId(dogs) == 0 && pet.EditableDog.Texture.ResourcePath == "res://Art/Dogs/Corgi3.png",
 			"Losing the selected dog's ownership falls back to Starter in both the menu and desktop.");
 		SelectDogByItemId(dogs, firstDog.ItemDefId);
 		await Settle();
@@ -260,9 +260,16 @@ public partial class SteamInventorySmokeTest : Node
 		var cards = DogCards(dogs);
 		var actualIds = cards.Select(card => card.GetMeta("dog_itemdef_id").AsInt32()).ToArray();
 		Require(actualIds.SequenceEqual(expectedIds) && actualIds.Distinct().Count() == actualIds.Length && cards.All(card => !card.Disabled), message);
-		Require(cards.All(card => card.GetNode<TextureRect>("%DogChoicePreview").Texture != null
-			&& card.GetNode<Label>("%DogChoiceName").Text == (SteamCosmeticCatalog.Find(card.GetMeta("dog_itemdef_id").AsInt32())?.Name ?? "Starter dog")),
-			"Each owned dog card shows its picture and matching name.");
+		foreach (var card in cards)
+		{
+			var dog = SteamCosmeticCatalog.Find(card.GetMeta("dog_itemdef_id").AsInt32());
+			var expectedName = dog?.Name ?? "Corgi 3";
+			var expectedPath = dog?.UiAssetPath ?? "res://Art/Dogs/Corgi3.png";
+			var preview = card.GetNode<TextureRect>("%DogChoicePreview").Texture;
+			var previewSource = preview is AtlasTexture cropped ? cropped.Atlas : preview;
+			Require(previewSource?.ResourcePath == expectedPath && card.GetNode<Label>("%DogChoiceName").Text == expectedName,
+				$"Each owned dog card shows its matching picture and name: {expectedName}.");
+		}
 		Require(cards.Count(card => card.ButtonPressed) == 1 && cards.All(card =>
 			card.GetNode<Label>("%DogChoiceStatus").Text == (card.ButtonPressed ? "Selected" : "Choose dog")),
 			"Exactly one dog has the selected visual state and caption.");

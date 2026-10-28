@@ -1,7 +1,7 @@
 # Cloudflare setup for Pet Da Dog
 
 For the new two-currency Shop, follow [the current Worker guide](../PetDaDog.Worker/README.md)
-and [coordinated Steam rollout](../SteamInventory/README.md). The 150-definition
+and [coordinated Steam rollout](../SteamInventory/README.md). The 154-definition
 Golden Bones schema and Worker changes are prepared locally. Cash and Market
 capabilities default off. The deployment history below describes the last
 verified live release until a later verified publication is recorded.
@@ -31,11 +31,14 @@ The omitted `auto_stack=false` values match Steam's documented default. The
 preview was stopped and the production deployment remained unchanged. These
 were read-only checks; no live box purchase or opening was performed.
 
-The latest local catalog prepares eight additional dogs (3065–3072), bringing
-the source schema to 141 definitions: 73 dogs and 63 accessories plus currency,
-boxes, and generators. Its Worker dog reward range ends at 3072. Steam upload
-and Worker redeployment are pending; the production version recorded above
-still uses the verified 65-dog pool.
+The October 19 Golden Bones release later published 150 definitions and
+enabled the matching v1 Shop; see the verified record in
+[the release guide](../SteamInventory/README.md). The October 28 local candidate
+adds four Drive dogs (3073–3076), for 154 definitions, 77 dogs, and 63 accessories.
+Its economy version is `golden-bones-v2`; the premium dog pool has 67 outcomes
+and the legacy dog reward range ends at 3076. Publication and Worker deployment
+of this candidate remain pending. Do not infer live availability from local
+generation or the older deployment history above.
 
 ## 1. Finish the Steamworks configuration
 
@@ -46,8 +49,10 @@ check the upload results, and enable Inventory Service. The schema includes:
 | Item | Definition ID | Use |
 | --- | --- | --- |
 | Pets | 100 | One accepted mouse-button or keyboard press earns one unit |
-| Dog Box | 1001 | Costs 1 Pet; prepared schema opens into one of 73 dog variants |
-| Accessories Box | 1000 | Costs 2 Pets; opens into one of 63 accessories |
+| Dig Box generator | 1110 | Costs 500 Pets plus a server-issued permit; 20 starter outcomes |
+| Premium Dog Box generator | 1111 | Costs 50 Golden Bones; candidate pool has 67 dog outcomes |
+| Premium Accessory Box generator | 1112 | Costs 25 Golden Bones; 53 accessory outcomes |
+| Legacy Dog/Accessories Box | 1001 / 1000 | Existing boxes remain openable; cheap purchase recipes are retired |
 
 Use a Steamworks partner-group account with access to this app for testing
 while Inventory visibility is Private. See [Steam's inventory setup](https://partner.steamgames.com/doc/features/inventory).

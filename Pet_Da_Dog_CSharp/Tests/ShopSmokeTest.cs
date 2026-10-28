@@ -45,7 +45,7 @@ public partial class ShopSmokeTest : Node
 				&& StatusWindow.RecyclableQuantity(2, 9) == 0, "Recycling protects last copy and current outfit.");
 			menu.GetNode<Button>("%ShopDogsTab").EmitSignal(BaseButton.SignalName.Pressed);
 			await Settle();
-			Require(menu.GetNode<GridContainer>("%ShopItemGrid").GetChildCount() == 73, "Direct dog grid contains all 73 dogs.");
+			Require(menu.GetNode<GridContainer>("%ShopItemGrid").GetChildCount() == 77, "Direct dog grid contains all 77 dogs.");
 			menu.GetNode<LineEdit>("%ShopSearch").Text = "Shiba";
 			await Settle();
 			Require(menu.GetNode<GridContainer>("%ShopItemGrid").GetChildCount() == 2, "Dog search filters names.");
@@ -167,7 +167,7 @@ public partial class ShopSmokeTest : Node
 					ReceivedItems = new[] { new SteamInventoryItem("13", 3000, 1) }, CompletedAt = DateTimeOffset.UtcNow, IsDuplicate = true });
 			}
 			if (request.RequestUri.AbsolutePath == "/v2/shop/ack") _receipts.Clear();
-			return Response(new { pets = _pets, goldenBones = 800, items = Items, economyVersion = "golden-bones-v1", serverTime = DateTimeOffset.UtcNow,
+			return Response(new { pets = _pets, goldenBones = 800, items = Items, economyVersion = "golden-bones-v2", serverTime = DateTimeOffset.UtcNow,
 				nextDigAt = _nextDig, catalog = _catalog, capabilities = new { shopEnabled = true }, receipts = _receipts.ToArray(), status = "complete", receivedItems = _receipts.LastOrDefault()?.ReceivedItems });
 		}
 		private static HttpResponseMessage Response(object body) => new(HttpStatusCode.OK) { Content = JsonContent.Create(body) };

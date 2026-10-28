@@ -1,10 +1,16 @@
 # Golden Bones economy source and Steam release
 
 `economy.json` is the versioned source for item IDs, cosmetics, prices, reward
-pools, cooldown, recycling value, and provisional currency packs. All 136
-cosmetic IDs are preserved, including dogs 3065–3072. The checked-in
-`itemdefs.json` now has **150 definitions**. It is prepared locally; generating
-it does not publish anything to Steam.
+pools, cooldown, recycling value, and provisional currency packs. The catalog
+contains **140 cosmetics: 77 dogs and 63 accessories**. All existing IDs remain
+unchanged; the October 28 Drive sync adds Irish Setters and Wirehaired Pointing
+Griffons as dogs **3073–3076**. The checked-in `itemdefs.json` now has
+**154 definitions** under candidate economy version `golden-bones-v2`.
+The premium dog pool contains 67 equally likely outcomes; the 20-item starter
+pool, accessory pool, and prices are unchanged. This version and its matching
+icon namespace are prepared locally and are **not yet published or deployed**.
+Generating files does not publish anything to Steam; the October 19 v1 live
+verification below remains a historical record.
 
 From the repository root, using Node 22.13 or newer:
 
@@ -93,9 +99,9 @@ Market proceeds go to Steam Wallet; recycling gives Golden Bones.
 2. Deploy the compatible Worker with `PDD_SHOP_ENABLED=0` and
    `PDD_LEGACY_PURCHASES_ENABLED=0` for the migration window. Existing boxes
    remain openable; old purchases receive `update_required`.
-3. Upload/publish the complete 150-definition safe schema. Read it back from
+3. Upload/publish the complete 154-definition safe schema. Read it back from
    Steam without cache and compare IDs, prices, recipes, and generator weights,
-   including the eight newly prepared dogs. Do not infer publication from a
+   including dogs 3073–3076. Do not infer publication from a
    local JSON or successful upload alone.
 4. Enable `PDD_SHOP_ENABLED=1` and ship the matching client. Keep public cash and
    Market flags off until their separate Steam gates are verified.
@@ -114,7 +120,7 @@ References: [Steam inventory schema](https://partner.steamgames.com/doc/features
 
 Native Steam SDK readback omits some generator/recipe metadata; it cannot by
 itself verify the complete economy. Use a full publisher `GetItemDefs` response
-with `cache_max_age_seconds=0`. The comparison checks all 150 IDs, every expected
+with `cache_max_age_seconds=0`. The comparison checks all 154 IDs, every expected
 property, explicit reward weights, icon URLs, and unexpected live prices,
 promotions, legacy purchase recipes, or Market flags.
 

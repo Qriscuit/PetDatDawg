@@ -14,9 +14,9 @@ test("publisher readback compares all definitions, pools, prices and icons with 
     row.price = ""; row.price_category = ""; row.promo = "";
   }
   const report = compareDefinitions(schema, wire(items));
-  assert.equal(report.passed, true); assert.equal(report.definitionCount, 150);
-  assert.deepEqual(report.pools.map(p => p.outcomes), [63, 73, 20, 63, 53]);
-  assert.equal(report.matchingCosmeticIcons, 136); assert.deepEqual(report.pricedItemDefIds, []);
+  assert.equal(report.passed, true); assert.equal(report.definitionCount, 154);
+  assert.deepEqual(report.pools.map(p => p.outcomes), [63, 77, 20, 67, 53]);
+  assert.equal(report.matchingCosmeticIcons, 140); assert.deepEqual(report.pricedItemDefIds, []);
 });
 test("readback fails for missing/duplicate IDs, stale cheap recipes, prices, changed pool weights, wrong app and icons", () => {
   for (const modify of [

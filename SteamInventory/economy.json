@@ -1,7 +1,7 @@
 {
-  "version": "golden-bones-v1",
+  "version": "golden-bones-v2",
   "appId": 4817200,
-  "iconBaseUrl": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1",
+  "iconBaseUrl": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v2",
   "ids": {
     "pets": 100,
     "goldenBones": 101,
@@ -66,7 +66,7 @@
       "kind": "accessory",
       "description": "Angel Wing accessory for your desktop dog.",
       "assetPath": "res://Art/Items/AngelWing.png",
-      "uiAssetPath": "res://Art/UI/Items/AngelWing.png"
+      "uiAssetPath": "res://Art/Items/AngelWing.png"
     },
     {
       "itemDefId": 2001,
@@ -74,7 +74,7 @@
       "kind": "accessory",
       "description": "Ball accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Ball.png",
-      "uiAssetPath": "res://Art/UI/Items/Ball.png"
+      "uiAssetPath": "res://Art/Items/Ball.png"
     },
     {
       "itemDefId": 2002,
@@ -82,7 +82,7 @@
       "kind": "accessory",
       "description": "Bandana 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Bandana1.png",
-      "uiAssetPath": "res://Art/UI/Items/Bandana1.png"
+      "uiAssetPath": "res://Art/Items/Bandana1.png"
     },
     {
       "itemDefId": 2003,
@@ -90,7 +90,7 @@
       "kind": "accessory",
       "description": "Bone accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Bone.png",
-      "uiAssetPath": "res://Art/UI/Items/Bone.png"
+      "uiAssetPath": "res://Art/Items/Bone.png"
     },
     {
       "itemDefId": 2004,
@@ -98,7 +98,7 @@
       "kind": "accessory",
       "description": "Bow 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Bow1.png",
-      "uiAssetPath": "res://Art/UI/Items/Bow1.png"
+      "uiAssetPath": "res://Art/Items/Bow1.png"
     },
     {
       "itemDefId": 2005,
@@ -106,7 +106,7 @@
       "kind": "accessory",
       "description": "Chef Hat accessory for your desktop dog.",
       "assetPath": "res://Art/Items/ChefHat.png",
-      "uiAssetPath": "res://Art/UI/Items/ChefHat.png"
+      "uiAssetPath": "res://Art/Items/ChefHat.png"
     },
     {
       "itemDefId": 2006,
@@ -114,7 +114,7 @@
       "kind": "accessory",
       "description": "Circle Charm accessory for your desktop dog.",
       "assetPath": "res://Art/Items/CircleCharm.png",
-      "uiAssetPath": "res://Art/UI/Items/CircleCharm.png"
+      "uiAssetPath": "res://Art/Items/CircleCharm.png"
     },
     {
       "itemDefId": 2007,
@@ -122,7 +122,7 @@
       "kind": "accessory",
       "description": "Collar 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Collar1.png",
-      "uiAssetPath": "res://Art/UI/Items/Collar1.png"
+      "uiAssetPath": "res://Art/Items/Collar1.png"
     },
     {
       "itemDefId": 2008,
@@ -130,7 +130,7 @@
       "kind": "accessory",
       "description": "Collar Clip accessory for your desktop dog.",
       "assetPath": "res://Art/Items/CollarClip.png",
-      "uiAssetPath": "res://Art/UI/Items/CollarClip.png"
+      "uiAssetPath": "res://Art/Items/CollarClip.png"
     },
     {
       "itemDefId": 2009,
@@ -138,7 +138,7 @@
       "kind": "accessory",
       "description": "Crown 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Crown1.png",
-      "uiAssetPath": "res://Art/UI/Items/Crown1.png"
+      "uiAssetPath": "res://Art/Items/Crown1.png"
     },
     {
       "itemDefId": 2010,
@@ -146,7 +146,7 @@
       "kind": "accessory",
       "description": "Diamond Charm accessory for your desktop dog.",
       "assetPath": "res://Art/Items/DiamondCharm.png",
-      "uiAssetPath": "res://Art/UI/Items/DiamondCharm.png"
+      "uiAssetPath": "res://Art/Items/DiamondCharm.png"
     },
     {
       "itemDefId": 2011,
@@ -154,7 +154,7 @@
       "kind": "accessory",
       "description": "Dragon Wing accessory for your desktop dog.",
       "assetPath": "res://Art/Items/DragonWing.png",
-      "uiAssetPath": "res://Art/UI/Items/DragonWing.png"
+      "uiAssetPath": "res://Art/Items/DragonWing.png"
     },
     {
       "itemDefId": 2012,
@@ -162,7 +162,7 @@
       "kind": "accessory",
       "description": "Extra Eye (Half Open) 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/ExtraEyeHalf1.png",
-      "uiAssetPath": "res://Art/UI/Items/ExtraEyeHalf1.png"
+      "uiAssetPath": "res://Art/Items/ExtraEyeHalf1.png"
     },
     {
       "itemDefId": 2013,
@@ -170,7 +170,7 @@
       "kind": "accessory",
       "description": "Extra Eye (Half Open) 2 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/ExtraEyeHalf2.png",
-      "uiAssetPath": "res://Art/UI/Items/ExtraEyeHalf2.png"
+      "uiAssetPath": "res://Art/Items/ExtraEyeHalf2.png"
     },
     {
       "itemDefId": 2014,
@@ -178,7 +178,7 @@
       "kind": "accessory",
       "description": "Extra Eye (Open) 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/ExtraEyeOpen1.png",
-      "uiAssetPath": "res://Art/UI/Items/ExtraEyeOpen1.png"
+      "uiAssetPath": "res://Art/Items/ExtraEyeOpen1.png"
     },
     {
       "itemDefId": 2015,
@@ -186,7 +186,7 @@
       "kind": "accessory",
       "description": "Extra Eye (Open) 2 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/ExtraEyeOpen2.png",
-      "uiAssetPath": "res://Art/UI/Items/ExtraEyeOpen2.png"
+      "uiAssetPath": "res://Art/Items/ExtraEyeOpen2.png"
     },
     {
       "itemDefId": 2016,
@@ -194,7 +194,7 @@
       "kind": "accessory",
       "description": "Eyepatch accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Eyepatch.png",
-      "uiAssetPath": "res://Art/UI/Items/Eyepatch.png"
+      "uiAssetPath": "res://Art/Items/Eyepatch.png"
     },
     {
       "itemDefId": 2017,
@@ -202,7 +202,7 @@
       "kind": "accessory",
       "description": "Fairy Wing accessory for your desktop dog.",
       "assetPath": "res://Art/Items/FairyWing.png",
-      "uiAssetPath": "res://Art/UI/Items/FairyWing.png"
+      "uiAssetPath": "res://Art/Items/FairyWing.png"
     },
     {
       "itemDefId": 2018,
@@ -210,7 +210,7 @@
       "kind": "accessory",
       "description": "Googly Eye accessory for your desktop dog.",
       "assetPath": "res://Art/Items/GooglyEye.png",
-      "uiAssetPath": "res://Art/UI/Items/GooglyEye.png"
+      "uiAssetPath": "res://Art/Items/GooglyEye.png"
     },
     {
       "itemDefId": 2019,
@@ -218,7 +218,7 @@
       "kind": "accessory",
       "description": "Halo accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Halo.png",
-      "uiAssetPath": "res://Art/UI/Items/Halo.png"
+      "uiAssetPath": "res://Art/Items/Halo.png"
     },
     {
       "itemDefId": 2020,
@@ -226,7 +226,7 @@
       "kind": "accessory",
       "description": "Heart Charm accessory for your desktop dog.",
       "assetPath": "res://Art/Items/HeartCharm.png",
-      "uiAssetPath": "res://Art/UI/Items/HeartCharm.png"
+      "uiAssetPath": "res://Art/Items/HeartCharm.png"
     },
     {
       "itemDefId": 2021,
@@ -234,7 +234,7 @@
       "kind": "accessory",
       "description": "Heart Glasses accessory for your desktop dog.",
       "assetPath": "res://Art/Items/HeartGlasses.png",
-      "uiAssetPath": "res://Art/UI/Items/HeartGlasses.png"
+      "uiAssetPath": "res://Art/Items/HeartGlasses.png"
     },
     {
       "itemDefId": 2022,
@@ -242,7 +242,7 @@
       "kind": "accessory",
       "description": "Horn 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Horn1.png",
-      "uiAssetPath": "res://Art/UI/Items/Horn1.png"
+      "uiAssetPath": "res://Art/Items/Horn1.png"
     },
     {
       "itemDefId": 2023,
@@ -250,7 +250,7 @@
       "kind": "accessory",
       "description": "Hot Dog Bun accessory for your desktop dog.",
       "assetPath": "res://Art/Items/HotDogBun.png",
-      "uiAssetPath": "res://Art/UI/Items/HotDogBun.png"
+      "uiAssetPath": "res://Art/Items/HotDogBun.png"
     },
     {
       "itemDefId": 2024,
@@ -258,7 +258,7 @@
       "kind": "accessory",
       "description": "Jester Hat 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/JesterHat1.png",
-      "uiAssetPath": "res://Art/UI/Items/JesterHat1.png"
+      "uiAssetPath": "res://Art/Items/JesterHat1.png"
     },
     {
       "itemDefId": 2025,
@@ -266,7 +266,7 @@
       "kind": "accessory",
       "description": "Jester Hat 2 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/JesterHat2.png",
-      "uiAssetPath": "res://Art/UI/Items/JesterHat2.png"
+      "uiAssetPath": "res://Art/Items/JesterHat2.png"
     },
     {
       "itemDefId": 2026,
@@ -274,7 +274,7 @@
       "kind": "accessory",
       "description": "Round Glasses accessory for your desktop dog.",
       "assetPath": "res://Art/Items/RoundGlasses.png",
-      "uiAssetPath": "res://Art/UI/Items/RoundGlasses.png"
+      "uiAssetPath": "res://Art/Items/RoundGlasses.png"
     },
     {
       "itemDefId": 2027,
@@ -282,7 +282,7 @@
       "kind": "accessory",
       "description": "Rubber Duck accessory for your desktop dog.",
       "assetPath": "res://Art/Items/RubberDuck.png",
-      "uiAssetPath": "res://Art/UI/Items/RubberDuck.png"
+      "uiAssetPath": "res://Art/Items/RubberDuck.png"
     },
     {
       "itemDefId": 2028,
@@ -290,7 +290,7 @@
       "kind": "accessory",
       "description": "Safety Glasses accessory for your desktop dog.",
       "assetPath": "res://Art/Items/SafetyGlasses.png",
-      "uiAssetPath": "res://Art/UI/Items/SafetyGlasses.png"
+      "uiAssetPath": "res://Art/Items/SafetyGlasses.png"
     },
     {
       "itemDefId": 2029,
@@ -298,7 +298,7 @@
       "kind": "accessory",
       "description": "Sauce accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Sauce.png",
-      "uiAssetPath": "res://Art/UI/Items/Sauce.png"
+      "uiAssetPath": "res://Art/Items/Sauce.png"
     },
     {
       "itemDefId": 2030,
@@ -306,7 +306,7 @@
       "kind": "accessory",
       "description": "Scarf accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Scarf.png",
-      "uiAssetPath": "res://Art/UI/Items/Scarf.png"
+      "uiAssetPath": "res://Art/Items/Scarf.png"
     },
     {
       "itemDefId": 2031,
@@ -314,7 +314,7 @@
       "kind": "accessory",
       "description": "Flower 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/SFlower1.png",
-      "uiAssetPath": "res://Art/UI/Items/SFlower1.png"
+      "uiAssetPath": "res://Art/Items/SFlower1.png"
     },
     {
       "itemDefId": 2032,
@@ -322,7 +322,7 @@
       "kind": "accessory",
       "description": "Flower 2 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/SFlower2.png",
-      "uiAssetPath": "res://Art/UI/Items/SFlower2.png"
+      "uiAssetPath": "res://Art/Items/SFlower2.png"
     },
     {
       "itemDefId": 2033,
@@ -330,7 +330,7 @@
       "kind": "accessory",
       "description": "Sock accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Sock.png",
-      "uiAssetPath": "res://Art/UI/Items/Sock.png"
+      "uiAssetPath": "res://Art/Items/Sock.png"
     },
     {
       "itemDefId": 2034,
@@ -338,7 +338,7 @@
       "kind": "accessory",
       "description": "Square Charm accessory for your desktop dog.",
       "assetPath": "res://Art/Items/SquareCharm.png",
-      "uiAssetPath": "res://Art/UI/Items/SquareCharm.png"
+      "uiAssetPath": "res://Art/Items/SquareCharm.png"
     },
     {
       "itemDefId": 2035,
@@ -346,7 +346,7 @@
       "kind": "accessory",
       "description": "Straw Hat 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/StrawHat1.png",
-      "uiAssetPath": "res://Art/UI/Items/StrawHat1.png"
+      "uiAssetPath": "res://Art/Items/StrawHat1.png"
     },
     {
       "itemDefId": 2036,
@@ -354,7 +354,7 @@
       "kind": "accessory",
       "description": "Straw Hat 2 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/StrawHat2.png",
-      "uiAssetPath": "res://Art/UI/Items/StrawHat2.png"
+      "uiAssetPath": "res://Art/Items/StrawHat2.png"
     },
     {
       "itemDefId": 2037,
@@ -362,7 +362,7 @@
       "kind": "accessory",
       "description": "Tiara accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Tiara.png",
-      "uiAssetPath": "res://Art/UI/Items/Tiara.png"
+      "uiAssetPath": "res://Art/Items/Tiara.png"
     },
     {
       "itemDefId": 2038,
@@ -370,7 +370,7 @@
       "kind": "accessory",
       "description": "Tie accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Tie.png",
-      "uiAssetPath": "res://Art/UI/Items/Tie.png"
+      "uiAssetPath": "res://Art/Items/Tie.png"
     },
     {
       "itemDefId": 2039,
@@ -378,7 +378,7 @@
       "kind": "accessory",
       "description": "Top Hat 1 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/TopHat1.png",
-      "uiAssetPath": "res://Art/UI/Items/TopHat1.png"
+      "uiAssetPath": "res://Art/Items/TopHat1.png"
     },
     {
       "itemDefId": 2040,
@@ -386,7 +386,7 @@
       "kind": "accessory",
       "description": "Top Hat 2 accessory for your desktop dog.",
       "assetPath": "res://Art/Items/TopHat2.png",
-      "uiAssetPath": "res://Art/UI/Items/TopHat2.png"
+      "uiAssetPath": "res://Art/Items/TopHat2.png"
     },
     {
       "itemDefId": 2041,
@@ -394,7 +394,7 @@
       "kind": "accessory",
       "description": "Triangle Glasses accessory for your desktop dog.",
       "assetPath": "res://Art/Items/TriangleGlasses.png",
-      "uiAssetPath": "res://Art/UI/Items/TriangleGlasses.png"
+      "uiAssetPath": "res://Art/Items/TriangleGlasses.png"
     },
     {
       "itemDefId": 2042,
@@ -402,7 +402,7 @@
       "kind": "accessory",
       "description": "Tutu accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Tutu.png",
-      "uiAssetPath": "res://Art/UI/Items/Tutu.png"
+      "uiAssetPath": "res://Art/Items/Tutu.png"
     },
     {
       "itemDefId": 2043,
@@ -410,7 +410,7 @@
       "kind": "accessory",
       "description": "Angry Eyebrows accessory for your desktop dog.",
       "assetPath": "res://Art/Items/AngryBrows.png",
-      "uiAssetPath": "res://Art/UI/Items/AngryBrows.png"
+      "uiAssetPath": "res://Art/Items/AngryBrows.png"
     },
     {
       "itemDefId": 2044,
@@ -418,15 +418,15 @@
       "kind": "accessory",
       "description": "Antennae accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Antennae.png",
-      "uiAssetPath": "res://Art/UI/Items/Antennae.png"
+      "uiAssetPath": "res://Art/Items/Antennae.png"
     },
     {
       "itemDefId": 2045,
       "name": "Baseball Cap",
       "kind": "accessory",
       "description": "Baseball Cap accessory for your desktop dog.",
-      "assetPath": "res://Art/Items/BaseballCatHat.png",
-      "uiAssetPath": "res://Art/UI/Items/BaseballCatHat.png"
+      "assetPath": "res://Art/Items/BaseballHat.png",
+      "uiAssetPath": "res://Art/Items/BaseballHat.png"
     },
     {
       "itemDefId": 2046,
@@ -434,7 +434,7 @@
       "kind": "accessory",
       "description": "Cowboy Boot accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Boot.png",
-      "uiAssetPath": "res://Art/UI/Items/Boot.png"
+      "uiAssetPath": "res://Art/Items/Boot.png"
     },
     {
       "itemDefId": 2047,
@@ -442,7 +442,7 @@
       "kind": "accessory",
       "description": "Bucket Hat accessory for your desktop dog.",
       "assetPath": "res://Art/Items/BucketHat.png",
-      "uiAssetPath": "res://Art/UI/Items/BucketHat.png"
+      "uiAssetPath": "res://Art/Items/BucketHat.png"
     },
     {
       "itemDefId": 2048,
@@ -450,7 +450,7 @@
       "kind": "accessory",
       "description": "Cat Ears accessory for your desktop dog.",
       "assetPath": "res://Art/Items/CatEars.png",
-      "uiAssetPath": "res://Art/UI/Items/CatEars.png"
+      "uiAssetPath": "res://Art/Items/CatEars.png"
     },
     {
       "itemDefId": 2049,
@@ -458,7 +458,7 @@
       "kind": "accessory",
       "description": "Cyber Visor accessory for your desktop dog.",
       "assetPath": "res://Art/Items/CyberVisor.png",
-      "uiAssetPath": "res://Art/UI/Items/CyberVisor.png"
+      "uiAssetPath": "res://Art/Items/CyberVisor.png"
     },
     {
       "itemDefId": 2050,
@@ -466,7 +466,7 @@
       "kind": "accessory",
       "description": "Cyber Wing accessory for your desktop dog.",
       "assetPath": "res://Art/Items/CyberWing.png",
-      "uiAssetPath": "res://Art/UI/Items/CyberWing.png"
+      "uiAssetPath": "res://Art/Items/CyberWing.png"
     },
     {
       "itemDefId": 2051,
@@ -474,7 +474,7 @@
       "kind": "accessory",
       "description": "Dizzy Eye accessory for your desktop dog.",
       "assetPath": "res://Art/Items/DizzyEye.png",
-      "uiAssetPath": "res://Art/UI/Items/DizzyEye.png"
+      "uiAssetPath": "res://Art/Items/DizzyEye.png"
     },
     {
       "itemDefId": 2052,
@@ -482,7 +482,7 @@
       "kind": "accessory",
       "description": "Headphones accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Headphones.png",
-      "uiAssetPath": "res://Art/UI/Items/Headphones.png"
+      "uiAssetPath": "res://Art/Items/Headphones.png"
     },
     {
       "itemDefId": 2053,
@@ -490,7 +490,7 @@
       "kind": "accessory",
       "description": "Heart Eye accessory for your desktop dog.",
       "assetPath": "res://Art/Items/HeartEye.png",
-      "uiAssetPath": "res://Art/UI/Items/HeartEye.png"
+      "uiAssetPath": "res://Art/Items/HeartEye.png"
     },
     {
       "itemDefId": 2054,
@@ -498,7 +498,7 @@
       "kind": "accessory",
       "description": "Leaf accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Leaf.png",
-      "uiAssetPath": "res://Art/UI/Items/Leaf.png"
+      "uiAssetPath": "res://Art/Items/Leaf.png"
     },
     {
       "itemDefId": 2055,
@@ -506,7 +506,7 @@
       "kind": "accessory",
       "description": "Lily accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Lily.png",
-      "uiAssetPath": "res://Art/UI/Items/Lily.png"
+      "uiAssetPath": "res://Art/Items/Lily.png"
     },
     {
       "itemDefId": 2056,
@@ -514,7 +514,7 @@
       "kind": "accessory",
       "description": "Chain Necklace accessory for your desktop dog.",
       "assetPath": "res://Art/Items/LoopCollar.png",
-      "uiAssetPath": "res://Art/UI/Items/LoopCollar.png"
+      "uiAssetPath": "res://Art/Items/LoopCollar.png"
     },
     {
       "itemDefId": 2057,
@@ -522,7 +522,7 @@
       "kind": "accessory",
       "description": "Paw Decal accessory for your desktop dog.",
       "assetPath": "res://Art/Items/PawDecal.png",
-      "uiAssetPath": "res://Art/UI/Items/PawDecal.png"
+      "uiAssetPath": "res://Art/Items/PawDecal.png"
     },
     {
       "itemDefId": 2058,
@@ -530,7 +530,7 @@
       "kind": "accessory",
       "description": "Propeller Hat accessory for your desktop dog.",
       "assetPath": "res://Art/Items/PropellerHat.png",
-      "uiAssetPath": "res://Art/UI/Items/PropellerHat.png"
+      "uiAssetPath": "res://Art/Items/PropellerHat.png"
     },
     {
       "itemDefId": 2059,
@@ -538,7 +538,7 @@
       "kind": "accessory",
       "description": "Rose accessory for your desktop dog.",
       "assetPath": "res://Art/Items/Rose.png",
-      "uiAssetPath": "res://Art/UI/Items/Rose.png"
+      "uiAssetPath": "res://Art/Items/Rose.png"
     },
     {
       "itemDefId": 2060,
@@ -546,7 +546,7 @@
       "kind": "accessory",
       "description": "Cowboy Hat accessory for your desktop dog.",
       "assetPath": "res://Art/Items/TenGallonHat.png",
-      "uiAssetPath": "res://Art/UI/Items/TenGallonHat.png"
+      "uiAssetPath": "res://Art/Items/TenGallonHat.png"
     },
     {
       "itemDefId": 2061,
@@ -554,7 +554,7 @@
       "kind": "accessory",
       "description": "Sun Visor accessory for your desktop dog.",
       "assetPath": "res://Art/Items/VisorHat.png",
-      "uiAssetPath": "res://Art/UI/Items/VisorHat.png"
+      "uiAssetPath": "res://Art/Items/VisorHat.png"
     },
     {
       "itemDefId": 2062,
@@ -562,7 +562,7 @@
       "kind": "accessory",
       "description": "Witch Hat accessory for your desktop dog.",
       "assetPath": "res://Art/Items/WitchHat.png",
-      "uiAssetPath": "res://Art/UI/Items/WitchHat.png"
+      "uiAssetPath": "res://Art/Items/WitchHat.png"
     },
     {
       "itemDefId": 3000,
@@ -570,7 +570,7 @@
       "kind": "dog",
       "description": "Australian Shepherd 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/AustralianShepard1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/AustralianShepard1.png"
+      "uiAssetPath": "res://Art/Dogs/AustralianShepard1.png"
     },
     {
       "itemDefId": 3001,
@@ -578,7 +578,7 @@
       "kind": "dog",
       "description": "Australian Shepherd 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/AustralianShepard2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/AustralianShepard2.png"
+      "uiAssetPath": "res://Art/Dogs/AustralianShepard2.png"
     },
     {
       "itemDefId": 3002,
@@ -586,7 +586,7 @@
       "kind": "dog",
       "description": "Basset Hound 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Bassethound1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Bassethound1.png"
+      "uiAssetPath": "res://Art/Dogs/Bassethound1.png"
     },
     {
       "itemDefId": 3003,
@@ -594,7 +594,7 @@
       "kind": "dog",
       "description": "Basset Hound 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Bassethound2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Bassethound2.png"
+      "uiAssetPath": "res://Art/Dogs/Bassethound2.png"
     },
     {
       "itemDefId": 3004,
@@ -602,7 +602,7 @@
       "kind": "dog",
       "description": "Bloodhound 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Bloodhound1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Bloodhound1.png"
+      "uiAssetPath": "res://Art/Dogs/Bloodhound1.png"
     },
     {
       "itemDefId": 3005,
@@ -610,7 +610,7 @@
       "kind": "dog",
       "description": "Bloodhound 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Bloodhound2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Bloodhound2.png"
+      "uiAssetPath": "res://Art/Dogs/Bloodhound2.png"
     },
     {
       "itemDefId": 3006,
@@ -618,7 +618,7 @@
       "kind": "dog",
       "description": "Border Collie 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/BorderCollie1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/BorderCollie1.png"
+      "uiAssetPath": "res://Art/Dogs/BorderCollie1.png"
     },
     {
       "itemDefId": 3007,
@@ -626,7 +626,7 @@
       "kind": "dog",
       "description": "Border Collie 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/BorderCollie2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/BorderCollie2.png"
+      "uiAssetPath": "res://Art/Dogs/BorderCollie2.png"
     },
     {
       "itemDefId": 3008,
@@ -634,7 +634,7 @@
       "kind": "dog",
       "description": "Borzoi 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Borzoi1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Borzoi1.png"
+      "uiAssetPath": "res://Art/Dogs/Borzoi1.png"
     },
     {
       "itemDefId": 3009,
@@ -642,7 +642,7 @@
       "kind": "dog",
       "description": "Borzoi 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Borzoi2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Borzoi2.png"
+      "uiAssetPath": "res://Art/Dogs/Borzoi2.png"
     },
     {
       "itemDefId": 3010,
@@ -650,7 +650,7 @@
       "kind": "dog",
       "description": "Boxer 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Boxer1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Boxer1.png"
+      "uiAssetPath": "res://Art/Dogs/Boxer1.png"
     },
     {
       "itemDefId": 3011,
@@ -658,7 +658,7 @@
       "kind": "dog",
       "description": "Boxer 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Boxer2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Boxer2.png"
+      "uiAssetPath": "res://Art/Dogs/Boxer2.png"
     },
     {
       "itemDefId": 3012,
@@ -666,7 +666,7 @@
       "kind": "dog",
       "description": "Bulldog 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Bulldog1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Bulldog1.png"
+      "uiAssetPath": "res://Art/Dogs/Bulldog1.png"
     },
     {
       "itemDefId": 3013,
@@ -674,7 +674,7 @@
       "kind": "dog",
       "description": "Bulldog 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Bulldog2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Bulldog2.png"
+      "uiAssetPath": "res://Art/Dogs/Bulldog2.png"
     },
     {
       "itemDefId": 3014,
@@ -682,7 +682,7 @@
       "kind": "dog",
       "description": "Chihuahua 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Chihuahua1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Chihuahua1.png"
+      "uiAssetPath": "res://Art/Dogs/Chihuahua1.png"
     },
     {
       "itemDefId": 3015,
@@ -690,7 +690,7 @@
       "kind": "dog",
       "description": "Chihuahua 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Chihuahua2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Chihuahua2.png"
+      "uiAssetPath": "res://Art/Dogs/Chihuahua2.png"
     },
     {
       "itemDefId": 3016,
@@ -698,7 +698,7 @@
       "kind": "dog",
       "description": "Cocker Spaniel 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/CockerSpaniel1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/CockerSpaniel1.png"
+      "uiAssetPath": "res://Art/Dogs/CockerSpaniel1.png"
     },
     {
       "itemDefId": 3017,
@@ -706,7 +706,7 @@
       "kind": "dog",
       "description": "Cocker Spaniel 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/CockerSpaniel2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/CockerSpaniel2.png"
+      "uiAssetPath": "res://Art/Dogs/CockerSpaniel2.png"
     },
     {
       "itemDefId": 3018,
@@ -714,7 +714,7 @@
       "kind": "dog",
       "description": "Corgi 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Corgi1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Corgi1.png"
+      "uiAssetPath": "res://Art/Dogs/Corgi1.png"
     },
     {
       "itemDefId": 3019,
@@ -722,7 +722,7 @@
       "kind": "dog",
       "description": "Corgi 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Corgi2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Corgi2.png"
+      "uiAssetPath": "res://Art/Dogs/Corgi2.png"
     },
     {
       "itemDefId": 3020,
@@ -730,7 +730,7 @@
       "kind": "dog",
       "description": "English Sheepdog 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/EnglishSheepdog1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/EnglishSheepdog1.png"
+      "uiAssetPath": "res://Art/Dogs/EnglishSheepdog1.png"
     },
     {
       "itemDefId": 3021,
@@ -738,7 +738,7 @@
       "kind": "dog",
       "description": "English Sheepdog 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/EnglishSheepdog2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/EnglishSheepdog2.png"
+      "uiAssetPath": "res://Art/Dogs/EnglishSheepdog2.png"
     },
     {
       "itemDefId": 3022,
@@ -746,7 +746,7 @@
       "kind": "dog",
       "description": "Great Dane 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/GreatDane1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/GreatDane1.png"
+      "uiAssetPath": "res://Art/Dogs/GreatDane1.png"
     },
     {
       "itemDefId": 3023,
@@ -754,7 +754,7 @@
       "kind": "dog",
       "description": "Great Dane 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/GreatDane2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/GreatDane2.png"
+      "uiAssetPath": "res://Art/Dogs/GreatDane2.png"
     },
     {
       "itemDefId": 3024,
@@ -762,7 +762,7 @@
       "kind": "dog",
       "description": "Great Pyrenees 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/GreatPyranees1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/GreatPyranees1.png"
+      "uiAssetPath": "res://Art/Dogs/GreatPyranees1.png"
     },
     {
       "itemDefId": 3025,
@@ -770,7 +770,7 @@
       "kind": "dog",
       "description": "Great Pyrenees 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/GreatPyranees2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/GreatPyranees2.png"
+      "uiAssetPath": "res://Art/Dogs/GreatPyranees2.png"
     },
     {
       "itemDefId": 3026,
@@ -778,7 +778,7 @@
       "kind": "dog",
       "description": "Greyhound 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Greyhound1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Greyhound1.png"
+      "uiAssetPath": "res://Art/Dogs/Greyhound1.png"
     },
     {
       "itemDefId": 3027,
@@ -786,7 +786,7 @@
       "kind": "dog",
       "description": "Greyhound 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Greyhound2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Greyhound2.png"
+      "uiAssetPath": "res://Art/Dogs/Greyhound2.png"
     },
     {
       "itemDefId": 3028,
@@ -794,7 +794,7 @@
       "kind": "dog",
       "description": "Husky 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Husky1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Husky1.png"
+      "uiAssetPath": "res://Art/Dogs/Husky1.png"
     },
     {
       "itemDefId": 3029,
@@ -802,7 +802,7 @@
       "kind": "dog",
       "description": "Husky 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Husky2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Husky2.png"
+      "uiAssetPath": "res://Art/Dogs/Husky2.png"
     },
     {
       "itemDefId": 3030,
@@ -810,7 +810,7 @@
       "kind": "dog",
       "description": "Labrador Retriever 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Lab1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Lab1.png"
+      "uiAssetPath": "res://Art/Dogs/Lab1.png"
     },
     {
       "itemDefId": 3031,
@@ -818,7 +818,7 @@
       "kind": "dog",
       "description": "Labrador Retriever 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Lab2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Lab2.png"
+      "uiAssetPath": "res://Art/Dogs/Lab2.png"
     },
     {
       "itemDefId": 3032,
@@ -826,7 +826,7 @@
       "kind": "dog",
       "description": "Labrador Retriever 3 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Lab3.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Lab3.png"
+      "uiAssetPath": "res://Art/Dogs/Lab3.png"
     },
     {
       "itemDefId": 3033,
@@ -834,7 +834,7 @@
       "kind": "dog",
       "description": "Pomeranian 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Pomeranian1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Pomeranian1.png"
+      "uiAssetPath": "res://Art/Dogs/Pomeranian1.png"
     },
     {
       "itemDefId": 3034,
@@ -842,7 +842,7 @@
       "kind": "dog",
       "description": "Pomeranian 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Pomeranian2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Pomeranian2.png"
+      "uiAssetPath": "res://Art/Dogs/Pomeranian2.png"
     },
     {
       "itemDefId": 3035,
@@ -850,7 +850,7 @@
       "kind": "dog",
       "description": "Poodle 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Poodle1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Poodle1.png"
+      "uiAssetPath": "res://Art/Dogs/Poodle1.png"
     },
     {
       "itemDefId": 3036,
@@ -858,7 +858,7 @@
       "kind": "dog",
       "description": "Poodle 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Poodle2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Poodle2.png"
+      "uiAssetPath": "res://Art/Dogs/Poodle2.png"
     },
     {
       "itemDefId": 3037,
@@ -866,7 +866,7 @@
       "kind": "dog",
       "description": "Pug 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Pug1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Pug1.png"
+      "uiAssetPath": "res://Art/Dogs/Pug1.png"
     },
     {
       "itemDefId": 3038,
@@ -874,7 +874,7 @@
       "kind": "dog",
       "description": "Pug 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Pug2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Pug2.png"
+      "uiAssetPath": "res://Art/Dogs/Pug2.png"
     },
     {
       "itemDefId": 3039,
@@ -882,7 +882,7 @@
       "kind": "dog",
       "description": "Rat Terrier 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/RatTerrier1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/RatTerrier1.png"
+      "uiAssetPath": "res://Art/Dogs/RatTerrier1.png"
     },
     {
       "itemDefId": 3040,
@@ -890,7 +890,7 @@
       "kind": "dog",
       "description": "Rat Terrier 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/RatTerrier2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/RatTerrier2.png"
+      "uiAssetPath": "res://Art/Dogs/RatTerrier2.png"
     },
     {
       "itemDefId": 3041,
@@ -898,7 +898,7 @@
       "kind": "dog",
       "description": "Shih Tzu 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/ShihTzu1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/ShihTzu1.png"
+      "uiAssetPath": "res://Art/Dogs/ShihTzu1.png"
     },
     {
       "itemDefId": 3042,
@@ -906,7 +906,7 @@
       "kind": "dog",
       "description": "Shih Tzu 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/ShihTzu2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/ShihTzu2.png"
+      "uiAssetPath": "res://Art/Dogs/ShihTzu2.png"
     },
     {
       "itemDefId": 3043,
@@ -914,7 +914,7 @@
       "kind": "dog",
       "description": "Saint Bernard 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/StBernard1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/StBernard1.png"
+      "uiAssetPath": "res://Art/Dogs/StBernard1.png"
     },
     {
       "itemDefId": 3044,
@@ -922,7 +922,7 @@
       "kind": "dog",
       "description": "Saint Bernard 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/StBernard2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/StBernard2.png"
+      "uiAssetPath": "res://Art/Dogs/StBernard2.png"
     },
     {
       "itemDefId": 3045,
@@ -930,7 +930,7 @@
       "kind": "dog",
       "description": "Bernese Mountain Dog 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/BermeseMountainDog1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/BermeseMountainDog1.png"
+      "uiAssetPath": "res://Art/Dogs/BermeseMountainDog1.png"
     },
     {
       "itemDefId": 3046,
@@ -938,7 +938,7 @@
       "kind": "dog",
       "description": "Bernese Mountain Dog Mix for your desktop companion.",
       "assetPath": "res://Art/Dogs/BermeseMountainDog2MIX.png",
-      "uiAssetPath": "res://Art/UI/Dogs/BermeseMountainDog2MIX.png"
+      "uiAssetPath": "res://Art/Dogs/BermeseMountainDog2MIX.png"
     },
     {
       "itemDefId": 3047,
@@ -946,7 +946,7 @@
       "kind": "dog",
       "description": "Cane Corso 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/CaneCorso1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/CaneCorso1.png"
+      "uiAssetPath": "res://Art/Dogs/CaneCorso1.png"
     },
     {
       "itemDefId": 3048,
@@ -954,7 +954,7 @@
       "kind": "dog",
       "description": "Cane Corso 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/CaneCorso2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/CaneCorso2.png"
+      "uiAssetPath": "res://Art/Dogs/CaneCorso2.png"
     },
     {
       "itemDefId": 3049,
@@ -962,7 +962,7 @@
       "kind": "dog",
       "description": "Corgi 3 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Corgi3.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Corgi3.png"
+      "uiAssetPath": "res://Art/Dogs/Corgi3.png"
     },
     {
       "itemDefId": 3050,
@@ -970,7 +970,7 @@
       "kind": "dog",
       "description": "Corgi 4 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Corgi4.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Corgi4.png"
+      "uiAssetPath": "res://Art/Dogs/Corgi4.png"
     },
     {
       "itemDefId": 3051,
@@ -978,7 +978,7 @@
       "kind": "dog",
       "description": "Doberman 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Doberman1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Doberman1.png"
+      "uiAssetPath": "res://Art/Dogs/Doberman1.png"
     },
     {
       "itemDefId": 3052,
@@ -986,7 +986,7 @@
       "kind": "dog",
       "description": "Doberman 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Doberman2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Doberman2.png"
+      "uiAssetPath": "res://Art/Dogs/Doberman2.png"
     },
     {
       "itemDefId": 3053,
@@ -994,7 +994,7 @@
       "kind": "dog",
       "description": "Finnish Spitz 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/FinnishSpitz1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/FinnishSpitz1.png"
+      "uiAssetPath": "res://Art/Dogs/FinnishSpitz1.png"
     },
     {
       "itemDefId": 3054,
@@ -1002,7 +1002,7 @@
       "kind": "dog",
       "description": "Finnish Spitz 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/FinnishSpitz2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/FinnishSpitz2.png"
+      "uiAssetPath": "res://Art/Dogs/FinnishSpitz2.png"
     },
     {
       "itemDefId": 3055,
@@ -1010,7 +1010,7 @@
       "kind": "dog",
       "description": "German Shorthaired Pointer 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/GermanShorthairPointer1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/GermanShorthairPointer1.png"
+      "uiAssetPath": "res://Art/Dogs/GermanShorthairPointer1.png"
     },
     {
       "itemDefId": 3056,
@@ -1018,7 +1018,7 @@
       "kind": "dog",
       "description": "German Shorthaired Pointer 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/GermanShorthairPointer2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/GermanShorthairPointer2.png"
+      "uiAssetPath": "res://Art/Dogs/GermanShorthairPointer2.png"
     },
     {
       "itemDefId": 3057,
@@ -1026,7 +1026,7 @@
       "kind": "dog",
       "description": "Indian Pariah 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/IndianPariah1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/IndianPariah1.png"
+      "uiAssetPath": "res://Art/Dogs/IndianPariah1.png"
     },
     {
       "itemDefId": 3058,
@@ -1034,7 +1034,7 @@
       "kind": "dog",
       "description": "Indian Pariah 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/IndianPariah2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/IndianPariah2.png"
+      "uiAssetPath": "res://Art/Dogs/IndianPariah2.png"
     },
     {
       "itemDefId": 3059,
@@ -1042,7 +1042,7 @@
       "kind": "dog",
       "description": "Jack Russell Terrier 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/JackRusselTerrier1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/JackRusselTerrier1.png"
+      "uiAssetPath": "res://Art/Dogs/JackRusselTerrier1.png"
     },
     {
       "itemDefId": 3060,
@@ -1050,7 +1050,7 @@
       "kind": "dog",
       "description": "Jack Russell Terrier 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/JackRusselTerrier2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/JackRusselTerrier2.png"
+      "uiAssetPath": "res://Art/Dogs/JackRusselTerrier2.png"
     },
     {
       "itemDefId": 3061,
@@ -1058,7 +1058,7 @@
       "kind": "dog",
       "description": "Maltese 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Maltese1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Maltese1.png"
+      "uiAssetPath": "res://Art/Dogs/Maltese1.png"
     },
     {
       "itemDefId": 3062,
@@ -1066,7 +1066,7 @@
       "kind": "dog",
       "description": "Maltese 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Maltese2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Maltese2.png"
+      "uiAssetPath": "res://Art/Dogs/Maltese2.png"
     },
     {
       "itemDefId": 3063,
@@ -1074,7 +1074,7 @@
       "kind": "dog",
       "description": "Schnauzer 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Schnauzer1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Schnauzer1.png"
+      "uiAssetPath": "res://Art/Dogs/Schnauzer1.png"
     },
     {
       "itemDefId": 3064,
@@ -1082,7 +1082,7 @@
       "kind": "dog",
       "description": "Schnauzer 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Schnauzer2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Schnauzer2.png"
+      "uiAssetPath": "res://Art/Dogs/Schnauzer2.png"
     },
     {
       "itemDefId": 3065,
@@ -1090,7 +1090,7 @@
       "kind": "dog",
       "description": "Dalmatian 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Dalmatian1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Dalmatian1.png"
+      "uiAssetPath": "res://Art/Dogs/Dalmatian1.png"
     },
     {
       "itemDefId": 3066,
@@ -1098,7 +1098,7 @@
       "kind": "dog",
       "description": "Dalmatian 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Dalmatian2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Dalmatian2.png"
+      "uiAssetPath": "res://Art/Dogs/Dalmatian2.png"
     },
     {
       "itemDefId": 3067,
@@ -1106,7 +1106,7 @@
       "kind": "dog",
       "description": "Dachshund 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Daschund1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Daschund1.png"
+      "uiAssetPath": "res://Art/Dogs/Daschund1.png"
     },
     {
       "itemDefId": 3068,
@@ -1114,7 +1114,7 @@
       "kind": "dog",
       "description": "Dachshund 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/Daschund2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/Daschund2.png"
+      "uiAssetPath": "res://Art/Dogs/Daschund2.png"
     },
     {
       "itemDefId": 3069,
@@ -1122,7 +1122,7 @@
       "kind": "dog",
       "description": "Portuguese Water Dog 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/PortugeseWaterDog1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/PortugeseWaterDog1.png"
+      "uiAssetPath": "res://Art/Dogs/PortugeseWaterDog1.png"
     },
     {
       "itemDefId": 3070,
@@ -1130,7 +1130,7 @@
       "kind": "dog",
       "description": "Portuguese Water Dog 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/PortugeseWaterDog2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/PortugeseWaterDog2.png"
+      "uiAssetPath": "res://Art/Dogs/PortugeseWaterDog2.png"
     },
     {
       "itemDefId": 3071,
@@ -1138,7 +1138,7 @@
       "kind": "dog",
       "description": "Shiba Inu 1 for your desktop companion.",
       "assetPath": "res://Art/Dogs/ShibaInu1.png",
-      "uiAssetPath": "res://Art/UI/Dogs/ShibaInu1.png"
+      "uiAssetPath": "res://Art/Dogs/ShibaInu1.png"
     },
     {
       "itemDefId": 3072,
@@ -1146,7 +1146,39 @@
       "kind": "dog",
       "description": "Shiba Inu 2 for your desktop companion.",
       "assetPath": "res://Art/Dogs/ShibaInu2.png",
-      "uiAssetPath": "res://Art/UI/Dogs/ShibaInu2.png"
+      "uiAssetPath": "res://Art/Dogs/ShibaInu2.png"
+    },
+    {
+      "itemDefId": 3073,
+      "name": "Irish Setter 1",
+      "kind": "dog",
+      "description": "Irish Setter 1 for your desktop companion.",
+      "assetPath": "res://Art/Dogs/IrishSetter1.png",
+      "uiAssetPath": "res://Art/Dogs/IrishSetter1.png"
+    },
+    {
+      "itemDefId": 3074,
+      "name": "Irish Setter 2",
+      "kind": "dog",
+      "description": "Irish Setter 2 for your desktop companion.",
+      "assetPath": "res://Art/Dogs/IrishSetter2.png",
+      "uiAssetPath": "res://Art/Dogs/IrishSetter2.png"
+    },
+    {
+      "itemDefId": 3075,
+      "name": "Wirehaired Pointing Griffon 1",
+      "kind": "dog",
+      "description": "Wirehaired Pointing Griffon 1 for your desktop companion.",
+      "assetPath": "res://Art/Dogs/WirehairPointingGriffon1.png",
+      "uiAssetPath": "res://Art/Dogs/WirehairPointingGriffon1.png"
+    },
+    {
+      "itemDefId": 3076,
+      "name": "Wirehaired Pointing Griffon 2",
+      "kind": "dog",
+      "description": "Wirehaired Pointing Griffon 2 for your desktop companion.",
+      "assetPath": "res://Art/Dogs/WirehairPointingGriffon2.png",
+      "uiAssetPath": "res://Art/Dogs/WirehairPointingGriffon2.png"
     }
   ]
 }

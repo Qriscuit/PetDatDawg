@@ -238,7 +238,7 @@ internal static class ShopScenarios
 	{
 		pets = 500, goldenBones = bones,
 		items = new[] { new SteamInventoryItem("pets", 100, 500), new SteamInventoryItem("bones", 101, bones), new SteamInventoryItem("bow", 2004, copies) },
-		economyVersion = "golden-bones-v1", serverTime = ServerNow, nextDigAt,
+		economyVersion = "golden-bones-v2", serverTime = ServerNow, nextDigAt,
 		catalog = new { offers = new[]
 		{
 			new ShopOffer { Id = "dig", Kind = "box", CurrencyItemDefId = 100, Price = 500, RewardItemDefIds = new[] { 3000 }, CooldownSeconds = 1200 },

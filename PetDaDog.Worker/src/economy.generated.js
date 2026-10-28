@@ -1,8 +1,8 @@
 // Generated from SteamInventory/economy.json. Run node scripts/economy-generate.mjs.
 export default {
-  "version": "golden-bones-v1",
+  "version": "golden-bones-v2",
   "appId": 4817200,
-  "iconBaseUrl": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v1",
+  "iconBaseUrl": "https://petdadawg.americlasagna.workers.dev/icons/golden-bones-v2",
   "ids": {
     "pets": 100,
     "goldenBones": 101,
@@ -740,6 +740,26 @@ export default {
       "itemDefId": 3072,
       "kind": "dog",
       "name": "Shiba Inu 2"
+    },
+    {
+      "itemDefId": 3073,
+      "kind": "dog",
+      "name": "Irish Setter 1"
+    },
+    {
+      "itemDefId": 3074,
+      "kind": "dog",
+      "name": "Irish Setter 2"
+    },
+    {
+      "itemDefId": 3075,
+      "kind": "dog",
+      "name": "Wirehaired Pointing Griffon 1"
+    },
+    {
+      "itemDefId": 3076,
+      "kind": "dog",
+      "name": "Wirehaired Pointing Griffon 2"
     }
   ]
 };
