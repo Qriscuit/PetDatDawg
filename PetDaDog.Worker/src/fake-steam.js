@@ -35,8 +35,15 @@ export class FakeSteamBackend {
     if (url.pathname.includes("GetInventory")) return this.result(account.items);
     if (url.pathname.includes("AddItem")) {
       const key = `add:${params.get("requestid")}`;
-      if (account.requests.has(key)) return this.result(account.requests.get(key), true);
-      const result = structuredClone([this.add(account, Number(params.get("itemdefid[0]")), 1)]);
+      if (account.requests.has(key)) return this.result(account.requests.get(key).map(original =>
+        account.items.find(item => item.itemid === original.itemid) ?? { ...original, quantity: 0, state: "removed" }), true);
+      const affected = [];
+      for (let i = 0; params.has(`itemdefid[${i}]`); i++) {
+        const item = this.add(account, Number(params.get(`itemdefid[${i}]`)), 1);
+        // Real AddItem repeats the final stack snapshot for repeated itemdefs.
+        affected.push(item);
+      }
+      const result = structuredClone(affected);
       account.requests.set(key, result); return this.result(result);
     }
     if (url.pathname.includes("ConsumeItem")) {

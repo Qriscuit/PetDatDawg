@@ -74,6 +74,7 @@ public partial class SteamInventorySmokeTest : Node
 			await Settle();
 			Require(menu.GetNode<Button>("%BuyDogBox").Disabled && menu.GetNode<Button>("%BuyAccessoryBox").Disabled
 				&& menu.GetNode<Button>("%OpenBox").Disabled, "Offline shop disables currency operations.");
+			await VerifyShopOpeningSync(menu, backend, wardrobe);
 			var dogs = menu.GetNode<GridContainer>("%DogGrid");
 			RequireDogChoices(dogs, new[] { 0 }, "Empty Steam ownership shows only Starter dog.");
 			Require(SelectedDogId(dogs) == 0, "Starter dog is selected with empty ownership.");
@@ -101,6 +102,49 @@ public partial class SteamInventorySmokeTest : Node
 		}
 	}
 	private async Task Settle() { for (var i = 0; i < 3; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); }
+	private async Task VerifyShopOpeningSync(StatusWindow menu, BackendPetClient original, AccessoryWardrobe wardrobe)
+	{
+		using var transport = new ShopSyncTransport();
+		using var backend = new BackendPetClient(new System.Net.Http.HttpClient(transport) { BaseAddress = new Uri("https://isolated.test/") });
+		// An isolated HTTP transport supplies every confirmed value; no Steam or network is used.
+		typeof(BackendPetClient).GetField("_sessionToken", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(backend, "test-session");
+		backend.EnqueuePetGrant(Guid.NewGuid()); backend.EnqueuePetGrant(Guid.NewGuid());
+		menu.ConfigureSteamInventory(backend, wardrobe, CancellationToken.None);
+		try
+		{
+			menu.GetNode<Button>("%ShopTab").EmitSignal(BaseButton.SignalName.Pressed);
+			menu.ShowStatusWindow();
+			for (var i = 0; i < 120 && (backend.PendingGrantCount > 0 || backend.IsOperationInFlight); i++) await Settle();
+			typeof(StatusWindow).GetField("_nextShopRefresh", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(menu, 0UL);
+			await Settle();
+			Require(transport.BatchCalls == 1 && transport.ShopCalls >= 1 && backend.PendingGrantCount == 0 && backend.ConfirmedPets == 2,
+				"Opening Shop immediately settles a nonempty batch and reads confirmed inventory without the 30-second wait.");
+			Require(!menu.GetNode<Button>("%BuyDigBox").Disabled && menu.GetNode<Button>("%BuyDigBox").Text.StartsWith("Check & dig", StringComparison.Ordinal),
+				"A low displayed balance keeps Check & dig reachable so purchase-time synchronization can establish affordability.");
+		}
+		finally { menu.Hide(); menu.ConfigureSteamInventory(original, wardrobe, CancellationToken.None); }
+	}
+	private sealed class ShopSyncTransport : System.Net.Http.HttpMessageHandler
+	{
+		public int BatchCalls, ShopCalls;
+		protected override Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, CancellationToken cancellationToken)
+		{
+			string body;
+			if (request.RequestUri!.AbsolutePath == "/v1/pets/grant-batch")
+			{
+				BatchCalls++;
+				body = "{\"pets\":2,\"granted\":2,\"replayed\":false,\"items\":[{\"itemId\":\"test-pets\",\"itemDefId\":100,\"quantity\":2}]}";
+			}
+			else if (request.RequestUri.AbsolutePath == "/v2/shop")
+			{
+				ShopCalls++;
+				body = "{\"pets\":2,\"goldenBones\":0,\"items\":[{\"itemId\":\"test-pets\",\"itemDefId\":100,\"quantity\":2}],\"economyVersion\":\"test\",\"serverTime\":\"2026-10-29T00:00:00Z\",\"capabilities\":{\"shopEnabled\":true},\"catalog\":{\"offers\":[{\"id\":\"dig\",\"kind\":\"box\",\"currencyItemDefId\":100,\"price\":500}]},\"receipts\":[]}";
+			}
+			else throw new InvalidOperationException("Unexpected request in isolated Shop UI smoke.");
+			return Task.FromResult(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
+				{ Content = new System.Net.Http.StringContent(body, System.Text.Encoding.UTF8, "application/json") });
+		}
+	}
 	private void VerifyAccessoryQuantities(AccessoryWardrobe wardrobe, SteamCosmeticDefinition accessory)
 	{
 		var id = accessory.AccessoryId;

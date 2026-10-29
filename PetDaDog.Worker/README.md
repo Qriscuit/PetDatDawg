@@ -4,6 +4,19 @@ Steam is the inventory authority. The SQLite Durable Object stores operation
 intents, receipts, acknowledgment state and account cooldowns, never currency
 balances. Per-account requests are serialized across Steam I/O.
 
+For production connection failures, daily storage quotas and the October 28
+incident, use the [operations runbook](../docs/CLOUDFLARE_OPERATIONS.md).
+
+## Batched Pets earning
+
+`POST /v1/pets/grant-batch` accepts an immutable `{clientEventId, runId,
+firstSequence, count}` and returns confirmed inventory plus `granted` and
+`replayed`. The client batches every 30 seconds and synchronizes on Shop entry
+and purchase. Quantity-based account limits are shared with the legacy grant
+route; contiguous run ranges and stable Steam request IDs protect retries.
+See [the batching protocol and rollout guide](../docs/GRANT_BATCHING.md).
+This local implementation has not changed production or published economy v2.
+
 ## v2 contract
 
 All routes use the existing `/v1/auth/steam` bearer session.

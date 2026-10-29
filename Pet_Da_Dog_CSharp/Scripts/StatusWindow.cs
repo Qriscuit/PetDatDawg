@@ -317,6 +317,7 @@ public partial class StatusWindow : Window
 		if (_shopPage != null) _shopPage.Visible = tab == StatusTab.Shop;
 		if (_settingsPage != null) _settingsPage.Visible = tab == StatusTab.Settings;
 		SyncEditingState();
+		if (tab == StatusTab.Shop && Visible) SynchronizeOpenShop();
 	}
 	private void RefreshControls()
 	{

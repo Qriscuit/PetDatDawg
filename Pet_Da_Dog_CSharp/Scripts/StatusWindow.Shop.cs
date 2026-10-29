@@ -51,6 +51,7 @@ public partial class StatusWindow
 		GetNode<Button>("%SteamMarket").Pressed += () => _shopSteam?.OpenMarket();
 		GetNode<Button>("%SteamInventoryLink").Pressed += () => _shopSteam?.OpenSteamInventory();
 		FocusEntered += OnShopFocusReturned;
+		VisibilityChanged += () => { if (Visible) SynchronizeOpenShop(); };
 		_recycleConfirmation = new ConfirmationDialog { Title = "Recycle a spare copy", OkButtonText = "Recycle one copy",
 			MinSize = new Vector2I(400, 180), Theme = Theme, Exclusive = true };
 		AddChild(_recycleConfirmation);
@@ -69,8 +70,14 @@ public partial class StatusWindow
 	private void OnShopFocusReturned()
 	{
 		_shopSteam?.NotifyApplicationFocusReturned();
+		SynchronizeOpenShop();
+	}
+
+	private void SynchronizeOpenShop()
+	{
+		if (!Visible || _activeTab != StatusTab.Shop) return;
 		if (_inventoryBackend?.IsAuthenticated == true && !IsShopBusy)
-			_ = _inventoryBackend.RefreshShopAsync(_inventoryCancellation);
+			_ = _inventoryBackend.SyncShopAsync(_inventoryCancellation);
 	}
 
 	private void SelectShopSection(string section)
@@ -117,8 +124,8 @@ public partial class StatusWindow
 		foreach (var (id, button) in _shopBoxButtons)
 		{
 			var offer = catalog?.Offers.FirstOrDefault(candidate => candidate.Id == id);
-			button.Disabled = !ready || offer == null || !CanAfford(offer) || (id == "dig" && remaining > TimeSpan.Zero);
-			if (offer != null) button.Text = $"Dig · {offer.Price:N0} {(offer.CurrencyItemDefId == 100 ? "Pets" : "Golden Bones")}";
+			button.Disabled = !ready || offer == null || (id == "dig" && remaining > TimeSpan.Zero);
+			if (offer != null) button.Text = $"{(CanAfford(offer) ? "Dig" : "Check & dig")} · {offer.Price:N0} {(offer.CurrencyItemDefId == 100 ? "Pets" : "Golden Bones")}";
 		}
 		GetNode<Label>("%DigCooldown").Text = backend?.IsAuthenticated != true ? "Connect to check availability."
 			: capabilities?.ShopEnabled != true ? "The new Shop is being prepared."
@@ -221,8 +228,8 @@ public partial class StatusWindow
 			var offer = catalog?.Offers.FirstOrDefault(item => item.Id == $"{cosmetic.Kind}:{cosmetic.ItemDefId}");
 			card.GetNode<Label>("%Owned").Text = recycle ? $"Owned: {owned} · In use: {equipped}\nSpare: {RecyclableQuantity(owned, equipped)}" : $"Owned: {owned}";
 			var button = card.GetNode<Button>("%Purchase");
-			button.Text = recycle ? $"Recycle 1 · +{catalog?.RecycleValue ?? 5} Bones" : offer == null ? "Unavailable" : $"Buy · {offer.Price:N0} Bones";
-			button.Disabled = !ready || (recycle ? catalog == null || RecyclableQuantity(owned, equipped) == 0 : offer == null || !CanAfford(offer));
+			button.Text = recycle ? $"Recycle 1 · +{catalog?.RecycleValue ?? 5} Bones" : offer == null ? "Unavailable" : $"{(CanAfford(offer) ? "Buy" : "Check & buy")} · {offer.Price:N0} Bones";
+			button.Disabled = !ready || (recycle ? catalog == null || RecyclableQuantity(owned, equipped) == 0 : offer == null);
 		}
 		var empty = GetNode<Label>("%ShopEmpty");
 		empty.Visible = cosmetics.Length == 0;
@@ -252,7 +259,9 @@ public partial class StatusWindow
 	{
 		var backend = _inventoryBackend;
 		var offer = backend?.ShopCatalog?.Offers.FirstOrDefault(candidate => candidate.Id == id);
-		if (backend == null || offer == null || IsShopBusy || !backend.IsAuthenticated || !backend.ShopCapabilities.ShopEnabled || !CanAfford(offer)) return;
+		// A displayed balance may predate queued earnings or a Steam inventory change.
+		// The backend synchronizes first and Steam decides whether this purchase can spend.
+		if (backend == null || offer == null || IsShopBusy || !backend.IsAuthenticated || !backend.ShopCapabilities.ShopEnabled) return;
 		_shopActionActive = true;
 		var box = offer.Kind == "box";
 		if (box) BoxRevealRequested?.Invoke(id);

@@ -13,20 +13,21 @@ if (args.Contains("--local-economy", StringComparer.Ordinal))
 }
 
 await Run("backend URL defaults to the shared Worker and preserves explicit overrides", VerifyBackendUrlConfigurationAsync);
-await Run("401 renews authentication and preserves the click GUID", VerifyExpiredSessionAsync);
+await Run("401 renews authentication and preserves the frozen batch", VerifyExpiredSessionAsync);
 await Run("uncertain purchases reuse the original GUID and block new exchanges", VerifyUncertainPurchaseAsync);
 await Run("202 responses do not apply an optimistic balance or rewards", VerifyPendingExchangeAsync);
 await Run("grants and exchanges serialize their confirmed balance snapshots", VerifySerializedBalancesAsync);
 await Run("server pending operations recover after a client restart", VerifyServerRecoveryAsync);
 await Run("definite rejected exchanges permit a new purchase", VerifyDefiniteRejectionAsync);
 await Run("Steam authentication sends the expected ticket identity and bearer session", VerifyAuthenticationContractAsync);
-await Run("offline clicks grant once each in order without an optimistic total", VerifyQueuedClicksAsync);
-await Run("uncertain and rate-limited grants retry one GUID without inventing pets", VerifyGrantRetriesAsync);
+await Run("offline inputs settle as an exact batch without an optimistic total", VerifyQueuedClicksAsync);
+await Run("uncertain and rate-limited batches retry unchanged without inventing pets", VerifyGrantRetriesAsync);
 await Run("every inventory refresh replaces the total only with a valid Steam snapshot", VerifyAuthoritativeRefreshAsync);
 await Run("changing Steam accounts discards the previous account's queued clicks", VerifyAccountChangeAsync);
 await Run("Steam error diagnostics show only allowlisted endpoints, categories and bounded numeric results", VerifySafeSteamDiagnosticsAsync);
 await ShopScenarios.RunAsync();
-Console.WriteLine("BACKEND_CLIENT_HARNESS_PASS: 25 scenarios");
+await BatchScenarios.RunAsync();
+Console.WriteLine("BACKEND_CLIENT_HARNESS_PASS");
 
 static async Task Run(string name, Func<Task> scenario)
 {
@@ -85,13 +86,13 @@ static async Task VerifyBackendUrlConfigurationAsync()
 
 static async Task VerifyExpiredSessionAsync()
 {
-	var grantIds = new List<string>();
+	var grantBatches = new List<BatchRequest>();
 	var grantCalls = 0;
 	using var client = CreateClient(async request =>
 	{
-		if (Path(request) == "/v1/pets/grant")
+		if (Path(request) == "/v1/pets/grant-batch")
 		{
-			grantIds.Add(await EventId(request));
+			grantBatches.Add(await BatchRequest.ReadAsync(request));
 			return ++grantCalls == 1
 				? Json(HttpStatusCode.Unauthorized, """{"error":"Session expired","code":"unauthorized"}""")
 				: Json(HttpStatusCode.OK, """{"pets":11,"granted":1,"replayed":false,"items":[{"itemId":"10001","itemDefId":100,"quantity":11},{"itemId":"10002","itemDefId":2000,"quantity":1}]}""");
@@ -102,15 +103,15 @@ static async Task VerifyExpiredSessionAsync()
 	await client.AuthenticateAsync(steam, CancellationToken.None);
 	var inventoryBefore = client.InventoryItems;
 	client.EnqueuePetGrant(Guid.NewGuid());
-	client.Tick(0, CancellationToken.None);
+	client.Tick(30, CancellationToken.None);
 	await WaitForIdle(client);
 	Require(!client.IsAuthenticated && client.PendingGrantCount == 1, "401 must clear the session without dropping the click.");
 	Require(client.ConfirmedPets == 10 && ReferenceEquals(inventoryBefore, client.InventoryItems), "Expiration retains the previous confirmed snapshot.");
 	await client.AuthenticateAsync(steam, CancellationToken.None);
-	client.Tick(3, CancellationToken.None);
+	client.Tick(30, CancellationToken.None);
 	await WaitForIdle(client);
 	Require(steam.TicketRequests == 2 && client.IsAuthenticated, "Reauthentication must request a fresh Steam ticket.");
-	Require(grantIds.Count == 2 && grantIds[0] == grantIds[1], "The grant retry must reuse the click GUID.");
+	Require(grantBatches.Count == 2 && grantBatches[0] == grantBatches[1], "Renewing authentication must retain the exact batch ID, run, range and quantity.");
 	Require(client.PendingGrantCount == 0 && client.ConfirmedPets == 11, "Only the confirmed retry removes the click.");
 	Require(client.InventoryItems.Count == 2 && client.InventoryItems[0].Quantity == 11 && client.InventoryItems[1].ItemDefId == 2000,
 		"The confirmed grant refreshes currency stacks and cosmetic ownership from Steam's snapshot.");
@@ -170,7 +171,7 @@ static async Task VerifySerializedBalancesAsync()
 	var buyCalls = 0;
 	using var client = CreateClient(async request =>
 	{
-		if (Path(request) == "/v1/pets/grant")
+		if (Path(request) == "/v1/pets/grant-batch")
 		{
 			grantStarted.SetResult();
 			return await grantReply.Task;
@@ -184,11 +185,11 @@ static async Task VerifySerializedBalancesAsync()
 	});
 	await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
 	client.EnqueuePetGrant(Guid.NewGuid());
-	client.Tick(0, CancellationToken.None);
-	await grantStarted.Task;
+	client.Tick(30, CancellationToken.None);
+	await grantStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 	var purchase = client.BuyBoxAsync("accessory", CancellationToken.None);
 	Require(buyCalls == 0, "The exchange must wait for the grant's inventory snapshot.");
-	grantReply.SetResult(Json(HttpStatusCode.OK, """{"pets":6,"granted":1,"replayed":false}"""));
+	grantReply.SetResult(Json(HttpStatusCode.OK, """{"pets":6,"granted":1,"replayed":false,"items":[]}"""));
 	Require(await purchase, "The purchase should succeed after the grant finishes.");
 	Require(client.ConfirmedPets == 4 && client.PendingGrantCount == 0, "The final balance must reflect the later purchase, not an older grant response.");
 }
@@ -207,7 +208,7 @@ static async Task VerifyServerRecoveryAsync()
 			retriedIds.Add(await EventId(request));
 			return Json(HttpStatusCode.Accepted, """{"status":"pending"}""");
 		}
-		if (Path(request) == "/v1/pets/grant") grantCalls++;
+		if (Path(request) == "/v1/pets/grant-batch") grantCalls++;
 		return AuthenticationOrInventory(request, 3);
 	});
 	await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
@@ -268,50 +269,49 @@ static async Task VerifyAuthenticationContractAsync()
 
 static async Task VerifyQueuedClicksAsync()
 {
-	var clickIds = Enumerable.Range(0, 3).Select(_ => Guid.NewGuid()).ToArray();
-	var grantIds = new List<string>();
+	var grantBatches = new List<BatchRequest>();
 	var grantStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 	var firstGrantReply = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 	using var client = CreateClient(async request =>
 	{
-		if (Path(request) != "/v1/pets/grant") return AuthenticationOrInventory(request, 20);
+		if (Path(request) != "/v1/pets/grant-batch") return AuthenticationOrInventory(request, 20);
 		Require(request.Headers.Authorization?.Parameter == "fixture-session", "A queued click must use the Worker session.");
-		grantIds.Add(await EventId(request));
-		if (grantIds.Count == 1)
+		grantBatches.Add(await BatchRequest.ReadAsync(request));
+		if (grantBatches.Count == 1)
 		{
 			grantStarted.SetResult();
 			return await firstGrantReply.Task;
 		}
-		return Json(HttpStatusCode.OK, $$"""{"pets":{{20 + grantIds.Count}},"granted":1,"replayed":false,"items":[]}""");
+		return Json(HttpStatusCode.OK, """{"pets":24,"granted":1,"replayed":false,"items":[]}""");
 	});
-	foreach (var clickId in clickIds) client.EnqueuePetGrant(clickId);
+	for (var index = 0; index < 3; index++) client.EnqueuePetGrant(Guid.NewGuid());
 	client.Tick(10, CancellationToken.None);
-	Require(grantIds.Count == 0 && client.PendingGrantCount == 3 && client.ConfirmedPets == null, "Offline clicks must remain in memory without a grant request or an invented total.");
+	Require(grantBatches.Count == 0 && client.PendingGrantCount == 3 && client.ConfirmedPets == null, "Offline clicks must remain in memory without a grant request or an invented total.");
 	await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
-	client.Tick(0, CancellationToken.None);
-	await grantStarted.Task;
+	client.Tick(30, CancellationToken.None);
+	await grantStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+	client.EnqueuePetGrant(Guid.NewGuid());
 	client.Tick(10, CancellationToken.None);
-	Require(grantIds.Count == 1 && client.PendingGrantCount == 3 && client.ConfirmedPets == 20, "A click in flight must remain pending and cannot increment the confirmed total.");
-	firstGrantReply.SetResult(Json(HttpStatusCode.OK, """{"pets":21,"granted":1,"replayed":false,"items":[]}"""));
+	Require(grantBatches.Count == 1 && client.PendingGrantCount == 4 && client.ConfirmedPets == 20, "An in-flight batch remains pending and newly arriving input cannot grow its frozen quantity.");
+	firstGrantReply.SetResult(Json(HttpStatusCode.OK, """{"pets":23,"granted":3,"replayed":false,"items":[]}"""));
 	await WaitForIdle(client);
-	Require(client.PendingGrantCount == 2 && client.ConfirmedPets == 21, "One confirmed response removes exactly one click.");
-	for (var index = 1; index < clickIds.Length; index++)
-	{
-		client.Tick(0, CancellationToken.None);
-		await WaitForIdle(client);
-	}
-	Require(grantIds.SequenceEqual(clickIds.Select(id => id.ToString())) && client.PendingGrantCount == 0 && client.ConfirmedPets == 23,
-		"Each click must produce one FIFO grant with its original GUID.");
+	Require(client.PendingGrantCount == 1 && client.ConfirmedPets == 23, "Confirmation removes exactly the three frozen input units.");
+	client.Tick(30, CancellationToken.None);
+	await WaitForIdle(client);
+	Require(grantBatches.Count == 2 && grantBatches[0].Count == 3 && grantBatches[0].FirstSequence == 1 &&
+		grantBatches[1].Count == 1 && grantBatches[1].FirstSequence == 4 && grantBatches[0].RunId == grantBatches[1].RunId &&
+		grantBatches[0].ClientEventId != grantBatches[1].ClientEventId && client.PendingGrantCount == 0 && client.ConfirmedPets == 24,
+		"Successive batches must cover each queued input exactly once, with contiguous ranges in one run.");
 }
 
 static async Task VerifyGrantRetriesAsync()
 {
-	var grantIds = new List<string>();
+	var grantBatches = new List<BatchRequest>();
 	using var client = CreateClient(async request =>
 	{
-		if (Path(request) != "/v1/pets/grant") return AuthenticationOrInventory(request, 31);
-		grantIds.Add(await EventId(request));
-		return grantIds.Count switch
+		if (Path(request) != "/v1/pets/grant-batch") return AuthenticationOrInventory(request, 31);
+		grantBatches.Add(await BatchRequest.ReadAsync(request));
+		return grantBatches.Count switch
 		{
 			1 => throw new HttpRequestException("Connection dropped after Steam may have granted the Pet."),
 			2 => Json(HttpStatusCode.TooManyRequests, """{"code":"rate_limited","error":"Retry shortly."}"""),
@@ -320,19 +320,18 @@ static async Task VerifyGrantRetriesAsync()
 		};
 	});
 	await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
-	var clickId = Guid.NewGuid();
-	client.EnqueuePetGrant(clickId);
+	client.EnqueuePetGrant(Guid.NewGuid());
 	for (var attempt = 1; attempt <= 3; attempt++)
 	{
-		client.Tick(attempt == 1 ? 0 : 3, CancellationToken.None);
+		client.Tick(attempt == 1 ? 30 : 300, CancellationToken.None);
 		await WaitForIdle(client);
 		Require(client.PendingGrantCount == 1 && client.ConfirmedPets == 31 && client.IsAuthenticated, "Transport failure, rate limits, and missing totals retain the click and previous confirmed Steam snapshot.");
 		client.Tick(0, CancellationToken.None);
-		Require(grantIds.Count == attempt, "Grant retries must respect their delay.");
+		Require(grantBatches.Count == attempt, "Grant retries must respect their delay.");
 	}
-	client.Tick(3, CancellationToken.None);
+	client.Tick(300, CancellationToken.None);
 	await WaitForIdle(client);
-	Require(grantIds.Count == 4 && grantIds.All(id => id == clickId.ToString()), "All grant attempts must reuse the same GUID, including a replay after an uncertain response.");
+	Require(grantBatches.Count == 4 && grantBatches.All(batch => batch == grantBatches[0]), "All grant attempts must retain the same ID, run, range and quantity, including an uncertain replay.");
 	Require(client.PendingGrantCount == 0 && client.ConfirmedPets == 9000000000, "A replay uses the server's full 64-bit total rather than incrementing a local balance.");
 }
 
@@ -369,14 +368,14 @@ static async Task VerifyAccountChangeAsync()
 		"/v1/auth/steam" => Json(HttpStatusCode.OK, ++authCalls == 1
 			? """{"sessionToken":"first-session","steamId":"76561198000000000"}"""
 			: """{"sessionToken":"second-session","steamId":"76561198000000001"}"""),
-		"/v1/pets/grant" => ++grantCalls == 1
+		"/v1/pets/grant-batch" => ++grantCalls == 1
 			? Json(HttpStatusCode.Unauthorized, """{"code":"unauthorized","error":"Steam account changed."}""")
 			: throw new InvalidOperationException("The old account's click must not be granted to the new Steam account."),
 		_ => AuthenticationOrInventory(request, authCalls == 1 ? 71 : 4),
 	}));
 	await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
 	client.EnqueuePetGrant(Guid.NewGuid());
-	client.Tick(0, CancellationToken.None);
+	client.Tick(30, CancellationToken.None);
 	await WaitForIdle(client);
 	Require(!client.IsAuthenticated && client.PendingGrantCount == 1, "Session expiry retains a click until the Steam identity is known again.");
 	await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
@@ -450,11 +449,11 @@ static async Task VerifySafeSteamDiagnosticsAsync()
 
 	static async Task<string> ReadGrantFailureStatusAsync(string body)
 	{
-		using var client = CreateClient(request => Task.FromResult(Path(request) == "/v1/pets/grant"
+		using var client = CreateClient(request => Task.FromResult(Path(request) == "/v1/pets/grant-batch"
 			? Json(HttpStatusCode.ServiceUnavailable, body) : AuthenticationOrInventory(request, 17)));
 		await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
 		client.EnqueuePetGrant(Guid.NewGuid());
-		client.Tick(0, CancellationToken.None);
+		client.Tick(30, CancellationToken.None);
 		await WaitForIdle(client);
 		Require(client.IsAuthenticated && client.ConfirmedPets == 17 && client.PendingGrantCount == 1, "Grant diagnostics must preserve the session, confirmed total and pending retry.");
 		Require(client.Status.Contains("Steam request failed.", StringComparison.Ordinal) && !client.Status.Contains("unsafe", StringComparison.Ordinal), "Only the safe primary error and recognized diagnostic fields may be displayed.");

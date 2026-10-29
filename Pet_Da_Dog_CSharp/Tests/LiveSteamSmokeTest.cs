@@ -54,20 +54,9 @@ public partial class LiveSteamSmokeTest : Node
 			var workerOnly = System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_WORKER_ONLY") == "1";
 			var retryIdText = System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_RETRY_EVENT_ID");
 			var retryExpectedText = System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_RETRY_EXPECTED_PETS");
-			Guid? retryEventId = null;
-			long? retryExpectedPets = null;
-			if (!string.IsNullOrWhiteSpace(retryIdText))
-			{
-				Require(workerOnly && _grantCount == 1 && System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_DOG_INPUT") != "1",
-					"Retrying an existing request requires WorkerOnly, GrantCount 1 and no new dog input.");
-				Require(Guid.TryParse(retryIdText, out var retryId) && retryId != Guid.Empty, "RetryEventId must be the non-empty GUID from the original request.");
-				Require(long.TryParse(retryExpectedText, NumberStyles.None, CultureInfo.InvariantCulture, out var expected) && expected > 0,
-					"RetryExpectedPets must be the positive expected total recorded for the original request.");
-				retryEventId = retryId;
-				retryExpectedPets = expected;
-			}
-			else Require(string.IsNullOrWhiteSpace(retryExpectedText), "RetryExpectedPets requires an existing RetryEventId.");
-			var inputMode = retryEventId.HasValue ? "retry-existing" : System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_DOG_INPUT") == "1" ? "background-with-dog-feedback" : "queue";
+			Require(string.IsNullOrWhiteSpace(retryIdText) && string.IsNullOrWhiteSpace(retryExpectedText),
+				"Legacy input-ID replay is disabled for batched earning. Batch recovery requires the original batch ID, run ID, sequence and count; an input GUID cannot recreate it.");
+			var inputMode = System.Environment.GetEnvironmentVariable("PDD_LIVE_SMOKE_DOG_INPUT") == "1" ? "background-with-dog-feedback" : "queue";
 			var timeoutSeconds = ReadNumber("PDD_LIVE_SMOKE_TIMEOUT_SECONDS", 150, 30, 600);
 			var endpoint = System.Environment.GetEnvironmentVariable("PDD_BACKEND_URL");
 			if (string.IsNullOrWhiteSpace(endpoint)) endpoint = ProjectSettings.GetSetting("pdd/backend_url").AsString();
@@ -97,7 +86,7 @@ public partial class LiveSteamSmokeTest : Node
 			Require(_steam.Initialize(), _steam.Status);
 			Require(SteamUtils.GetAppID().m_AppId == 4817200, "Steam initialized with the wrong AppID.");
 			_inventoryCallback = Callback<SteamInventoryResultReady_t>.Create(OnInventoryReady);
-			GD.Print($"LIVE_STEAM_CONNECTED: appId=4817200 loggedOn={SteamUser.BLoggedOn()} grantsRequested={_grantCount} mode={(retryEventId.HasValue ? "retry-existing" : workerOnly ? "worker-only" : "native-verified")}");
+			GD.Print($"LIVE_STEAM_CONNECTED: appId=4817200 loggedOn={SteamUser.BLoggedOn()} grantsRequested={_grantCount} mode={(workerOnly ? "worker-only" : "native-verified")}");
 			Require(SteamUser.BLoggedOn(), "The Steam account is offline.");
 			using var baselineTimeout = CancellationTokenSource.CreateLinkedTokenSource(_timeout.Token);
 			if (workerOnly) baselineTimeout.CancelAfter(TimeSpan.FromSeconds(10));
@@ -124,9 +113,6 @@ public partial class LiveSteamSmokeTest : Node
 			await VerifyLiveShopAsync();
 			var initial = _backend.ConfirmedPets!.Value;
 			GD.Print($"LIVE_WORKER_AUTHENTICATED: pets={initial}");
-			if (retryExpectedPets.HasValue)
-				Require(initial == retryExpectedPets.Value || initial == retryExpectedPets.Value - 1,
-					"The current inventory must match the original expected total or its pre-grant total before retrying that request.");
 			if (!workerOnly) await CompareNativeInventoryAsync("initial", initial);
 
 			for (var refresh = 1; refresh <= 3; refresh++)
@@ -142,9 +128,8 @@ public partial class LiveSteamSmokeTest : Node
 			for (var grant = 1; grant <= _grantCount; grant++)
 			{
 				var before = _backend.ConfirmedPets!.Value;
-				var expectedAfter = retryExpectedPets ?? checked(before + 1);
-				if (retryEventId.HasValue) _backend.EnqueuePetGrant(retryEventId.Value);
-				else if (_pet == null) _backend.EnqueuePetGrant(Guid.NewGuid());
+				var expectedAfter = checked(before + 1);
+				if (_pet == null) _backend.EnqueuePetGrant(Guid.NewGuid());
 				else
 				{
 					using var click = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = FindVisibleDogPoint() };
@@ -153,20 +138,17 @@ public partial class LiveSteamSmokeTest : Node
 				}
 				Require(_backend.ConfirmedPets == before && _backend.PendingGrantCount == 1, "A queued click must not alter Steam's confirmed total.");
 				var pendingIds = typeof(BackendPetClient).GetField("_pendingGrantIds", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(_backend) as Queue<Guid>;
-				Require(pendingIds != null && pendingIds.TryPeek(out _), "The queued click must have a recoverable request GUID.");
-				Require(!retryEventId.HasValue || pendingIds!.Peek() == retryEventId.Value, "A retry must use exactly the original request GUID.");
-				GD.Print($"LIVE_PET_REQUESTED: number={grant} clientEventId={pendingIds!.Peek()} input={inputMode}");
+				Require(pendingIds != null && pendingIds.TryPeek(out _), "The queued click must have an internal input GUID.");
+				GD.Print($"LIVE_PET_REQUESTED: number={grant} inputEventId={pendingIds!.Peek()} input={inputMode}; input IDs are not retryable batch operation IDs.");
 				while (_backend.PendingGrantCount > 0 || _backend.IsOperationInFlight)
 				{
 					_timeout.Token.ThrowIfCancellationRequested();
 					if (!_backend.IsAuthenticated) throw new InvalidOperationException($"The Worker session expired while granting: {_backend.Status}");
 					await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 				}
-				Require(_backend.ConfirmedPets == expectedAfter, retryEventId.HasValue
-					? "The existing request did not confirm its original expected Steam total."
-					: "One confirmed click did not increase the Steam-authoritative total by exactly one.");
+				Require(_backend.ConfirmedPets == expectedAfter, "One confirmed click did not increase the Steam-authoritative total by exactly one.");
 				Require(SumWorkerPets() == _backend.ConfirmedPets, "The confirmed grant total differs from its Pet item stacks.");
-				GD.Print($"{(retryEventId.HasValue ? "LIVE_PET_RETRY_CONFIRMED" : "LIVE_PET_GRANTED")}: number={grant} input={inputMode} before={before} after={_backend.ConfirmedPets} pending={_backend.PendingGrantCount}");
+				GD.Print($"LIVE_PET_GRANTED: number={grant} input={inputMode} before={before} after={_backend.ConfirmedPets} pending={_backend.PendingGrantCount}");
 				Require(await _backend.RefreshInventoryAsync(_timeout.Token) && _backend.ConfirmedPets == expectedAfter,
 					"A fresh inventory read did not preserve the confirmed grant total.");
 			}
@@ -183,10 +165,8 @@ public partial class LiveSteamSmokeTest : Node
 				}
 			}
 			else await CompareNativeInventoryAsync("final", final);
-			Require(final == (retryExpectedPets ?? checked(initial + _grantCount)), "The final confirmed total differs from the requested or original expected total.");
-			if (retryEventId.HasValue)
-				GD.Print($"LIVE_WORKER_RETRY_PASS: assertions={_assertions} requests=1 clientEventId={retryEventId.Value} initial={initial} final={final} expected={retryExpectedPets} nativeVerified=false input=retry-existing");
-			else if (workerOnly)
+			Require(final == checked(initial + _grantCount), "The final confirmed total differs from the requested total.");
+			if (workerOnly)
 				GD.Print($"LIVE_WORKER_SMOKE_PASS: assertions={_assertions} grants={_grantCount} initial={initial} final={final} nativeVerified=false input={inputMode}");
 			else GD.Print($"LIVE_STEAM_SMOKE_PASS: assertions={_assertions} grants={_grantCount} initial={initial} final={final}");
 		}

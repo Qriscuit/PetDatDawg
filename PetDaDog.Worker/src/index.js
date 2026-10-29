@@ -3,6 +3,7 @@
 import { createShopService, GOLDEN_BONES } from "./shop.js";
 const APP_ID = 4817200;
 const PETS = 100;
+const MAX_GRANT_BATCH = 300;
 const IDENTITY = "petdadog-backend";
 const STEAM = "https://partner.steam-api.com";
 const STEAM_ENDPOINT_NAMES = Object.freeze({
@@ -50,7 +51,40 @@ function json(value, status = 200, headers = {}) {
   });
 }
 
-function errorResponse(error) {
+export function serviceFailureDiagnostic(error, stage) {
+  // Fixed labels describe a caught failure, not a confirmed cause. Never emit
+  // exception text, stack frames, request data, account IDs or credentials.
+  let name, message, stack;
+  try { name = error?.name; } catch { /* Unusual thrown values stay unknown. */ }
+  try { message = error?.message; } catch { }
+  try { stack = error?.stack; } catch { }
+  const errorName = ["Error", "TypeError", "ReferenceError", "RangeError", "SyntaxError", "DOMException", "AbortError"].includes(name) ? name : "unknown";
+  const text = typeof message === "string" ? message.slice(0, 2048).toLowerCase() : "";
+  let category = "unexpected_error";
+  if (/sqlite_full|database.*(?:full|disk space)/.test(text)) category = "storage_full";
+  else if (/exceeded allowed rows (?:written|read).*durable objects free tier|(?:daily|per day|free tier|free plan).*(?:limit|quota)|(?:limit|quota).*(?:daily|per day|free tier|free plan)/.test(text)) category = "daily_quota";
+  else if (/quota|limit exceeded|exceeded.*limit|too many (?:reads|writes|rows|requests)/.test(text)) category = "quota_exceeded";
+  else if (/overload/.test(text)) category = "overloaded";
+  else if (/object.*reset|reset.*object|code was updated/.test(text)) category = "object_reset";
+  else if (errorName === "TypeError" && /undefined|null/.test(text)) category = "invalid_value_access";
+  else if (errorName === "TypeError" && /not a function/.test(text)) category = "invalid_function_call";
+  else if (errorName === "ReferenceError") category = "undefined_reference";
+  else if (errorName === "TypeError") category = "type_error";
+  const record = { event: "service_request_failed",
+    stage: ["worker", "player_inventory"].includes(stage) ? stage : "unknown",
+    errorName, serviceFailureCategory: category };
+  if (typeof stack === "string") {
+    // Only numeric positions from a known bundle filename may leave the stack.
+    const position = stack.slice(0, 8192).split("\n").slice(1).join("\n")
+      .match(/^\s*at .*\b(?:index|worker)\.js:(\d{1,7}):(\d{1,7})\)?\s*$/m);
+    if (position && Number(position[1]) > 0 && Number(position[2]) > 0) {
+      record.sourceLine = Number(position[1]); record.sourceColumn = Number(position[2]);
+    }
+  }
+  return record;
+}
+
+function errorResponse(error, stage) {
   if (error instanceof SteamHttpError) {
     const denied = [401, 403].includes(error.httpStatus);
     return json({
@@ -64,9 +98,16 @@ function errorResponse(error) {
   }
   if (error instanceof ApiError) {
     return json({ error: error.message, code: error.code, ...error.extra }, error.status,
-      error.status === 429 ? { "Retry-After": "60" } : {});
+      error.status === 429 ? { "Retry-After": String(error.extra.retryAfterSeconds ?? 60) } : {});
   }
-  // Do not log raw errors/URLs: Steam authentication URLs contain the ticket.
+  const diagnostic = serviceFailureDiagnostic(error, stage);
+  console.warn(diagnostic);
+  if (diagnostic.serviceFailureCategory === "daily_quota") {
+    const now = Date.now();
+    const resetAt = (Math.floor(now / 86400000) + 1) * 86400000;
+    return json({ error: "Pet syncing is paused because the server reached its daily storage quota. Please retry after 00:00 UTC.",
+      code: "storage_quota_exceeded" }, 503, { "Retry-After": String(Math.max(1, Math.ceil((resetAt - now) / 1000))) });
+  }
   return json({ error: "The service is temporarily unavailable. Please retry.", code: "service_unavailable" }, 503);
 }
 
@@ -155,10 +196,10 @@ export function configuration(env) {
     testEconomy, testTransport: testEconomy ? env.PDD_FAKE_STEAM : undefined };
 }
 
-export function canonicalGuid(value) {
+export function canonicalGuid(value, field = "clientEventId") {
   if (typeof value !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
     || value === "00000000-0000-0000-0000-000000000000") {
-    throw new ApiError(400, "invalid_request", "clientEventId must be a non-empty GUID.");
+    throw new ApiError(400, "invalid_request", `${field} must be a non-empty GUID.`);
   }
   return value.toLowerCase();
 }
@@ -254,7 +295,7 @@ async function readJson(request) {
   } catch { throw new ApiError(400, "invalid_request", "The request body must be a JSON object."); }
 }
 
-export function parseItems(response, path = "IInventoryService/GetInventory/v1/") {
+export function parseItems(response, path = "IInventoryService/GetInventory/v1/", allowRepeatedAddItemSnapshots = false) {
   if (!response || typeof response !== "object" || Array.isArray(response)) throw steamFailure(path, "missing_response");
   if (response.error) throw steamFailure(path, steamRejectionCategory(response), response);
   if (response.success !== undefined) {
@@ -271,7 +312,7 @@ export function parseItems(response, path = "IInventoryService/GetInventory/v1/"
     try {
       if (!row || typeof row !== "object" || (row.appid !== undefined && uint(row.appid) !== APP_ID)) throw unavailable();
       const itemId = uint64(row.itemid);
-      if (seen.has(itemId)) throw unavailable();
+      if (seen.has(itemId) && !(allowRepeatedAddItemSnapshots && path === "IInventoryService/AddItem/v1/")) throw unavailable();
       seen.add(itemId);
       const itemDefId = uint(row.itemdefid);
       if (itemDefId === 0) throw unavailable();
@@ -351,12 +392,20 @@ export class SteamClient {
     return inventoryView(parseItems((await this.call("GET", "IInventoryService/GetInventory/v1/", { steamid: steamId })).response));
   }
 
-  async grant(steamId, requestId) {
+  async grant(steamId, requestId, count = 1) {
+    if (!Number.isSafeInteger(count) || count < 1 || count > MAX_GRANT_BATCH) {
+      throw new ApiError(400, "invalid_request", `count must be an integer from 1 to ${MAX_GRANT_BATCH}.`);
+    }
     const path = "IInventoryService/AddItem/v1/";
-    const result = (await this.call("POST", path, {
-      steamid: steamId, "itemdefid[0]": String(PETS), itempropsjson: "{}", notify: "0", requestid: requestId,
-    })).response;
-    const affected = parseItems(result, path);
+    const values = { steamid: steamId, itempropsjson: "{}", notify: "0", requestid: requestId };
+    // AddItem documents an itemdef list, not a quantity parameter. The frozen
+    // count defines this exact list again on every retry of the request ID.
+    for (let index = 0; index < count; index++) values[`itemdefid[${index}]`] = String(PETS);
+    const result = (await this.call("POST", path, values)).response;
+    // Steam can return one snapshot per requested entry, repeating the same
+    // stacked item ID and final quantity. Validate each snapshot, but never sum
+    // these receipts. Only a separate GetInventory establishes the balance.
+    const affected = parseItems(result, path, true);
     // Replayed receipts can describe a Pets stack that has since been spent.
     if (!affected.some(item => item.itemDefId === PETS)) throw steamFailure(path, "missing_pets_receipt", result);
     let replayed;
@@ -520,11 +569,7 @@ export class PlayerService {
       // A zero requestid disables Steam idempotency. Do not send this astronomically unlikely hash.
       if (operation.requestId === "0") throw new ApiError(400, "invalid_request", "Please generate another operation ID.");
       await this.storage.transaction(async txn => {
-        const minute = Math.floor(this.now() / 60000);
-        const previous = await txn.get("grant-rate");
-        const count = previous?.minute === minute ? previous.count : 0;
-        if (count >= this.config.grantsPerMinute) throw new ApiError(429, "rate_limited", "Pets are arriving too quickly. Your pending pets will retry shortly.");
-        await txn.put("grant-rate", { minute, count: count + 1 });
+        await this.reserveGrantRate(txn, 1);
         await txn.put(`op:${id}`, operation);
       });
     }
@@ -532,6 +577,56 @@ export class PlayerService {
     operation.state = "complete";
     await this.save(operation);
     return { ...await this.steam.inventory(steamId), granted: 1, replayed: receipt.replayed };
+  }
+
+  async reserveGrantRate(txn, quantity) {
+    const now = this.now();
+    const minute = Math.floor(now / 60000);
+    const previous = await txn.get("grant-rate");
+    const count = previous?.minute === minute ? previous.count : 0;
+    if (count + quantity > this.config.grantsPerMinute) {
+      throw new ApiError(429, "rate_limited", "Pets are arriving too quickly. Your pending pets will retry shortly.",
+        { retryAfterSeconds: Math.max(1, Math.ceil(((minute + 1) * 60000 - now) / 1000)) });
+    }
+    await txn.put("grant-rate", { minute, count: count + quantity });
+  }
+
+  async grantBatch(steamId, input) {
+    const id = canonicalGuid(input.clientEventId);
+    const runId = canonicalGuid(input.runId, "runId");
+    const { firstSequence, count } = input;
+    if (!Number.isSafeInteger(firstSequence) || firstSequence < 1
+      || !Number.isSafeInteger(count) || count < 1 || count > MAX_GRANT_BATCH
+      || firstSequence > Number.MAX_SAFE_INTEGER - (count - 1)) {
+      throw new ApiError(400, "invalid_request", `A positive safe firstSequence and an integer count from 1 to ${MAX_GRANT_BATCH} are required.`);
+    }
+    let operation = await this.storage.get(`op:${id}`);
+    if (operation && (operation.kind !== "grant-batch" || operation.runId !== runId
+      || operation.firstSequence !== firstSequence || operation.count !== count)) {
+      throw new ApiError(409, "operation_conflict", "This operation ID was already used for a different action or input range.");
+    }
+    if (operation?.state === "complete") return { ...await this.steam.inventory(steamId), granted: count, replayed: true };
+    await this.ensureUnblocked(id);
+    if (!operation) {
+      operation = { id, kind: "grant-batch", state: "pending", runId, firstSequence, count,
+        requestId: await steamRequestId(steamId, id), createdAt: this.now() };
+      if (operation.requestId === "0") throw new ApiError(400, "invalid_request", "Please generate another operation ID.");
+      await this.storage.transaction(async txn => {
+        const highWater = await txn.get(`grant-run:${runId}`) ?? 0;
+        if (firstSequence - 1 !== highWater) {
+          throw new ApiError(409, "sequence_conflict", "This input range overlaps an accepted range or skips unsubmitted inputs.");
+        }
+        await this.reserveGrantRate(txn, count);
+        await txn.put(`op:${id}`, operation);
+        await txn.put(`grant-run:${runId}`, firstSequence + (count - 1));
+      });
+    }
+    // Keep the same semantics as individual grants: no durable active lock.
+    // An abandoned previous-run grant cannot strand future earning or Shop.
+    const receipt = await this.steam.grant(steamId, operation.requestId, operation.count);
+    operation.state = "complete";
+    await this.save(operation);
+    return { ...await this.steam.inventory(steamId), granted: count, replayed: receipt.replayed };
   }
 
   async exchange(steamId, kind, input) {
@@ -643,6 +738,7 @@ export class PlayerInventory {
       let result;
       if (request.method === "GET" && ["/v1/pets", "/v1/inventory"].includes(path)) result = await service.readInventory(steamId);
       else if (request.method === "POST" && path === "/v1/pets/grant") result = await service.grant(steamId, await readJson(request));
+      else if (request.method === "POST" && path === "/v1/pets/grant-batch") result = await service.grantBatch(steamId, await readJson(request));
       else if (request.method === "POST" && path === "/v1/boxes/buy") result = await service.exchange(steamId, "buy", await readJson(request));
       else if (request.method === "POST" && path === "/v1/boxes/open") result = await service.exchange(steamId, "open", await readJson(request));
       else if (request.method === "GET" && path === "/v2/shop") result = await service.shopState(steamId);
@@ -653,7 +749,7 @@ export class PlayerInventory {
       else if (request.method === "POST" && ["/v2/shop/dev/seed", "/v2/shop/dev/reset-cooldown"].includes(path)) result = await service.developerAction(steamId, path.endsWith("/seed") ? "seed" : "reset-cooldown", await readJson(request));
       else throw new ApiError(404, "not_found", "Endpoint not found.");
       return json(result, result.status === "pending" ? 202 : 200);
-    } catch (error) { return errorResponse(error); }
+    } catch (error) { return errorResponse(error, "player_inventory"); }
   }
 }
 
@@ -666,10 +762,11 @@ export default {
       if (request.method === "POST" && path === "/v1/auth/steam") {
         const body = await readJson(request);
         const steamId = await new SteamClient(config).authenticate(body.ticketHex, body.identity);
-        return json({ steamId, sessionToken: await createSession(steamId, config.secret) });
+        return json({ steamId, sessionToken: await createSession(steamId, config.secret),
+          maxGrantBatchSize: Math.min(MAX_GRANT_BATCH, config.grantsPerMinute) });
       }
       const read = request.method === "GET" && (["/v1/pets", "/v1/inventory", "/v2/shop"].includes(path) || path.startsWith("/v2/shop/operations/"));
-      const write = request.method === "POST" && ["/v1/pets/grant", "/v1/boxes/buy", "/v1/boxes/open", "/v2/shop/purchase", "/v2/shop/recycle", "/v2/shop/ack", "/v2/shop/dev/seed", "/v2/shop/dev/reset-cooldown"].includes(path);
+      const write = request.method === "POST" && ["/v1/pets/grant", "/v1/pets/grant-batch", "/v1/boxes/buy", "/v1/boxes/open", "/v2/shop/purchase", "/v2/shop/recycle", "/v2/shop/ack", "/v2/shop/dev/seed", "/v2/shop/dev/reset-cooldown"].includes(path);
       if (!read && !write) throw new ApiError(404, "not_found", "Endpoint not found.");
       const authorization = request.headers.get("Authorization");
       if (!authorization || !/^Bearer\s+/i.test(authorization)) throw new ApiError(401, "session_expired", "Please reconnect to Steam.");
@@ -678,6 +775,6 @@ export default {
       if (!env.PLAYER_INVENTORY) throw unavailable();
       const id = env.PLAYER_INVENTORY.idFromName(steamId);
       return await env.PLAYER_INVENTORY.get(id).fetch(request);
-    } catch (error) { return errorResponse(error); }
+    } catch (error) { return errorResponse(error, "worker"); }
   },
 };

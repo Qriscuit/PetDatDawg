@@ -15,12 +15,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if (-not $AllowLiveSteam) { throw 'Pass -AllowLiveSteam to explicitly permit real Steam authentication and Worker inventory requests. GrantCount defaults to 0.' }
-$liveSmokeRetryGuid = [Guid]::Empty
-if ($RetryEventId) {
-    if (-not $WorkerOnly -or $GrantCount -ne 1 -or $UseDogInput) { throw 'RetryEventId requires -WorkerOnly -GrantCount 1 and no -UseDogInput; it retries the existing request without creating another dog click.' }
-    if (-not [Guid]::TryParse($RetryEventId, [ref]$liveSmokeRetryGuid) -or $liveSmokeRetryGuid -eq [Guid]::Empty) { throw 'RetryEventId must be the non-empty GUID recorded by LIVE_PET_REQUESTED.' }
-    if (-not $PSBoundParameters.ContainsKey('RetryExpectedPets') -or $RetryExpectedPets -le 0) { throw 'Supply -RetryExpectedPets with the positive expected total recorded for the original request.' }
-} elseif ($PSBoundParameters.ContainsKey('RetryExpectedPets')) { throw 'RetryExpectedPets requires RetryEventId.' }
+if ($RetryEventId -or $PSBoundParameters.ContainsKey('RetryExpectedPets')) {
+    throw 'Legacy RetryEventId is disabled in the batched client: an input GUID is not a batch operation ID. Replaying it here could award new Pets. Use the preserved v1 runner only for an original v1 operation; batch recovery must retain its full frozen payload.'
+}
 if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) { throw "Godot 4.6.3 was not found at $GodotPath." }
 $liveSmokeProjectPath = Split-Path -Parent $PSScriptRoot
 $liveSmokeNames = @('PDD_LIVE_STEAM_SMOKE', 'PDD_LIVE_SMOKE_GRANTS', 'PDD_LIVE_SMOKE_TIMEOUT_SECONDS', 'PDD_LIVE_SMOKE_DOG_INPUT', 'PDD_LIVE_SMOKE_WORKER_ONLY', 'PDD_LIVE_SMOKE_RETRY_EVENT_ID', 'PDD_LIVE_SMOKE_RETRY_EXPECTED_PETS', 'PDD_LIVE_SMOKE_EXPECT_SHOP_ENABLED', 'PDD_STEAM_APP_ID', 'PDD_BACKEND_URL', 'PDD_DISABLE_STEAM', 'PDD_DISABLE_GLOBAL_INPUT', 'PDD_DISABLE_TRAY', 'APPDATA', 'LOCALAPPDATA', 'TEMP', 'TMP')
@@ -33,8 +30,8 @@ try {
     $env:PDD_LIVE_SMOKE_TIMEOUT_SECONDS = $TimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture)
     $env:PDD_LIVE_SMOKE_DOG_INPUT = if ($UseDogInput) { '1' } else { '0' }
     $env:PDD_LIVE_SMOKE_WORKER_ONLY = if ($WorkerOnly) { '1' } else { '0' }
-    $env:PDD_LIVE_SMOKE_RETRY_EVENT_ID = if ($RetryEventId) { $liveSmokeRetryGuid.ToString('D') } else { '' }
-    $env:PDD_LIVE_SMOKE_RETRY_EXPECTED_PETS = if ($RetryEventId) { $RetryExpectedPets.ToString([Globalization.CultureInfo]::InvariantCulture) } else { '' }
+    $env:PDD_LIVE_SMOKE_RETRY_EVENT_ID = ''
+    $env:PDD_LIVE_SMOKE_RETRY_EXPECTED_PETS = ''
     $env:PDD_LIVE_SMOKE_EXPECT_SHOP_ENABLED = if ($ExpectedShopState -eq 'enabled') { '1' } elseif ($ExpectedShopState -eq 'disabled') { '0' } else { '' }
     $env:PDD_STEAM_APP_ID = '4817200'
     $env:PDD_DISABLE_STEAM = '0'
@@ -57,7 +54,6 @@ try {
     }
     Write-Output "Running real Steam/Worker checks for AppID 4817200; requested grants: $GrantCount. Keep other clients closed while verifying exact increments."
     if ($WorkerOnly) { Write-Output 'WorkerOnly mode verifies the Steam inventory responses supplied by the trusted Worker; independent native inventory verification is skipped.' }
-    if ($RetryEventId) { Write-Output "Retrying the existing request $liveSmokeRetryGuid; original expected total: $RetryExpectedPets. This run does not generate another click GUID." }
     $liveSmokeStdout = Join-Path $LogDirectory 'stdout.log'
     $liveSmokeStderr = Join-Path $LogDirectory 'stderr.log'
     $liveSmokeArguments = @('--headless', '--path', ('"' + $liveSmokeProjectPath + '"'), '--scene', 'res://Tests/LiveSteamSmokeTest.tscn', '--no-header')
@@ -71,7 +67,7 @@ try {
     $liveSmokeOutput = @(Get-Content -LiteralPath $liveSmokeStdout; Get-Content -LiteralPath $liveSmokeStderr)
     $liveSmokeOutput | Write-Output
     Write-Output "Live test logs: $LogDirectory"
-    $liveSmokeExpectedMarker = if ($RetryEventId) { '^LIVE_WORKER_RETRY_PASS:' } elseif ($WorkerOnly) { '^LIVE_WORKER_SMOKE_PASS:' } else { '^LIVE_STEAM_SMOKE_PASS:' }
+    $liveSmokeExpectedMarker = if ($WorkerOnly) { '^LIVE_WORKER_SMOKE_PASS:' } else { '^LIVE_STEAM_SMOKE_PASS:' }
     if ($liveSmokeProcess.ExitCode -ne 0 -or -not ($liveSmokeOutput -match $liveSmokeExpectedMarker)) {
         throw "Live Steam smoke did not pass (exit $($liveSmokeProcess.ExitCode)). Review the logs at $LogDirectory."
     }

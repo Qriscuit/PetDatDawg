@@ -79,24 +79,19 @@ If a grant test times out, a pending grant may already have reached Steam. Read
 inventory with the default zero-grant check before requesting another grant run.
 This test never decreases or resets a Steam inventory total.
 
-To recover a timed-out request, use its exact `clientEventId` from
-`LIVE_PET_REQUESTED` and the total that its original click was expected to reach:
+The batched client no longer uses individual input GUIDs as Steam operation IDs.
+`RetryEventId` and `RetryExpectedPets` therefore fail before any live connection;
+the test scene also rejects their environment equivalents. An uncertain batch
+must retain its full batch ID, run ID, first sequence and count. Never re-enqueue
+an old input GUID to recover it: that would create a new batch and could grant
+again. Automatic retries within the same running client retain the frozen batch.
 
-```powershell
-& '.\Pet_Da_Dog_CSharp\Tests\Run-LiveSteamSmoke.ps1' -AllowLiveSteam -WorkerOnly -GrantCount 1 -RetryEventId '<original-request-guid>' -RetryExpectedPets 1
-```
-
-This mode requires an explicit positive expected total, `-WorkerOnly` and
-`-GrantCount 1`; it cannot be combined with `-UseDogInput`. It enqueues the supplied
-GUID through the production queue without generating a new GUID or claiming a
-new dog click. The expected value is only a test assertion: confirmed totals
-still come exclusively from Worker/Steam responses. Initial inventory must be
-either the original pre-grant total or the original expected total, allowing a
-Steam grant that succeeded before a lost response to replay safely. The final
-confirmed total must equal the original expected value and survive three fresh
-inventory reads with matching Pet stack sums. Success emits
-`LIVE_WORKER_RETRY_PASS` with `input=retry-existing` and `nativeVerified=false`.
-Use the recorded ID; inventing another ID would request another real grant.
+The preserved v1 runner may be used only for an original v1 single-grant
+operation, following its original instructions. Current `LIVE_PET_REQUESTED`
+output labels internal input IDs explicitly; they cannot be used for recovery.
+The default zero-grant check remains available. Nonzero tests exercise the
+30-second cadence per input and need a compatible batch-enabled Worker first;
+they do not validate a multi-input Steam batch or its maximum supported size.
 
 Native inventory query behavior is documented in the
 [Steamworks ISteamInventory reference](https://partner.steamgames.com/doc/api/ISteamInventory).

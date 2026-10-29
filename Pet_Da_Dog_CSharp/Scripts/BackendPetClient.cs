@@ -16,6 +16,7 @@ public sealed partial class BackendPetClient : IDisposable
 	private const string DefaultBackendUrl = "https://petdadawg.americlasagna.workers.dev";
 	private const double RetryDelaySeconds = 2.0;
 	private readonly System.Net.Http.HttpClient _httpClient;
+	private readonly TimeProvider _timeProvider;
 	// Apply every inventory response in request order, including clicks and exchanges.
 	private readonly SemaphoreSlim _requests = new(1, 1);
 	private readonly Queue<Guid> _pendingGrantIds = new();
@@ -36,10 +37,11 @@ public sealed partial class BackendPetClient : IDisposable
 	{
 	}
 
-	public BackendPetClient(System.Net.Http.HttpClient httpClient)
+	public BackendPetClient(System.Net.Http.HttpClient httpClient, TimeProvider? timeProvider = null)
 	{
 		_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 		_httpClient.BaseAddress ??= new Uri(GetBackendUrl());
+		_timeProvider = timeProvider ?? TimeProvider.System;
 	}
 
 	public bool IsAuthenticated => !string.IsNullOrWhiteSpace(_sessionToken);
@@ -47,23 +49,34 @@ public sealed partial class BackendPetClient : IDisposable
 	public long? ConfirmedPets { get; private set; }
 	public IReadOnlyList<SteamInventoryItem> InventoryItems { get; private set; } = Array.Empty<SteamInventoryItem>();
 	public IReadOnlyList<SteamInventoryItem> ReceivedItems { get; private set; } = Array.Empty<SteamInventoryItem>();
-	public bool IsOperationInFlight => _authInFlight || _requestInFlight || _exchangeInFlight || _shopRequestInFlight || _shopAckInFlight;
+	public bool IsOperationInFlight => _authInFlight || _requestInFlight || _exchangeInFlight || _shopRequestInFlight || _shopAckInFlight || _grantRequestInFlight || _shopForegroundReserved;
 	public bool HasPendingExchange => _pendingExchange != null || HasPendingShopOperation;
 	public string Status { get; private set; } = "Backend is not authenticated.";
 
-	public void EnqueuePetGrant(Guid clientEventId) => _pendingGrantIds.Enqueue(clientEventId);
+	public void EnqueuePetGrant(Guid clientEventId)
+	{
+		if (_pendingGrantIds.Count == 0) _grantFlushDelay = GrantFlushIntervalSeconds;
+		_pendingGrantIds.Enqueue(clientEventId);
+		_lastEnqueuedGrantSequence = checked(_lastEnqueuedGrantSequence + 1);
+	}
 
 	public void Tick(double delta, CancellationToken cancellationToken)
 	{
 		_retryDelay = Math.Max(0.0, _retryDelay - delta);
 		_shopAckRetryDelay = Math.Max(0.0, _shopAckRetryDelay - delta);
+		_grantRetryDelay = Math.Max(0.0, _grantRetryDelay - Math.Max(0, delta));
+		_grantFlushDelay = _pendingGrantIds.Count == 0 ? GrantFlushIntervalSeconds : Math.Max(0.0, _grantFlushDelay - Math.Max(0, delta));
 		if (_disposed || cancellationToken.IsCancellationRequested || !IsAuthenticated || IsOperationInFlight || _retryDelay > 0.0)
 			return;
 		// Resolve an uncertain exchange before any new Steam inventory mutation.
 		if (HasPendingShopOperation) _ = RecoverShopOperationAsync(cancellationToken);
 		else if (_pendingExchange != null) _ = ProcessPendingExchangeAsync(cancellationToken);
 		else if (_pendingReceiptAckIds.Count > 0 && _shopAckRetryDelay <= 0) _ = RetryShopAcknowledgmentAsync(cancellationToken);
-		else if (_pendingGrantIds.Count > 0) _ = GrantNextPetAsync(cancellationToken);
+		else if (_pendingGrantIds.Count > 0 && _grantFlushDelay <= 0 && _grantRetryDelay <= 0)
+		{
+			_grantFlushDelay = GrantFlushIntervalSeconds;
+			_ = FlushBackgroundGrantBatchAsync(cancellationToken);
+		}
 	}
 
 	public async Task AuthenticateAsync(SteamIntegration steam, CancellationToken cancellationToken)
@@ -90,8 +103,9 @@ public sealed partial class BackendPetClient : IDisposable
 					ReceivedItems = Array.Empty<SteamInventoryItem>();
 					_pendingExchange = null;
 					ResetShopAccount();
-					_pendingGrantIds.Clear();
+					ResetGrantAccount();
 				}
+				_maxGrantBatchSize = Math.Clamp(auth.MaxGrantBatchSize ?? 300, 1, 300);
 				_authenticatedSteamId = auth.SteamId;
 				_sessionToken = auth.SessionToken;
 				_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _sessionToken);
@@ -191,23 +205,46 @@ public sealed partial class BackendPetClient : IDisposable
 			Status = "Wait for Steam to confirm the previous box exchange.";
 			return Task.FromResult(false);
 		}
-		_pendingExchange = exchange;
-		ReceivedItems = Array.Empty<SteamInventoryItem>();
-		return ProcessPendingExchangeAsync(cancellationToken);
+		_shopForegroundReserved = true;
+		ShopStatus = CheckingPetsShopStatus;
+		return PrepareLegacyExchangeAsync(exchange, CaptureGrantPrefix(), cancellationToken);
 	}
 
-	private async Task<bool> ProcessPendingExchangeAsync(CancellationToken cancellationToken)
+	private async Task<bool> PrepareLegacyExchangeAsync(PendingExchange exchange, GrantPrefix prefix, CancellationToken cancellationToken)
+	{
+		try
+		{
+			await _requests.WaitAsync(cancellationToken);
+			_requestInFlight = true;
+			try
+			{
+				if (!IsAuthenticated || HasPendingExchange || !await SettleGrantPrefixUnderLockAsync(prefix, cancellationToken)) return false;
+				_pendingExchange = exchange;
+				ReceivedItems = Array.Empty<SteamInventoryItem>();
+			}
+			finally { _requestInFlight = false; _requests.Release(); }
+			return await ProcessPendingExchangeAsync(cancellationToken, recover: false);
+		}
+		catch (OperationCanceledException) { Status = "Box request canceled before purchase."; return false; }
+		catch (Exception exception) { Status = $"Box request was not sent: {exception.Message}"; return false; }
+		finally { _shopForegroundReserved = false; }
+	}
+
+	private async Task<bool> ProcessPendingExchangeAsync(CancellationToken cancellationToken, bool recover = true)
 	{
 		if (_exchangeInFlight || _pendingExchange == null) return false;
 		_exchangeInFlight = true;
 		var exchange = _pendingExchange;
 		var acquired = false;
+		var mayHaveSent = false;
 		try
 		{
 			await _requests.WaitAsync(cancellationToken);
 			acquired = true;
 			_requestInFlight = true;
+			cancellationToken.ThrowIfCancellationRequested();
 			if (!IsAuthenticated) return false;
+			mayHaveSent = true;
 			using var response = exchange.Kind == "buy"
 				? await _httpClient.PostAsJsonAsync("v1/boxes/buy", new BuyBoxRequest(exchange.ClientEventId, exchange.BoxType!), cancellationToken)
 				: await _httpClient.PostAsJsonAsync("v1/boxes/open", new OpenBoxRequest(exchange.ClientEventId, exchange.BoxItemId!), cancellationToken);
@@ -236,8 +273,17 @@ public sealed partial class BackendPetClient : IDisposable
 		}
 		catch (OperationCanceledException)
 		{
-			_retryDelay = RetryDelaySeconds;
-			Status = "Box exchange pending confirmation.";
+			if (!recover && !mayHaveSent && _pendingExchange == exchange)
+			{
+				_pendingExchange = null;
+				_retryDelay = 0;
+				Status = "Box request canceled before it was sent.";
+			}
+			else
+			{
+				_retryDelay = RetryDelaySeconds;
+				Status = "Box exchange pending confirmation.";
+			}
 		}
 		catch (Exception exception)
 		{
@@ -257,55 +303,19 @@ public sealed partial class BackendPetClient : IDisposable
 		return false;
 	}
 
-	private async Task GrantNextPetAsync(CancellationToken cancellationToken)
-	{
-		if (_pendingGrantIds.Count == 0) return;
-		var acquired = false;
-		var clientEventId = _pendingGrantIds.Peek();
-		try
-		{
-			await _requests.WaitAsync(cancellationToken);
-			acquired = true;
-			_requestInFlight = true;
-			if (!IsAuthenticated || HasPendingExchange) return;
-			using var response = await _httpClient.PostAsJsonAsync("v1/pets/grant", new GrantPetRequest(clientEventId), cancellationToken);
-			await RequireSuccessAsync(response, cancellationToken);
-			var grant = await response.Content.ReadFromJsonAsync<GrantPetResponse>(cancellationToken: cancellationToken);
-			if (grant?.Pets is not long pets || pets < 0)
-				throw new InvalidOperationException("Backend grant returned no confirmed pets total.");
-			_pendingGrantIds.Dequeue();
-			if (grant.Items != null) ApplyInventory(pets, grant.Items);
-			else ConfirmedPets = pets; // The older ASP.NET grant response contains only the total.
-			Status = $"Pets synced: {ConfirmedPets}.";
-		}
-		catch (OperationCanceledException)
-		{
-			_retryDelay = RetryDelaySeconds;
-			Status = "Pet grant pending retry.";
-		}
-		catch (Exception exception)
-		{
-			_retryDelay = RetryDelaySeconds;
-			Status = IsAuthenticated ? $"Pet grant pending retry: {exception.Message}" : "Steam session expired; reconnecting before syncing clicks.";
-			GD.PushWarning(Status);
-		}
-		finally
-		{
-			if (acquired)
-			{
-				_requestInFlight = false;
-				_requests.Release();
-			}
-		}
-	}
-
 	private void ApplyInventory(long? pets, SteamInventoryItem[]? items)
 	{
 		if (pets is not long confirmed || confirmed < 0 || items == null)
 			throw new InvalidOperationException("Backend returned no confirmed Steam inventory.");
+		long goldenBones = 0;
+		foreach (var item in items)
+		{
+			if (item.Quantity < 0) throw new InvalidOperationException("Backend returned an invalid Steam quantity.");
+			if (item.ItemDefId == 101) goldenBones = checked(goldenBones + item.Quantity);
+		}
 		ConfirmedPets = confirmed;
 		InventoryItems = Array.AsReadOnly(items);
-		ApplyGoldenBonesFromInventory(items);
+		ConfirmedGoldenBones = goldenBones;
 	}
 
 	private async Task RequireSuccessAsync(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -379,9 +389,7 @@ public sealed partial class BackendPetClient : IDisposable
 
 	private sealed record PendingExchange(Guid ClientEventId, string Kind, string? BoxType, string? BoxItemId);
 	private sealed record SteamAuthRequest(string TicketHex, string Identity);
-	private sealed record SteamAuthResponse(string SessionToken, string SteamId);
-	private sealed record GrantPetRequest(Guid ClientEventId);
-	private sealed record GrantPetResponse(long? Pets, int Granted, bool Replayed, SteamInventoryItem[]? Items);
+	private sealed record SteamAuthResponse(string SessionToken, string SteamId, int? MaxGrantBatchSize = null);
 	private sealed record BuyBoxRequest(Guid ClientEventId, string BoxType);
 	private sealed record OpenBoxRequest(Guid ClientEventId, string BoxItemId);
 	private sealed record InventoryResponse(long? Pets, SteamInventoryItem[]? Items, PendingOperationResponse? PendingOperation);

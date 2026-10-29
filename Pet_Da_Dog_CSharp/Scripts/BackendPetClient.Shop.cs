@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 
 public sealed partial class BackendPetClient
 {
+	private const string CheckingPetsShopStatus = "Checking Pets with Steam…";
 	private bool _shopRequestInFlight;
+	private bool _shopForegroundReserved;
 	private bool _shopAckInFlight;
 	private double _shopAckRetryDelay;
 	private readonly HashSet<Guid> _pendingReceiptAckIds = new();
@@ -25,7 +27,7 @@ public sealed partial class BackendPetClient
 	public DateTimeOffset? NextDigAt { get; private set; }
 	public TimeSpan DigCooldownRemaining => NextDigAt is DateTimeOffset next && next > ServerTime ? next - ServerTime : TimeSpan.Zero;
 	// Background click grants and inventory synchronization must never flash purchase buttons.
-	public bool IsShopOperationInFlight => _shopRequestInFlight || _exchangeInFlight;
+	public bool IsShopOperationInFlight => _shopRequestInFlight || _exchangeInFlight || _shopForegroundReserved;
 	public bool HasPendingShopOperation => _pendingShopOperationId.HasValue;
 	public IReadOnlyList<ShopReceipt> UnacknowledgedReceipts { get; private set; } = Array.Empty<ShopReceipt>();
 	public string ShopStatus { get; private set; } = "Connect to Steam to browse the Shop.";
@@ -36,7 +38,7 @@ public sealed partial class BackendPetClient
 		if (offer == null) return ShopRejected("Refresh the Shop before choosing an offer.");
 		if (offer.Id == "dig" && NextDigAt is DateTimeOffset next && next > ServerTime)
 			return ShopRejected("Your next Dig Box is still on cooldown.");
-		return StartShopRequest("v2/shop/purchase", new ShopPurchaseRequest(Guid.NewGuid(), offerId, EconomyVersion!), cancellationToken);
+		return StartShopRequest("v2/shop/purchase", new ShopPurchaseRequest(Guid.NewGuid(), offerId, EconomyVersion!), cancellationToken, settleGrants: true);
 	}
 
 	public Task<bool> RecycleAsync(int itemDefId, long quantity, long equippedQuantity, CancellationToken cancellationToken)
@@ -58,17 +60,7 @@ public sealed partial class BackendPetClient
 			acquired = true;
 			_requestInFlight = true;
 			if (!IsAuthenticated) return false;
-			using var response = await _httpClient.GetAsync("v2/shop", cancellationToken);
-			if (response.StatusCode == HttpStatusCode.NotFound)
-			{
-				ShopStatus = "The updated Shop is not available on this server yet.";
-				return false;
-			}
-			await RequireSuccessAsync(response, cancellationToken);
-			var shop = await response.Content.ReadFromJsonAsync<ShopResponse>(cancellationToken: cancellationToken);
-			ApplyShop(shop, true);
-			ShopStatus = HasPendingShopOperation ? "Steam is confirming your previous transaction." : ShopCapabilities.ShopEnabled ? "" : "The new Shop is being prepared.";
-			return true;
+			return await RefreshShopUnderLockAsync(cancellationToken);
 		}
 		catch (OperationCanceledException) { return false; }
 		catch (Exception exception)
@@ -80,6 +72,55 @@ public sealed partial class BackendPetClient
 		{
 			if (acquired) { _requestInFlight = false; _requests.Release(); }
 		}
+	}
+
+	// Opening the Shop settles only the input prefix present at entry. Inputs
+	// observed during this request remain queued for the next scheduled flush.
+	public Task<bool> SyncShopAsync(CancellationToken cancellationToken)
+	{
+		if (_disposed || cancellationToken.IsCancellationRequested || !IsAuthenticated) return Task.FromResult(false);
+		if (IsShopOperationInFlight) return ShopRejected("Wait for the current Shop request to finish.");
+		_shopForegroundReserved = true;
+		ShopStatus = CheckingPetsShopStatus;
+		return SyncShopPrefixAsync(CaptureGrantPrefix(), cancellationToken);
+	}
+
+	private async Task<bool> SyncShopPrefixAsync(GrantPrefix prefix, CancellationToken cancellationToken)
+	{
+		var acquired = false;
+		try
+		{
+			await _requests.WaitAsync(cancellationToken);
+			acquired = true; _requestInFlight = true;
+			if (!IsAuthenticated || prefix.RunId != _grantRunId) return false;
+			// Existing accepted purchases retain their ordinary recovery path. Do
+			// not place a fresh grant ahead of an unresolved inventory exchange.
+			if (!HasPendingExchange && !await SettleGrantPrefixUnderLockAsync(prefix, cancellationToken))
+				return await ShopRejected("Pet syncing has not finished. Please retry when the service is ready.");
+			return await RefreshShopUnderLockAsync(cancellationToken);
+		}
+		catch (OperationCanceledException) { return false; }
+		catch (Exception exception) { ShopStatus = $"Shop refresh failed: {exception.Message}"; return false; }
+		finally
+		{
+			if (acquired) { _requestInFlight = false; _requests.Release(); }
+			_shopForegroundReserved = false;
+		}
+	}
+
+	private async Task<bool> RefreshShopUnderLockAsync(CancellationToken cancellationToken)
+	{
+		if (!IsAuthenticated) return false;
+		using var response = await _httpClient.GetAsync("v2/shop", cancellationToken);
+		if (response.StatusCode == HttpStatusCode.NotFound)
+		{
+			ShopStatus = "The updated Shop is not available on this server yet.";
+			return false;
+		}
+		await RequireSuccessAsync(response, cancellationToken);
+		ApplyShop(await response.Content.ReadFromJsonAsync<ShopResponse>(cancellationToken: cancellationToken), true);
+		ShopStatus = HasPendingShopOperation ? "Steam is confirming your previous transaction." : ShopCapabilities.ShopEnabled ? "" : "The new Shop is being prepared.";
+		return true;
 	}
 
 	public Task<bool> AcknowledgeReceiptAsync(Guid clientEventId, CancellationToken cancellationToken)
@@ -111,6 +152,7 @@ public sealed partial class BackendPetClient
 			await RequireSuccessAsync(response, cancellationToken);
 			var auth = await response.Content.ReadFromJsonAsync<SteamAuthResponse>(cancellationToken: cancellationToken);
 			if (auth == null || string.IsNullOrWhiteSpace(auth.SessionToken) || string.IsNullOrWhiteSpace(auth.SteamId)) throw new InvalidOperationException("The local test server did not authenticate.");
+			_maxGrantBatchSize = Math.Clamp(auth.MaxGrantBatchSize ?? 300, 1, 300);
 			_sessionToken = auth.SessionToken; _authenticatedSteamId = auth.SteamId;
 			_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _sessionToken);
 			_requests.Release(); acquired = false;
@@ -173,19 +215,52 @@ public sealed partial class BackendPetClient
 		finally { if (acquired) { _requestInFlight = false; _requests.Release(); } _shopAckInFlight = false; }
 	}
 
-	private Task<bool> StartShopRequest(string path, IShopRequest body, CancellationToken cancellationToken)
+	private Task<bool> StartShopRequest(string path, IShopRequest body, CancellationToken cancellationToken, bool settleGrants = false)
 	{
 		if (_disposed || cancellationToken.IsCancellationRequested) return Task.FromResult(false);
 		if (!IsAuthenticated) return ShopRejected("Connect to Steam before purchasing.");
 		if (!ShopCapabilities.ShopEnabled || string.IsNullOrEmpty(EconomyVersion)) return ShopRejected("The new Shop is not available yet.");
 		if (IsShopOperationInFlight || HasPendingExchange) return ShopRejected("Wait for Steam to confirm the previous transaction.");
+		if (settleGrants)
+		{
+			_shopForegroundReserved = true;
+			ShopStatus = CheckingPetsShopStatus;
+			return PrepareShopPurchaseAsync(path, body, CaptureGrantPrefix(), cancellationToken);
+		}
+		MarkShopRequestPending(path, body);
+		return ProcessShopOperationAsync(false, cancellationToken);
+	}
+
+	private void MarkShopRequestPending(string path, IShopRequest body)
+	{
 		_pendingShopRequest = new(path, body);
 		_pendingShopOperationId = body.ClientEventId;
 		ReceivedItems = Array.Empty<SteamInventoryItem>();
 		// Set this before the first await. Tick yields to this queued request, even during a stream of clicks.
 		_shopRequestInFlight = true;
 		ShopStatus = "Confirming with Steam…";
-		return ProcessShopOperationAsync(false, cancellationToken);
+	}
+
+	private async Task<bool> PrepareShopPurchaseAsync(string path, IShopRequest body, GrantPrefix prefix, CancellationToken cancellationToken)
+	{
+		try
+		{
+			await _requests.WaitAsync(cancellationToken);
+			_requestInFlight = true;
+			try
+			{
+				if (!IsAuthenticated || HasPendingExchange || !await SettleGrantPrefixUnderLockAsync(prefix, cancellationToken))
+					return await ShopRejected("Pet syncing has not finished. Your purchase was not sent; please retry when the service is ready.");
+				// Reserving foreground work did not create a purchase. Its stable
+				// operation begins only after every captured grant is confirmed.
+				MarkShopRequestPending(path, body);
+			}
+			finally { _requestInFlight = false; _requests.Release(); }
+			return await ProcessShopOperationAsync(false, cancellationToken);
+		}
+		catch (OperationCanceledException) { return await ShopRejected("Purchase canceled before it was sent."); }
+		catch (Exception exception) { return await ShopRejected($"Purchase was not sent: {exception.Message}"); }
+		finally { _shopForegroundReserved = false; }
 	}
 
 	private Task<bool> RecoverShopOperationAsync(CancellationToken cancellationToken)
@@ -198,13 +273,16 @@ public sealed partial class BackendPetClient
 	private async Task<bool> ProcessShopOperationAsync(bool recover, CancellationToken cancellationToken)
 	{
 		var acquired = false;
+		var mayHaveSent = false;
 		var requestedId = _pendingShopOperationId;
 		try
 		{
 			await _requests.WaitAsync(cancellationToken);
 			acquired = true;
 			_requestInFlight = true;
+			cancellationToken.ThrowIfCancellationRequested();
 			if (!IsAuthenticated || !_pendingShopOperationId.HasValue) return false;
+			if (!recover) mayHaveSent = true;
 			using var response = recover
 				? await _httpClient.GetAsync($"v2/shop/operations/{_pendingShopOperationId.Value:D}", cancellationToken)
 				: await PostPendingShopRequestAsync(cancellationToken);
@@ -254,7 +332,21 @@ public sealed partial class BackendPetClient
 			ClearShopPending();
 			ShopStatus = exception.Message;
 		}
-		catch (OperationCanceledException) { _retryDelay = RetryDelaySeconds; ShopStatus = "Transaction awaiting confirmation. Reconnect to recover its result."; }
+		catch (OperationCanceledException)
+		{
+			if (!recover && !mayHaveSent && _pendingShopOperationId == requestedId)
+			{
+				// A cancelled wait for the request gate cannot have reached Steam.
+				// Do not later turn this local reservation into an automatic purchase.
+				ClearShopPending();
+				ShopStatus = "Purchase canceled before it was sent.";
+			}
+			else
+			{
+				_retryDelay = RetryDelaySeconds;
+				ShopStatus = "Transaction awaiting confirmation. Reconnect to recover its result.";
+			}
+		}
 		catch (Exception exception)
 		{
 			_retryDelay = RetryDelaySeconds;

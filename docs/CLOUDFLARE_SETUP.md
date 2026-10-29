@@ -1,5 +1,9 @@
 # Cloudflare setup for Pet Da Dog
 
+For live connection failures, daily limits and incident history, use the
+[Cloudflare operations runbook](CLOUDFLARE_OPERATIONS.md). The October 28 quota
+hotfix preserves the live v1 economy; it does not publish the staged v2 schema.
+
 For the new two-currency Shop, follow [the current Worker guide](../PetDaDog.Worker/README.md)
 and [coordinated Steam rollout](../SteamInventory/README.md). The 154-definition
 Golden Bones schema and Worker changes are prepared locally. Cash and Market
@@ -485,6 +489,7 @@ the client's confirmed balance or remove its pending click.
 | Steam sign-in rejected | Publisher group includes 4817200, General permission, and matching ticket identity |
 | Grants or inventory fail | Economy permission, current uploaded schema, Inventory enabled, Private visibility account access |
 | Worker configuration error | Both secrets present and `PLAYER_INVENTORY` binding deployed |
+| Health works but inventory reports `storage_quota_exceeded` | Check account-wide Durable Object daily usage; wait for 00:00 UTC reset or obtain account-owner approval for Workers Paid; see the operations runbook |
 | Rate limit reached | Stop clicking briefly and allow this run's pending queue to drain |
 | Purchase/open remains pending | Reconcile the saved operation with Steam; do not create another charge |
 

@@ -4,6 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
 import worker, { ApiError, configuration, createSession, validateSession, steamRequestId,
   parseItems, SteamClient, PlayerService, PlayerInventory, exchangeIntent, exchangeReceipt } from "../src/index.js";
+import { FakeSteamBackend } from "../src/fake-steam.js";
 
 const steamId = "76561198000000000";
 const guid = "01234567-89ab-cdef-0123-456789abcdef";
@@ -22,6 +23,7 @@ const failure = () => new ApiError(503, "steam_unavailable", "Unconfirmed.");
 // the DO storage KV API. No tests contact Steam or alter anyone's inventory.
 class DurableStorage {
   constructor() {
+    this.writeCalls = [];
     this.db = new DatabaseSync(":memory:");
     this.db.exec("CREATE TABLE kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
   }
@@ -30,6 +32,7 @@ class DurableStorage {
     return row ? JSON.parse(row.value) : undefined;
   }
   async put(key, value) {
+    this.writeCalls.push(key);
     this.db.prepare("INSERT INTO kv VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(key, JSON.stringify(value));
   }
   async delete(key) { this.db.prepare("DELETE FROM kv WHERE key = ?").run(key); }
@@ -45,6 +48,7 @@ class FakeSteam {
     this.items = structuredClone(items);
     this.grants = new Set();
     this.grantCalls = [];
+    this.grantCounts = [];
     this.exchanges = 0;
     this.nextId = 18446744073709551000n;
     this.readFailures = 0;
@@ -57,15 +61,16 @@ class FakeSteam {
     if (this.readFailures-- > 0) throw failure();
     return inventory(structuredClone(this.items));
   }
-  async grant(id, requestId) {
+  async grant(id, requestId, count = 1) {
     assert.equal(id, steamId);
     this.grantCalls.push(requestId);
+    this.grantCounts.push(count);
     const replayed = this.grants.has(requestId);
     if (!replayed) {
       this.grants.add(requestId);
       let pets = this.items.find(i => i.itemDefId === 100);
       if (!pets) this.items.push(pets = item((this.nextId++).toString(), 100, 0));
-      pets.quantity++;
+      pets.quantity += count;
     }
     if (this.failGrantAfterCommit) { this.failGrantAfterCommit = false; throw failure(); }
     return { replayed };
@@ -97,6 +102,267 @@ function fixture(items, options = {}) {
   const service = new PlayerService(storage, steam, { ...config, ...options }, () => 120000);
   return { storage, steam, service };
 }
+
+const batchRequest = (overrides = {}) => ({ clientEventId: guid, runId: thirdGuid, firstSequence: 1, count: 75, ...overrides });
+
+test("a batch grants one Pet per input using four writes total and duplicate replies remain Steam-authoritative", async () => {
+  const { storage, steam, service } = fixture();
+  const first = await service.grantBatch(steamId, batchRequest());
+  assert.equal(first.granted, 75);
+  assert.equal(first.pets, 85);
+  assert.deepEqual(steam.grantCounts, [75]);
+  assert.deepEqual(storage.writeCalls, ["grant-rate", `op:${guid}`, `grant-run:${thirdGuid}`, `op:${guid}`]);
+  assert.equal(await storage.get(`grant-run:${thirdGuid}`), 75);
+  assert.deepEqual(await storage.get("grant-rate"), { minute: 2, count: 75 });
+  assert.equal(await storage.get("active"), undefined);
+  steam.items[0].quantity = 4; // Steam spending outside this particular request.
+  const restarted = new PlayerService(storage, steam, config);
+  const replay = await restarted.grantBatch(steamId, batchRequest({ clientEventId: guid.toUpperCase(), runId: thirdGuid.toUpperCase() }));
+  assert.equal(replay.pets, 4);
+  assert.equal(replay.granted, 75);
+  assert.equal(replay.replayed, true);
+  assert.equal(steam.grantCalls.length, 1);
+  assert.equal(storage.writeCalls.length, 4);
+});
+
+test("batch IDs freeze run, range and count; legacy and batch identities cannot be interchanged", async () => {
+  for (const pending of [false, true]) {
+    const { service, steam, storage } = fixture();
+    if (pending) {
+      steam.failGrantAfterCommit = true;
+      await assert.rejects(service.grantBatch(steamId, batchRequest()), { status: 503 });
+    } else await service.grantBatch(steamId, batchRequest());
+    for (const changed of [{ runId: otherGuid }, { firstSequence: 2 }, { count: 74 }]) {
+      await assert.rejects(service.grantBatch(steamId, batchRequest(changed)), { code: "operation_conflict" });
+    }
+    await assert.rejects(service.grant(steamId, { clientEventId: guid }), { code: "operation_conflict" });
+    assert.equal(steam.grantCalls.length, 1);
+    assert.equal((await storage.get(`op:${guid}`)).count, 75);
+  }
+  const { service, steam } = fixture();
+  await service.grant(steamId, { clientEventId: guid });
+  await assert.rejects(service.grantBatch(steamId, batchRequest()), { code: "operation_conflict" });
+  assert.equal(steam.grantCalls.length, 1);
+});
+
+test("batch sequences reject overlap and gaps before Steam, and accept only contiguous new ranges", async () => {
+  const { storage, steam, service } = fixture();
+  await assert.rejects(service.grantBatch(steamId, batchRequest({ firstSequence: 2 })), { code: "sequence_conflict" });
+  assert.equal(storage.writeCalls.length, 0);
+  await service.grantBatch(steamId, batchRequest());
+  for (const firstSequence of [1, 50, 75, 77, 100]) {
+    await assert.rejects(service.grantBatch(steamId, batchRequest({ clientEventId: otherGuid, firstSequence })), { code: "sequence_conflict" });
+  }
+  assert.equal(steam.grantCalls.length, 1);
+  const next = await service.grantBatch(steamId, batchRequest({ clientEventId: otherGuid, firstSequence: 76, count: 25 }));
+  assert.equal(next.pets, 110);
+  assert.equal(await storage.get(`grant-run:${thirdGuid}`), 100);
+  assert.deepEqual(steam.grantCounts, [75, 25]);
+});
+
+test("invalid batch bounds and GUIDs never reach storage or Steam", async () => {
+  const { storage, steam, service } = fixture();
+  for (const changed of [
+    { runId: "invalid" }, { runId: "00000000-0000-0000-0000-000000000000" }, { clientEventId: null },
+    { firstSequence: 0 }, { firstSequence: -1 }, { firstSequence: "1" }, { firstSequence: 1.5 },
+    { firstSequence: Number.MAX_SAFE_INTEGER, count: 2 },
+    { count: 0 }, { count: -1 }, { count: 301 }, { count: 1.5 }, { count: "1" },
+  ]) await assert.rejects(service.grantBatch(steamId, batchRequest(changed)), { status: 400 });
+  assert.equal(storage.writeCalls.length, 0);
+  assert.equal(steam.grantCalls.length, 0);
+  assert.equal((await service.grantBatch(steamId, batchRequest({ count: 300 }))).pets, 310);
+});
+
+test("a lost batch reply retries the frozen Steam ID and quantity after reconstruction without charging twice", async () => {
+  const { storage, steam, service } = fixture();
+  steam.failGrantAfterCommit = true;
+  await assert.rejects(service.grantBatch(steamId, batchRequest()), { status: 503 });
+  assert.equal((await storage.get(`op:${guid}`)).state, "pending");
+  assert.equal(await storage.get(`grant-run:${thirdGuid}`), 75);
+  const restarted = new PlayerService(storage, steam, config, () => 120000);
+  const result = await restarted.grantBatch(steamId, batchRequest());
+  assert.equal(result.pets, 85);
+  assert.equal(result.replayed, true);
+  assert.deepEqual(steam.grantCalls, [await steamRequestId(steamId, guid), await steamRequestId(steamId, guid)]);
+  assert.deepEqual(steam.grantCounts, [75, 75]);
+  assert.deepEqual(await storage.get("grant-rate"), { minute: 2, count: 75 });
+});
+
+test("legacy and batched inputs share a quantity budget across runs, retries and the next minute", async () => {
+  const { storage, steam, service } = fixture(undefined, { grantsPerMinute: 5 });
+  service.now = () => 179500;
+  await service.grantBatch(steamId, batchRequest({ count: 4 }));
+  await service.grant(steamId, { clientEventId: otherGuid });
+  const next = batchRequest({ clientEventId: thirdGuid, firstSequence: 5, count: 1 });
+  await assert.rejects(service.grantBatch(steamId, next), { code: "rate_limited", extra: { retryAfterSeconds: 1 } });
+  await assert.rejects(service.grantBatch(steamId, { ...next, runId: otherGuid, firstSequence: 1 }), { code: "rate_limited" });
+  assert.equal(await storage.get(`op:${thirdGuid}`), undefined);
+  assert.equal(await storage.get(`grant-run:${thirdGuid}`), 4);
+  assert.equal(await storage.get(`grant-run:${otherGuid}`), undefined);
+  const restarted = new PlayerService(storage, steam, { ...config, grantsPerMinute: 5 }, () => 180001);
+  await restarted.grantBatch(steamId, batchRequest({ count: 4 })); // Replaying does not charge the new minute.
+  assert.deepEqual(await storage.get("grant-rate"), { minute: 2, count: 5 });
+  assert.equal((await restarted.grantBatch(steamId, next)).pets, 16);
+  assert.deepEqual(await storage.get("grant-rate"), { minute: 3, count: 1 });
+  const reverse = fixture(undefined, { grantsPerMinute: 5 });
+  await reverse.service.grant(steamId, { clientEventId: otherGuid });
+  await assert.rejects(reverse.service.grantBatch(steamId, batchRequest({ count: 5 })), { code: "rate_limited" });
+  assert.equal((await reverse.service.grantBatch(steamId, batchRequest({ count: 4 }))).pets, 15);
+});
+
+test("failed batch preparation rolls back rate, operation and sequence before any Steam mutation", async () => {
+  const { storage, steam, service } = fixture();
+  const put = storage.put.bind(storage);
+  storage.put = async (key, value) => {
+    if (key.startsWith("grant-run:")) throw new Error("Simulated storage quota");
+    return put(key, value);
+  };
+  await assert.rejects(service.grantBatch(steamId, batchRequest()), /Simulated storage quota/);
+  assert.equal(await storage.get("grant-rate"), undefined);
+  assert.equal(await storage.get(`op:${guid}`), undefined);
+  assert.equal(await storage.get(`grant-run:${thirdGuid}`), undefined);
+  assert.equal(steam.grantCalls.length, 0);
+  storage.put = put;
+  assert.equal((await service.grantBatch(steamId, batchRequest())).pets, 85);
+});
+
+test("batch completion storage failure keeps the frozen reservation and retries the same Steam mutation", async () => {
+  const { storage, steam, service } = fixture();
+  const put = storage.put.bind(storage);
+  storage.put = async (key, value) => {
+    if (value?.state === "complete") throw new Error("Simulated completion failure");
+    return put(key, value);
+  };
+  await assert.rejects(service.grantBatch(steamId, batchRequest()), /Simulated completion failure/);
+  assert.equal((await storage.get(`op:${guid}`)).state, "pending");
+  storage.put = put;
+  const restarted = new PlayerService(storage, steam, config, () => 120000);
+  const result = await restarted.grantBatch(steamId, batchRequest());
+  assert.equal(result.pets, 85);
+  assert.equal(result.replayed, true);
+  assert.equal(steam.grantCalls[0], steam.grantCalls[1]);
+  assert.deepEqual(await storage.get("grant-rate"), { minute: 2, count: 75 });
+});
+
+test("batch inventory-read failure does not resend a completed AddItem", async () => {
+  const { storage, steam, service } = fixture();
+  steam.readFailures = 1;
+  await assert.rejects(service.grantBatch(steamId, batchRequest()), { status: 503 });
+  const restarted = new PlayerService(storage, steam, config);
+  assert.equal((await restarted.grantBatch(steamId, batchRequest())).pets, 85);
+  assert.equal(steam.grantCalls.length, 1);
+});
+
+test("abandoned earlier-run batches do not block new earning; uncertain exchanges still do", async () => {
+  const { storage, steam, service } = fixture();
+  steam.failGrantAfterCommit = true;
+  await assert.rejects(service.grantBatch(steamId, batchRequest()), { status: 503 });
+  const restarted = new PlayerService(storage, steam, config, () => 120000);
+  assert.equal((await restarted.grantBatch(steamId, batchRequest({ clientEventId: otherGuid, runId: otherGuid }))).pets, 160);
+  assert.equal(await storage.get("active"), undefined);
+  assert.equal((await restarted.readInventory(steamId)).pendingOperation, undefined);
+  const locked = fixture();
+  await locked.service.save({ id: otherGuid, kind: "buy", state: "pending", input: { boxType: "dog" } }, true);
+  await assert.rejects(locked.service.grantBatch(steamId, batchRequest()), { code: "exchange_pending" });
+  assert.equal(locked.steam.grantCalls.length, 0);
+  assert.equal(await locked.storage.get(`op:${guid}`), undefined);
+});
+
+test("batch transport repeats only Pets itemdefs with one stable request ID and no quantity parameter", async () => {
+  const calls = [];
+  const client = new SteamClient(config, async (url, options) => {
+    calls.push(options.body);
+    return Response.json(steamResponse([rawItem("1", 100, 310)]));
+  });
+  await client.grant(steamId, "18446744073709551615", 300);
+  const form = calls[0];
+  assert.equal(form.get("requestid"), "18446744073709551615");
+  assert.equal(form.has("quantity"), false);
+  assert.equal(form.has("quantity[0]"), false);
+  assert.equal(form.has("itemdefid[300]"), false);
+  for (let i = 0; i < 300; i++) assert.equal(form.get(`itemdefid[${i}]`), "100");
+  assert.equal([...form.keys()].filter(key => key.startsWith("itemdefid[")).length, 300);
+});
+
+test("real Steam repeated-stack AddItem receipts recover a frozen batch without summing snapshots or granting twice", async () => {
+  const fake = new FakeSteamBackend();
+  const account = fake.account(steamId);
+  fake.add(account, 100, 148);
+  const storage = new DurableStorage();
+  let failCompletion = true;
+  const put = storage.put.bind(storage);
+  storage.put = async (key, value) => {
+    if (key === `op:${guid}` && value.state === "complete" && failCompletion) {
+      failCompletion = false;
+      throw new Error("Lost completion after Steam accepted the batch");
+    }
+    return put(key, value);
+  };
+  const makeSteam = () => new SteamClient(config, (...args) => fake.fetch(...args));
+  const input = batchRequest({ count: 2 });
+  const service = new PlayerService(storage, makeSteam(), config, () => 120000);
+  await assert.rejects(service.grantBatch(steamId, input), /Lost completion/);
+  assert.equal(account.items[0].quantity, 150);
+  const requestId = (await storage.get(`op:${guid}`)).requestId;
+  const snapshots = account.requests.get(`add:${requestId}`);
+  assert.equal(snapshots.length, 2);
+  assert.equal(new Set(snapshots.map(row => row.itemid)).size, 1);
+  assert.deepEqual(snapshots.map(row => row.quantity), [150, 150]);
+  const restarted = new PlayerService(storage, makeSteam(), config, () => 120000);
+  const replay = await restarted.grantBatch(steamId, input);
+  assert.equal(replay.granted, 2); assert.equal(replay.replayed, true); assert.equal(replay.pets, 150);
+  assert.equal(account.items[0].quantity, 150);
+  assert.deepEqual(await storage.get("grant-rate"), { minute: 2, count: 2 });
+  account.items[0].quantity = 147;
+  assert.deepEqual(await makeSteam().grant(steamId, requestId, 2), { replayed: true });
+  assert.equal((await makeSteam().inventory(steamId)).pets, 147);
+  assert.equal(account.requests.size, 1);
+});
+
+test("duplicate snapshot acceptance is restricted to grant AddItem receipts and validates every repeated row", async () => {
+  const duplicated = [rawItem("9007199254740993", 100, 150), rawItem("9007199254740993", 100, 150)];
+  const fetcher = async () => Response.json({ response: { item_json: JSON.stringify(duplicated), replayed: true } }, { headers: { "x-eresult": "1" } });
+  const client = new SteamClient(config, fetcher);
+  assert.deepEqual(await client.grant(steamId, "123", 2), { replayed: true });
+  await assert.rejects(client.inventory(steamId), { extra: { steamEndpoint: "IInventoryService/GetInventory", steamFailureCategory: "invalid_item_data" } });
+  await assert.rejects(client.exchange(steamId, { outputItemDefId: 1110, materials: [] }),
+    { extra: { steamEndpoint: "IInventoryService/ExchangeItem", steamFailureCategory: "invalid_item_data" } });
+  // The one-item Shop permit path remains strict as before this change.
+  await assert.rejects(client.addItem(steamId, 102, "456"), { extra: { steamEndpoint: "IInventoryService/AddItem", steamFailureCategory: "invalid_item_data" } });
+  for (const changed of [{ quantity: -1 }, { appid: 480 }, { itemdefid: 0 }, { state: "invalid" }]) {
+    const malformed = new SteamClient(config, async () => Response.json(steamResponse([duplicated[0], { ...duplicated[1], ...changed }])));
+    await assert.rejects(malformed.grant(steamId, "123", 2), { extra: { steamEndpoint: "IInventoryService/AddItem", steamFailureCategory: "invalid_item_data" } });
+  }
+});
+
+test("authentication advertises the configured batch ceiling and batch HTTP errors remain bounded", async () => {
+  const realNow = Date.now;
+  Date.now = () => 1800000000000;
+  try { for (const limit of [2, 300, 3600]) {
+    const isolatedEnv = { ...env, PDD_GRANTS_PER_MINUTE: String(limit), PDD_ECONOMY_ENVIRONMENT: "isolated-test",
+      PDD_STEAM_PUBLISHER_KEY: "test-only-publisher-key", PDD_FAKE_STEAM: new FakeSteamBackend() };
+    const auth = await worker.fetch(new Request("https://example.test/v1/auth/steam", { method: "POST",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticketHex: "aabb", identity: "petdadog-backend" }) }), isolatedEnv);
+    assert.equal(auth.status, 200);
+    const session = await auth.json();
+    assert.equal(session.maxGrantBatchSize, Math.min(limit, 300));
+    if (limit !== 2) continue;
+    const object = new PlayerInventory({ storage: new DurableStorage() }, isolatedEnv);
+    const bindings = { ...isolatedEnv, PLAYER_INVENTORY: { idFromName: id => id, get: () => object } };
+    const post = (path, body) => worker.fetch(new Request(`https://example.test${path}`, { method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.sessionToken}` }, body }), bindings);
+    const batch = await post("/v1/pets/grant-batch", JSON.stringify(batchRequest({ count: 2 })));
+    assert.equal(batch.status, 200);
+    assert.equal((await batch.json()).pets, 2);
+    const limited = await post("/v1/pets/grant", JSON.stringify({ clientEventId: otherGuid }));
+    assert.equal(limited.status, 429);
+    const error = await limited.json();
+    assert.equal(limited.headers.get("Retry-After"), String(error.retryAfterSeconds));
+    assert.ok(error.retryAfterSeconds >= 1 && error.retryAfterSeconds <= 60);
+    assert.equal((await post("/v1/pets/grant-batch", JSON.stringify({ padding: "x".repeat(32768) }))).status, 413);
+    assert.equal((await post("/v1/pets/grant-batch", "[]")).status, 400);
+  } } finally { Date.now = realNow; }
+});
 
 test("session identifies a Steam account, expires in one hour, and rejects tampering", async () => {
   const now = 1800000000000;

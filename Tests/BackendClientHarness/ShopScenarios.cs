@@ -30,19 +30,19 @@ internal static class ShopScenarios
 		var calls = 0;
 		using var client = Client(async request =>
 		{
-			if (Path(request) == "/v1/pets/grant") { grantStarted.SetResult(); return await grantReply.Task; }
+			if (Path(request) == "/v1/pets/grant-batch") { grantStarted.SetResult(); return await grantReply.Task; }
 			if (Path(request) == "/v2/shop/purchase") { calls++; return Snapshot(status: "complete", id: await EventId(request), bones: 50); }
 			return Default(request);
 		});
 		await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
 		var stableStatus = client.ShopStatus;
-		client.EnqueuePetGrant(Guid.NewGuid()); client.Tick(0, CancellationToken.None); await grantStarted.Task;
+		client.EnqueuePetGrant(Guid.NewGuid()); client.Tick(30, CancellationToken.None); await grantStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 		Check(!client.IsShopOperationInFlight && client.ShopStatus == stableStatus, "An input grant must leave Shop buttons and status stable.");
 		var purchase = client.PurchaseOfferAsync("dog", CancellationToken.None);
 		Check(client.IsShopOperationInFlight && calls == 0, "A purchase marks foreground busy before waiting for a grant.");
 		Check(!await client.PurchaseOfferAsync("dog", CancellationToken.None), "A second click cannot queue another spend.");
 		client.Tick(10, CancellationToken.None);
-		grantReply.SetResult(Json(HttpStatusCode.OK, new { pets = 501, granted = 1, replayed = false }));
+		grantReply.SetResult(Json(HttpStatusCode.OK, new { pets = 501, granted = 1, replayed = false, items = Array.Empty<SteamInventoryItem>() }));
 		Check(await purchase && calls == 1 && client.ConfirmedGoldenBones == 50 && client.ConfirmedPets == 500, "The purchase follows the grant in authoritative snapshot order.");
 		Pass("foreground Shop transactions queue once without flickering during input grants");
 	}
@@ -161,12 +161,12 @@ internal static class ShopScenarios
 			using var client = Client(request =>
 			{
 				if (Path(request) == "/v2/shop/purchase") return Task.FromResult(Json(status, new { code, error = "Fixture rejected before acceptance." }));
-				if (Path(request) == "/v1/pets/grant") { grants++; return Task.FromResult(Json(HttpStatusCode.OK, new { pets = 501, granted = 1, replayed = false })); }
+				if (Path(request) == "/v1/pets/grant-batch") { grants++; return Task.FromResult(Json(HttpStatusCode.OK, new { pets = 501, granted = 1, replayed = false, items = Array.Empty<SteamInventoryItem>() })); }
 				return Task.FromResult(Default(request));
 			});
 			await client.AuthenticateAsync(new SteamIntegration(), CancellationToken.None);
 			Check(!await client.PurchaseOfferAsync("dog", CancellationToken.None) && !client.HasPendingShopOperation, $"{code} must release an unaccepted purchase.");
-			client.EnqueuePetGrant(Guid.NewGuid()); client.Tick(3, CancellationToken.None); await Idle(client);
+			client.EnqueuePetGrant(Guid.NewGuid()); client.Tick(30, CancellationToken.None); await Idle(client);
 			Check(grants == 1 && client.PendingGrantCount == 0, $"{code} must not starve subsequent click grants.");
 		}
 		Pass("definite Worker rejection codes release unaccepted operations and preserve earning");

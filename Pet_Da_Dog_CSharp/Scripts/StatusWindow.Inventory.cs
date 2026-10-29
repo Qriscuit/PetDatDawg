@@ -53,7 +53,7 @@ public partial class StatusWindow
 	{
 		var backend = _inventoryBackend;
 		if (backend == null || IsShopBusy || !backend.IsAuthenticated) return;
-		if (action == "refresh") await backend.RefreshShopAsync(_inventoryCancellation);
+		if (action == "refresh") await backend.SyncShopAsync(_inventoryCancellation);
 		else if (backend.HasPendingExchange) return;
 		else if (action == "open")
 		{

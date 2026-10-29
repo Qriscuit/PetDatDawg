@@ -27,7 +27,9 @@ try {
       headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
     const result = await response.json(); assert.equal(response.status, expected, JSON.stringify(result)); return result;
   };
-  token = (await send("/v1/auth/steam", { ticketHex: "aabb", identity: "petdadog-backend" })).sessionToken;
+  const authentication = await send("/v1/auth/steam", { ticketHex: "aabb", identity: "petdadog-backend" });
+  assert.equal(authentication.maxGrantBatchSize, 300);
+  token = authentication.sessionToken;
   const buy = (id, offerId) => ({ clientEventId: guid(id), offerId, economyVersion: "golden-bones-v2" });
   const replies = await Promise.all([send("/v2/shop/purchase", buy(1, "dig")), send("/v2/shop/purchase", buy(1, "dig"))]);
   assert.ok(replies.every(r => r.pets === 1500 && r.status === "complete"));
@@ -43,5 +45,17 @@ try {
   const seeded = await send("/v2/shop/dev/seed", { clientEventId: guid(7), pets: 100, goldenBones: 100 });
   assert.equal(seeded.goldenBones, 705); assert.equal(seeded.capabilities.developerControls, true);
   assert.equal((await send("/v2/shop/dev/reset-cooldown", { clientEventId: guid(8) })).nextDigAt, null);
-  console.log("Actual workerd + SQLite v2 Shop smoke passed: permit, cooldown, concurrent dedup, direct copies, recycling, receipts/ack, legacy retirement, isolated seed/reset and zero real network.");
+  const beforeBatch = account.items.find(row => row.itemdefid === 100).quantity;
+  const addCallsBefore = [...account.requests.keys()].filter(key => key.startsWith("add:")).length;
+  const batch = { clientEventId: guid(9), runId: guid(12), firstSequence: 1, count: 300 };
+  const batches = await Promise.all([send("/v1/pets/grant-batch", batch), send("/v1/pets/grant-batch", batch)]);
+  assert.ok(batches.every(result => result.granted === 300 && result.pets === beforeBatch + 300));
+  assert.equal([...account.requests.keys()].filter(key => key.startsWith("add:")).length, addCallsBefore + 1);
+  assert.equal((await send("/v2/shop")).pendingOperation, undefined);
+  assert.equal((await send("/v1/pets/grant-batch", { ...batch, count: 299 }, 409)).code, "operation_conflict");
+  assert.equal((await send("/v1/pets/grant-batch", { ...batch, clientEventId: guid(11), firstSequence: 300, count: 1 }, 409)).code, "sequence_conflict");
+  const afterBatchPurchase = await send("/v2/shop/purchase", buy(10, "dig"));
+  assert.equal(afterBatchPurchase.status, "complete");
+  assert.equal(afterBatchPurchase.pets, beforeBatch + 300 - 500);
+  console.log("Actual workerd + SQLite v2 Shop smoke passed: permit, cooldown, concurrent grant-batch dedup/range guards followed by purchase, direct copies, recycling, receipts/ack, legacy retirement, isolated seed/reset and zero real network.");
 } finally { await mf.dispose(); }

@@ -24,10 +24,12 @@ internal static class LocalEconomyScenario
 		Check(client.ConfirmedPets == 0 && client.ConfirmedGoldenBones == 0 && client.UnacknowledgedReceipts.Count == 0,
 			"This test requires fresh isolated persistence and a fresh fake-Steam process.");
 		Check(await client.TestSeedCurrenciesAsync(2000, 1000, token) && client.ConfirmedPets == 2000 && client.ConfirmedGoldenBones == 1000, $"Fake currency seed failed: {client.ShopStatus}");
+		for (var index = 0; index < 70; index++) client.EnqueuePetGrant(Guid.NewGuid());
+		Check(client.PendingGrantCount == 70 && client.ConfirmedPets == 2000, "Unsettled inputs must not change the displayed Steam-confirmed balance.");
 		Check(await client.PurchaseOfferAsync("dig", token), $"Dig purchase failed: {client.ShopStatus}");
-		Check(client.ConfirmedPets == 1500 && client.DigCooldownRemaining.TotalMinutes > 19 && client.UnacknowledgedReceipts.Count == 1,
-			"The permit-backed Dig Box must confirm spending, cooldown, and one receipt.");
-		Check(!await client.PurchaseOfferAsync("dig", token) && client.ConfirmedPets == 1500, "Cooldown must reject another immediate Dig Box.");
+		Check(client.ConfirmedPets == 1570 && client.PendingGrantCount == 0 && client.DigCooldownRemaining.TotalMinutes > 19 && client.UnacknowledgedReceipts.Count == 1,
+			"Buying must settle all 70 inputs before the permit-backed Dig Box confirms spending, cooldown, and its receipt.");
+		Check(!await client.PurchaseOfferAsync("dig", token) && client.ConfirmedPets == 1570, "Cooldown must reject another immediate Dig Box.");
 		Check(await client.PurchaseOfferAsync("dog:3076", token) && await client.PurchaseOfferAsync("dog:3076", token), $"Repeat direct dog purchase failed: {client.ShopStatus}");
 		Check(client.ConfirmedGoldenBones == 600 && client.InventoryItems.Where(item => item.ItemDefId == 3076).Sum(item => item.Quantity) == 2 && client.UnacknowledgedReceipts.Last().IsDuplicate,
 			"Direct purchases must permit duplicates and decode duplicate receipt metadata.");
@@ -38,12 +40,15 @@ internal static class LocalEconomyScenario
 		Check(await client.TestResetCooldownAsync(token) && client.NextDigAt == null && await client.PurchaseOfferAsync("dig", token),
 			"Isolated cooldown reset must allow another normal permit-backed purchase.");
 		using var recovered = NewClient();
-		Check(await recovered.AuthenticateTestEconomyAsync(token) && recovered.ConfirmedPets == 1000 && recovered.ConfirmedGoldenBones == 605 && recovered.UnacknowledgedReceipts.Count == 1,
+		Check(await recovered.AuthenticateTestEconomyAsync(token) && recovered.ConfirmedPets == 1070 && recovered.ConfirmedGoldenBones == 605 && recovered.UnacknowledgedReceipts.Count == 1,
 			"A restarted C# client must recover the confirmed wallet and unacknowledged receipt.");
-		recovered.EnqueuePetGrant(Guid.NewGuid()); recovered.Tick(0, token);
+		recovered.EnqueuePetGrant(Guid.NewGuid()); recovered.Tick(30, token);
 		while (recovered.IsOperationInFlight) await Task.Delay(10, token);
-		Check(recovered.PendingGrantCount == 0 && recovered.ConfirmedPets == 1001 && recovered.ConfirmedGoldenBones == 605,
+		Check(recovered.PendingGrantCount == 0 && recovered.ConfirmedPets == 1071 && recovered.ConfirmedGoldenBones == 605,
 			"Background earning must preserve both actual Worker currency balances.");
+		for (var index = 0; index < 5; index++) recovered.EnqueuePetGrant(Guid.NewGuid());
+		Check(await recovered.SyncShopAsync(token) && recovered.PendingGrantCount == 0 && recovered.ConfirmedPets == 1076 && recovered.ConfirmedGoldenBones == 605,
+			"Opening Shop must settle its captured input prefix and then read the actual Worker inventory.");
 		Check(!await recovered.BuyBoxAsync("dog", token) && !recovered.HasPendingExchange && recovered.ShopCatalog.Offers.Length == 143,
 			"A retired legacy purchase must not wedge the updated client.");
 		Console.WriteLine($"LOCAL_ECONOMY_CLIENT_PASS: {checks} checks; actual C# client -> local Wrangler -> SQLite -> fake Steam; no real Steam or purchases.");
