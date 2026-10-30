@@ -46,9 +46,9 @@ public partial class AccessoryWardrobe : Node
 	// Keep saved starter IDs separate from Steam ownership even when artwork is shared.
 	private static readonly (string Id, string AssetPath, bool CanRecolor)[] StarterAccessories =
 	{
-		("DragonWing.jpg", "res://Sprites/Accessories/DragonWing.jpg", true),
-		("FairyWing.jpg", "res://Sprites/Accessories/FairyWing.jpg", true),
-		("SafetyGlasses.jpg", "res://Sprites/Accessories/SafetyGlasses.jpg", true),
+		("DragonWing.jpg", "res://Art/Items/DragonWing.png", true),
+		("FairyWing.jpg", "res://Art/Items/FairyWing.png", true),
+		("SafetyGlasses.jpg", "res://Art/Items/SafetyGlasses.png", true),
 		("SFlower1.png", "res://Art/Items/SFlower1.png", false),
 		("SFlower2.png", "res://Art/Items/SFlower2.png", false),
 		("SquareCharm.png", "res://Art/Items/SquareCharm.png", false)

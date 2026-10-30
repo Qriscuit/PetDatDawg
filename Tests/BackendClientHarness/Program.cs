@@ -43,8 +43,8 @@ static async Task VerifyBackendUrlConfigurationAsync()
 	{
 		foreach (var (environmentUrl, projectUrl, expectedBaseUrl) in new (string?, string?, string)[]
 		{
-			(null, null, "https://petdadawg.americlasagna.workers.dev/"),
-			(null, "   ", "https://petdadawg.americlasagna.workers.dev/"),
+			(null, null, "https://petdadawg.petthatdog.workers.dev/"),
+			(null, "   ", "https://petdadawg.petthatdog.workers.dev/"),
 			(null, " https://configured.test/backend ", "https://configured.test/backend/"),
 			("   ", "https://configured.test/", "https://configured.test/"),
 			(" http://127.0.0.1:5155 ", "https://configured.test/", "http://127.0.0.1:5155/"),

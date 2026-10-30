@@ -52,7 +52,7 @@ theme/custom="res://UI/Theme/DefaultTheme.tres"
 
 [pdd]
 
-backend_url="https://petdadawg.americlasagna.workers.dev"
+backend_url="https://petdadawg.petthatdog.workers.dev"
 
 [physics]
 

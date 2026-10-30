@@ -91,11 +91,13 @@ Smoke test the Godot scene with the known-good local Godot 4.6.3 runtime:
 
 Do not use the local Godot 4.6.2 console runtime for smoke tests; it was observed to hang/crash on this project even when tray and Steam were disabled.
 
+For a requested Windows/Steam build, use `scripts/Export-Windows.ps1` to rebuild the entire `Builds` package, then `scripts/Prepare-SteamDepot.ps1` under PowerShell 7.2+ for the ordinary Release depot ZIP. The separate checkout-sandbox packager is only for its diagnostic build. The October 30 export includes the migrated backend and 30-second batching; its actual exported Release entrypoint passed Steam sign-in and inventory sync at 450 Pets with desktop input earning disabled. The latest local Steam upload package is recorded in `Pet_Da_Dog_CSharp/.godot/steam-release/latest-package.txt`; it contains the EXE, matching PCK and runtime, omitting the development AppID file and debug artifacts. It has been prepared and validated locally, not uploaded or published to Steam.
+
 ## Runtime Config
 
 Client config:
 
-- `PDD_BACKEND_URL`, default `https://petdadawg.americlasagna.workers.dev`; set it to `http://127.0.0.1:5155` explicitly for a local backend
+- `PDD_BACKEND_URL`, default `https://petdadawg.petthatdog.workers.dev`; set it to `http://127.0.0.1:5155` explicitly for a local backend
 - Godot project setting `pdd/backend_url` supplies the packaged backend URL; the environment variable overrides it.
 - `PDD_STEAM_APP_ID`, or local `Pet_Da_Dog_CSharp/steam_appid.txt` for development
 - The client defaults to the real app, `4817200`; set the development file to this AppID for real Steam inventory tests.
@@ -113,6 +115,8 @@ Backend config:
 Real pet grants require the app's actual Steamworks Inventory itemdef and publisher key. Steam AppID `480` is only useful for local client initialization tests.
 
 Worker configuration and deployment are covered in `docs/CLOUDFLARE_SETUP.md`. Node 22.13 or newer is required. From `PetDaDog.Worker`, use `npm test`, `npm run test:runtime`, and `npm run check` for fake-Steam verification and a deployment dry run. Real deployment is separate from these checks and requires Cloudflare login and backend-only secrets.
+
+On October 30, 2026, the production v1 service moved to Cloudflare account `b92850b8277b83eb68aad13a7f8a2d82` (`petthatdogsupport@gmail.com`) at `https://petdadawg.petthatdog.workers.dev`. Its SQLite namespace is `8af0b99f42f64290831ee4b920997ab5`. All five player journals (79,589 records) were transferred with matching page counts and digest chains. Real zero-grant auth/inventory verification passed directly and through the old URL at 450 Pets and 5 Golden Bones. The old Worker is a compatibility API/health proxy and retains v1 icons; its original namespace stays durably fenced. Do not roll it back to the unwrapped original code. The live target version is `9fbf4368-d533-48eb-9280-fc2149f18e90`; the exact v1 batching bundle and Shop/economy remain preserved inside the migration wrapper. Preserve `.wrangler/account-migration-20261030/` for recovery. The default Wrangler config is pinned to the new account but still contains the staged v2 source; ordinary deployment requires the separate coordinated v2 publication. Existing workspace-local Wrangler credentials in `.wrangler/config` belong to the old account; use the authenticated Cloudflare MCP for the destination or a separate destination credential profile.
 
 Live connection diagnosis, daily Durable Object quotas, and the October 28, 2026 storage outage are recorded in `docs/CLOUDFLARE_OPERATIONS.md`. A healthy `/health` response does not verify authenticated inventory. Authenticated inventory and v1 Shop recovery were verified at approximately October 29 05:47 UTC with 44 zero-grant assertions. The live quota-reporting hotfix preserves economy `golden-bones-v1`; the locally staged v2 economy still requires its coordinated publication.
 

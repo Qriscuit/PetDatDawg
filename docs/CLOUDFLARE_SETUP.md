@@ -1,5 +1,103 @@
 # Cloudflare setup for Pet Da Dog
 
+## October 30 account migration — completed
+
+The destination Cloudflare member is `petthatdogsupport@gmail.com`, account
+`b92850b8277b83eb68aad13a7f8a2d82`. Its Worker is
+`https://petdadawg.petthatdog.workers.dev`, with SQLite namespace
+`8af0b99f42f64290831ee4b920997ab5`. This is now the production authority.
+The old address forwards API and health requests to this Worker and retains
+the original v1 icon hosting. Its original player namespace remains fenced.
+
+The destination contains the exact verified v1 batching bundle (SHA-256
+`664d37f87605b8da84aff8abf52c86f65e4e41ce93005faa82839083e37cfba8`) wrapped by
+`PetDaDog.Worker/src/account-migration.js`. Its role is `target-live`.
+Remote module readback matched all three tested files. Both backend Secrets
+are installed, including the publisher key entered directly by the owner.
+All five journals, containing 79,589 business records across 624 pages, were
+exported, imported and verified by final counts and digest chains. The frozen
+source had zero active mutation locks and zero unacknowledged receipts.
+
+Destination version `9fbf4368-d533-48eb-9280-fc2149f18e90` is deployed at 100%
+(deployment `cc5b0a6b-3109-4c33-82ce-240c29e9d01e`). Real Steam sign-in and two
+fresh inventory reads passed directly at **18:16:54 UTC**, then through the old
+forwarding address at **18:17:37 UTC / 2:17:37 PM EDT**. Both checks confirmed
+450 Pets and 5 Golden Bones, with zero grants, purchases, recycling or
+acknowledgments and no automatic Shop recovery. Both health endpoints returned
+HTTP 200 at 18:18:34 UTC, and the old v1 `2000.png` icon retained its exact
+pre-migration hash. No billing change or Steam economy publication occurred.
+
+Client project/fallback URLs now point to the new Worker; existing published
+builds continue through the old address. The client/backend build passed with
+zero warnings or errors and all 41 HTTP harness scenarios passed. This move
+did not publish a new Steam client distribution.
+
+This is a separate release path from `npm run deploy`, which currently targets
+the locally staged v2 economy. Do not publish that economy during the move.
+Both the v1 catalog and live Steam definitions still use the old host's icon
+URLs. Keep the original asset hosting when forwarding its API traffic.
+
+Migration tooling is `PetDaDog.Worker/scripts/account-migration.mjs`. Its pinned
+generation, private signing key, snapshots, journals and resumable progress live
+under the ignored `PetDaDog.Worker/.wrangler/account-migration-20261030/`.
+Preserve that directory after any uncertain result. Only its public verification
+key is deployed; neither signing credentials nor Steam keys belong in source,
+client builds or chat.
+
+The completed release sequence, retained as a recovery reference, used the
+Worker directory and bundled Node. Do not rerun deployment commands: their
+saved intents deliberately prevent blind retries.
+
+1. Add the publisher Secret on the destination and verify its binding name.
+2. Retain passing unit tests, `test/runtime-account-migration.js`, the existing
+   runtime smokes and the staged configuration dry run. The October 30 candidate
+   passed 83 unit tests and all three workerd/SQLite smoke suites with fake Steam.
+3. Run the runner's `source-freeze` command once. It preserves the original
+   namespace, assets, secrets and economy flags, changes only the migration
+   wrapper/configuration, and records a deployment intent before the API write.
+   Read back the tested modules and wait for deployment propagation before export.
+4. Run `export`. It enumerates every stored source object, durably fences each
+   object's serialized queue, and snapshots every business key in signed pages.
+   The source namespace contained five stored objects. A quota or
+   storage failure must stop the transfer; never substitute an empty journal.
+5. Inspect the frozen export counts before `import`. The runner stops before
+   writes if its conservative estimate could exhaust the destination Free
+   storage allowance. Imports persist each page and its progress atomically.
+   Retry using the same generation and saved pages; never replace pending
+   exchanges, receipts, cooldowns, rates or grant-run high-water marks.
+6. Run `verify-target`. It requires a frozen source and staged target, the exact
+   source object set, and remote complete-import counts/digests for every player.
+   It produces `activation-permit.json`. Check that permit and the exact tested
+   module hashes before deploying `target-live` with all secret/namespace
+   bindings retained. A fresh player's empty journal is allowed only after the
+   complete source set is accounted for.
+7. Run the standalone zero-grant Steam auth/inventory verifier against the new
+   URL with global input and tray disabled. The prepared ignored helper is in
+   `Pet_Da_Dog_CSharp/.godot/migration-readonly-20261030/`; it calls only Steam
+   ticket auth and fresh `/v1/inventory` reads, never Shop, grants, spending,
+   recycling or acknowledgment. Record its successful result, target URL,
+   generation, UTC time and zero mutation counts in
+   `auth-inventory-verification.json` in the migration directory.
+8. Run `source-forward` once. Its gates require the completed import report,
+   unchanged source object set, live target health and a fresh successful
+   zero-grant auth/inventory verification. It forwards the old API address and
+   health checks to the new authority while retaining static assets. Old
+   sessions reauthenticate against the new signing secret. Then repeat the
+   read-only connection check through the old URL and update client defaults.
+
+The destination is authenticated through the Cloudflare MCP. The ignored
+`.wrangler/config` credential directory still belongs to the **source** account
+for migration/recovery tooling. Use a separate destination login/profile, such
+as `.wrangler/target-config`, for future Wrangler commands; do not overwrite the
+source authorization. `wrangler.jsonc` now has an explicit destination account
+ID, so source-only credentials cannot silently deploy to the old Worker.
+
+Do not roll a fenced source back to the original unwrapped module: it ignores
+migration fences and would permit two independent authorities. Namespace class
+transfer is limited to Workers in the same account; this application-level
+journal handoff is required for this account move. See
+[Cloudflare Durable Object migrations](https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/).
+
 For live connection failures, daily limits and incident history, use the
 [Cloudflare operations runbook](CLOUDFLARE_OPERATIONS.md). The October 28 quota
 hotfix preserves the live v1 economy; it does not publish the staged v2 schema.
@@ -15,7 +113,7 @@ Steam AppID **4817200**. Steam Inventory holds the spendable Pets balance, boxes
 and owned cosmetics. Cloudflare verifies Steam sign-ins and forwards accepted
 operations to Steam.
 
-Verified deployment: `https://petdadawg.americlasagna.workers.dev`, with
+Historical deployment before the account move: `https://petdadawg.americlasagna.workers.dev`, with
 `/health` returning HTTP 200, AppID 4817200, and Pets itemdef 100. Cloudflare
 contains both secret bindings and the `PLAYER_INVENTORY` storage binding. The
 Godot project is configured for that URL. Real Steam sign-in, grants, purchases,
@@ -83,7 +181,7 @@ a suitable server egress restriction.
    starter. Dashboard labels can vary; if your screen only offers repository
    templates, use the command-line creation path in step 4 below instead.
 4. Save the provided HTTPS address, usually
-   `https://petdadawg.americlasagna.workers.dev`.
+   `https://petdadawg.petthatdog.workers.dev` for the destination account.
 
 The starter only confirms that Cloudflare is reachable. Step 4 deploys the
 actual game API. A custom domain is optional for initial testing.
@@ -129,6 +227,11 @@ secret values must never be placed in its `vars` object.
 
 ## 4. Deploy the code from this repository
 
+The commands below describe general project deployment. For the migrated live
+service, retain the preserved v1 wrapper until the separate Steam/v2 economy
+publication is approved and verified. Do not run an ordinary source deployment
+as a connection repair or account-migration retry.
+
 Node.js runs the local deployment tool; Cloudflare runs the deployed Worker,
 and players do not need Node. This development machine already has Node 24
 bundled with Codex at
@@ -139,7 +242,7 @@ With the existing project dependencies, it can run Wrangler directly:
 Set-Location 'S:\CodexProjects\PetDaDog\PetDaDog.Worker'
 $pddNode = 'C:\Users\Hurshuuuuuu\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
 $env:WRANGLER_SEND_METRICS = 'false'
-$env:XDG_CONFIG_HOME = Join-Path (Get-Location).Path '.wrangler/config'
+$env:XDG_CONFIG_HOME = Join-Path (Get-Location).Path '.wrangler/target-config'
 $env:WRANGLER_LOG_PATH = Join-Path (Get-Location).Path '.wrangler/logs'
 & $pddNode node_modules/wrangler/bin/wrangler.js login --scopes account:read user:read workers_scripts:write workers:write
 & $pddNode node_modules/wrangler/bin/wrangler.js whoami
@@ -192,11 +295,11 @@ SQLite Durable Objects work on Cloudflare's Workers Free plan, subject to its
 usage limits. A small live test can start there; check usage as player traffic
 grows. [Durable Object plans](https://developers.cloudflare.com/durable-objects/platform/pricing/)
 
-The configured public URL is `https://petdadawg.americlasagna.workers.dev`.
+The configured public URL is `https://petdadawg.petthatdog.workers.dev`.
 Confirm deployment prints that same address, then check:
 
 ```powershell
-Invoke-RestMethod 'https://petdadawg.americlasagna.workers.dev/health'
+Invoke-RestMethod 'https://petdadawg.petthatdog.workers.dev/health'
 ```
 
 A configured API returns:
@@ -215,7 +318,7 @@ Start Steam and sign in with your development account. In PowerShell:
 
 ```powershell
 Set-Location 'S:\CodexProjects\PetDaDog\Pet_Da_Dog_CSharp'
-$env:PDD_BACKEND_URL = 'https://petdadawg.americlasagna.workers.dev'
+$env:PDD_BACKEND_URL = 'https://petdadawg.petthatdog.workers.dev'
 $env:PDD_STEAM_APP_ID = '4817200'
 Remove-Item Env:PDD_DISABLE_STEAM -ErrorAction SilentlyContinue
 dotnet build
@@ -233,7 +336,7 @@ For the packaged game, set the production address in
 ```ini
 [pdd]
 
-backend_url="https://petdadawg.americlasagna.workers.dev"
+backend_url="https://petdadawg.petthatdog.workers.dev"
 ```
 
 If the `[pdd]` section already exists, edit its `backend_url` entry. The

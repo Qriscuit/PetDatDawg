@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "petdadawg",
+  "account_id": "b92850b8277b83eb68aad13a7f8a2d82",
   "main": "src/index.js",
   "compatibility_date": "2026-10-10",
   "workers_dev": true,

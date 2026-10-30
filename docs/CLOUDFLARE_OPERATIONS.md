@@ -2,14 +2,46 @@
 
 ## Service context
 
-- Production API: `https://petdadawg.americlasagna.workers.dev`.
+- Production API: `https://petdadawg.petthatdog.workers.dev`.
+- Compatibility API/health proxy and original v1 icon host:
+  `https://petdadawg.americlasagna.workers.dev`.
 - Worker: `petdadawg`; Steam AppID `4817200`; Pets itemdef `100`.
 - `PLAYER_INVENTORY` is the SQLite Durable Object class `PlayerInventory`.
-  Its production namespace is `66edfacca3da491b8ab38ddd376557be`.
+  Its production namespace is `8af0b99f42f64290831ee4b920997ab5` in destination
+  account `b92850b8277b83eb68aad13a7f8a2d82`. The old namespace
+  `66edfacca3da491b8ab38ddd376557be` is retained and durably fenced.
 - Steam owns balances and items. Durable storage owns operation records,
   deduplication, mutation locks, rate limits and Dig cooldowns.
 - Deployment and secret setup: [Cloudflare setup](CLOUDFLARE_SETUP.md).
   Shop behavior: [Worker guide](../PetDaDog.Worker/README.md).
+
+## October 30 account handoff
+
+The service moved to the destination account at **18:17 UTC / 2:17 PM EDT**.
+Target version `9fbf4368-d533-48eb-9280-fc2149f18e90` serves 100% of traffic.
+The preserved v1 bundle hash is
+`664d37f87605b8da84aff8abf52c86f65e4e41ce93005faa82839083e37cfba8`;
+the account-migration wrapper adds signed transfer and source-fence enforcement.
+All five journals (79,589 business records, 624 pages) completed transfer with
+matching digest chains, including nine grant-run high-water records. The
+source snapshot contained no active mutation locks or unacknowledged receipts.
+Its original records remain fenced for investigation, not a second authority.
+
+Standalone auth/inventory-only Steam checks passed directly at 18:16:54 UTC
+and through the old address at 18:17:37 UTC. Both returned 450 Pets and
+5 Golden Bones on two fresh reads, with zero grants, purchases, recycling or
+acknowledgments. Shop GET was deliberately omitted. Shop stays enabled, while
+cash, Market and legacy purchase capabilities remain disabled. Public health
+checks passed on both hosts, and the old v1 icon hash remained unchanged.
+
+Recovery artifacts and private signing material are in the ignored
+`PetDaDog.Worker/.wrangler/account-migration-20261030/` directory. Preserve
+that generation and its deployment intents; never blindly rerun a deployment
+or roll the old Worker back to code that ignores source fences. See the
+[completed handoff procedure](CLOUDFLARE_SETUP.md#october-30-account-migration--completed).
+The one-time import itself used destination storage writes. New quota
+diagnosis must use the destination account. Published older clients still
+use per-input grants until the batching client update is distributed.
 
 `GET /health` validates Worker configuration without contacting Steam or the
 Durable Object. HTTP 200 there cannot establish working player inventory,
@@ -23,7 +55,7 @@ the handler returned normally; an application HTTP 503 can still be `Ok`.
    `/v1/inventory` response. Use the existing zero-grant live verifier:
 
    ```powershell
-   .\Pet_Da_Dog_CSharp\Tests\Run-LiveSteamSmoke.ps1 -AllowLiveSteam -WorkerOnly -GrantCount 0 -BackendUrl 'https://petdadawg.americlasagna.workers.dev' -TimeoutSeconds 60
+   .\Pet_Da_Dog_CSharp\Tests\Run-LiveSteamSmoke.ps1 -AllowLiveSteam -WorkerOnly -GrantCount 0 -BackendUrl 'https://petdadawg.petthatdog.workers.dev' -TimeoutSeconds 60
    ```
 
    The runner disables global input and tray behavior. At GrantCount 0 it
@@ -40,7 +72,9 @@ the handler returned normally; an application HTTP 503 can still be `Ok`.
    with `wrangler secret list` and `wrangler deployments status`. Keep secret
    values, auth responses, bearer tokens, tickets and raw request headers out of
    logs. Existing workspace-local Wrangler auth uses
-   `PetDaDog.Worker/.wrangler/config` as `XDG_CONFIG_HOME`.
+   `PetDaDog.Worker/.wrangler/config` as `XDG_CONFIG_HOME` belongs to the old
+   account. Use the authenticated destination Cloudflare MCP or a separate
+   destination Wrangler credential directory for the new account.
 4. Inspect the API error code. `steam_access_denied` and `steam_unavailable`
    with `steamEndpoint` describe Steam failures. `storage_quota_exceeded`
    identifies a recognized daily Cloudflare storage limit. Unknown failures
@@ -183,6 +217,46 @@ This establishes recovered authenticated inventory and Shop reads on the v1
 quota hotfix. It does not establish a cause for the delayed recovery, successful
 new purchases, or deployment of the later batch candidate. No plan or billing
 change was made by the recovery check.
+
+### October 30 quota recurrence and follow-up retirement
+
+The one-time recovery heartbeat unexpectedly ran again at **2026-10-30
+00:05:25 UTC**. Recovery had already been confirmed on October 29, and the
+later batching release superseded the hotfix named in the saved heartbeat.
+The automation `verify-pet-da-dog-quota-recovery` was explicitly set to
+**PAUSED** during this follow-up so it will not continue daily checks.
+
+- At approximately **00:06 UTC**, `/health` returned HTTP 200 with status `ok`.
+- At **00:09:21 UTC**, read-only Cloudflare management requests confirmed
+  version `04fa0561-39fc-458d-b1d8-157f4f461365` at 100%, with the exact tested
+  batching bundle SHA-256
+  `664d37f87605b8da84aff8abf52c86f65e4e41ce93005faa82839083e37cfba8`.
+  The v1 economy, existing namespace, Shop-enabled flag and disabled
+  cash/Market/legacy-purchase flags were unchanged. This verified deployed
+  Shop configuration, not authenticated Shop state.
+- At **00:10:40 UTC**, real Steam authentication returned HTTP 200, but
+  authenticated `/v1/inventory` returned **HTTP 503** with
+  **`storage_quota_exceeded`**. The current connection check therefore failed;
+  the prior recovery does not establish availability at this later time.
+
+The preserved zero-grant runner was not executed: its automatic Shop refresh
+and background Tick can resume existing transactions. This follow-up required
+preserving pending operations, so an ignored standalone helper performed only
+Steam ticket authentication and an inventory GET. Global input and tray were
+disabled; the helper loads neither the pet client nor its input/Shop logic.
+It requested no grants, purchases, recycling or acknowledgments and never
+called `/v2/shop`. Authentication credentials stayed in memory; its own Steam
+ticket was canceled on exit. No production deployment, billing change,
+storage replacement, economy publication or operation cleanup occurred.
+
+Sanitized results are saved in
+`Pet_Da_Dog_CSharp/.godot/quota-readonly-20261030/result.jsonl`; the read-only
+deployment summary is in
+`PetDaDog.Worker/.wrangler/recovery-20261030-configuration.json`.
+Authenticated Shop availability and pending-operation state could not be
+verified because inventory failed. The advertised midnight reset had already
+passed, but this check does not establish why quota enforcement persisted or
+which traffic consumed the allowance. No recurring retry was scheduled.
 
 ## Grant batching and abuse controls
 

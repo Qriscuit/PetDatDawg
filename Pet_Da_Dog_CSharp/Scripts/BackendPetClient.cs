@@ -13,7 +13,7 @@ public sealed record SteamInventoryItem(string ItemId, int ItemDefId, long Quant
 
 public sealed partial class BackendPetClient : IDisposable
 {
-	private const string DefaultBackendUrl = "https://petdadawg.americlasagna.workers.dev";
+	private const string DefaultBackendUrl = "https://petdadawg.petthatdog.workers.dev";
 	private const double RetryDelaySeconds = 2.0;
 	private readonly System.Net.Http.HttpClient _httpClient;
 	private readonly TimeProvider _timeProvider;

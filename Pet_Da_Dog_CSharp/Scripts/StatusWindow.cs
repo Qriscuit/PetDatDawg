@@ -30,7 +30,7 @@ public partial class StatusWindow : Window
 	[Export] public string UnavailableStatusText { get; set; } = "Unavailable";
 	[ExportGroup("Connection summary text")]
 	[Export(PropertyHint.MultilineText)] public string SteamDisabledText { get; set; } = "Steam connection is disabled for this run.";
-	[Export(PropertyHint.MultilineText)] public string SteamUnavailableText { get; set; } = "Steam is unavailable. Open Steam, then restart Pet that Dog.";
+	[Export(PropertyHint.MultilineText)] public string SteamUnavailableText { get; set; } = "Waiting for Steam. Open Steam and sign in; Pet that Dog will reconnect automatically.";
 	[Export(PropertyHint.MultilineText)] public string SyncInterruptedText { get; set; } = "Pet syncing is interrupted. The app will retry while it is open.";
 	[Export(PropertyHint.MultilineText)] public string ConnectingText { get; set; } = "Connecting to the pet service…";
 	[Export(PropertyHint.MultilineText)] public string ConnectedText { get; set; } = "Connected to Steam and the pet service.";
