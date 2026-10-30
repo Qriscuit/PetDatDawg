@@ -6,62 +6,10 @@
 [ext_resource type="PackedScene" path="res://UI/AccessoryColorControls.tscn" id="4_colors"]
 [ext_resource type="Texture2D" uid="uid://dim7vb4km4ysh" path="res://Art/Vector/PawPrint.svg" id="5_6b7uq"]
 [ext_resource type="StyleBox" uid="uid://dfl6oj2bmqyc5" path="res://UI/Theme/Panel.tres" id="5_panel"]
-[ext_resource type="StyleBox" path="res://UI/Theme/Catalog.tres" id="6_catalog"]
+[ext_resource type="StyleBox" uid="uid://cmt7skognijl3" path="res://UI/Theme/Catalog.tres" id="6_catalog"]
 [ext_resource type="Texture2D" uid="uid://cn0eqtjwo2t8j" path="res://Art/Vector/Trashcan.svg" id="7_pkvd0"]
 [ext_resource type="Theme" uid="uid://c2qo58y1i4pyu" path="res://UI/Theme/DefaultTheme.tres" id="8_fvo2w"]
 [ext_resource type="Texture2D" uid="uid://dcdtnfw6g06og" path="res://Art/Vector/Refresh.svg" id="10_6b7uq"]
-[ext_resource type="Texture2D" uid="uid://cb8rpat8qy6yl" path="res://Sprites/Accessories/DragonWing.jpg" id="asset_0"]
-[ext_resource type="Texture2D" uid="uid://df1riaycnp6n3" path="res://Sprites/Accessories/FairyWing.jpg" id="asset_1"]
-[ext_resource type="Texture2D" uid="uid://dif3rh22vyl6h" path="res://Sprites/Accessories/SafetyGlasses.jpg" id="asset_2"]
-[ext_resource type="Texture2D" uid="uid://dc7d4vd8r2xjm" path="res://Art/Items/SFlower1.png" id="asset_3"]
-[ext_resource type="Texture2D" uid="uid://bm6oa8o858lny" path="res://Art/Items/SFlower2.png" id="asset_4"]
-[ext_resource type="Texture2D" uid="uid://c22ixw3uqucks" path="res://Art/Items/SquareCharm.png" id="asset_5"]
-
-[sub_resource type="AtlasTexture" id="Sample_0"]
-atlas = ExtResource("asset_0")
-region = Rect2(29, 128, 991, 804)
-filter_clip = true
-
-[sub_resource type="Shader" id="SampleJpegCutoutShader"]
-code = "shader_type canvas_item;
-render_mode unshaded;
-varying vec4 item_color;
-void vertex() { item_color = COLOR; }
-void fragment() {
-    vec4 pixel = texture(TEXTURE, UV);
-    float alpha = smoothstep(0.06, 0.30, max(pixel.r, max(pixel.g, pixel.b)));
-    vec3 rgb = alpha > 0.0 ? min(vec3(1.0), pixel.rgb / max(alpha, 0.0001)) : vec3(1.0);
-    COLOR = vec4(rgb, pixel.a * alpha) * item_color;
-}
-"
-
-[sub_resource type="ShaderMaterial" id="SampleJpegCutoutMaterial"]
-shader = SubResource("SampleJpegCutoutShader")
-
-[sub_resource type="AtlasTexture" id="Sample_1"]
-atlas = ExtResource("asset_1")
-region = Rect2(105, 35, 811, 909)
-filter_clip = true
-
-[sub_resource type="AtlasTexture" id="Sample_2"]
-atlas = ExtResource("asset_2")
-region = Rect2(139, 333, 777, 354)
-filter_clip = true
-
-[sub_resource type="AtlasTexture" id="Sample_3"]
-atlas = ExtResource("asset_3")
-region = Rect2(154, 158, 690, 703)
-filter_clip = true
-
-[sub_resource type="AtlasTexture" id="Sample_4"]
-atlas = ExtResource("asset_4")
-region = Rect2(154, 158, 690, 703)
-filter_clip = true
-
-[sub_resource type="AtlasTexture" id="Sample_5"]
-atlas = ExtResource("asset_5")
-region = Rect2(210, 188, 609, 673)
-filter_clip = true
 
 [node name="AccessoryEditor" type="VBoxContainer" unique_id=841997995]
 offset_right = 600.0
@@ -475,30 +423,6 @@ text = "▾  Wings · 2"
 [node name="EmptyCategoryLabel" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" index="0"]
 visible = false
 
-[node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" index="1" unique_id=218463489 instance=ExtResource("2_card")]
-layout_mode = 2
-DisplayName = "Dragon Wing"
-PreviewTexture = SubResource("Sample_0")
-
-[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(218463489, 189187757) index="0" unique_id=1274156670]
-material = SubResource("SampleJpegCutoutMaterial")
-texture = SubResource("Sample_0")
-
-[node name="CardName" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(218463489, 189187757) index="1" unique_id=1714582797]
-text = "Dragon Wing"
-
-[node name="SampleCard2" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards" index="2" unique_id=139211442 instance=ExtResource("2_card")]
-layout_mode = 2
-DisplayName = "Fairy Wing"
-PreviewTexture = SubResource("Sample_1")
-
-[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2/CardMargin/CardContent" parent_id_path=PackedInt32Array(139211442, 189187757) index="0" unique_id=1274156670]
-material = SubResource("SampleJpegCutoutMaterial")
-texture = SubResource("Sample_1")
-
-[node name="CardName" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2/CardMargin/CardContent" parent_id_path=PackedInt32Array(139211442, 189187757) index="1" unique_id=1714582797]
-text = "Fairy Wing"
-
 [node name="Collars" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" unique_id=629546523 instance=ExtResource("3_row")]
 layout_mode = 2
 Category = "Collars"
@@ -524,18 +448,6 @@ text = "▾  Glasses · 1"
 [node name="EmptyCategoryLabel" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards" index="0"]
 visible = false
 
-[node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards" index="1" unique_id=81356807 instance=ExtResource("2_card")]
-layout_mode = 2
-DisplayName = "Safety Glasses"
-PreviewTexture = SubResource("Sample_2")
-
-[node name="CardTexture" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(81356807, 189187757) index="0" unique_id=1274156670]
-material = SubResource("SampleJpegCutoutMaterial")
-texture = SubResource("Sample_2")
-
-[node name="CardName" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1/CardMargin/CardContent" parent_id_path=PackedInt32Array(81356807, 189187757) index="1" unique_id=1714582797]
-text = "Safety Glasses"
-
 [node name="Decorations" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" unique_id=100832166 instance=ExtResource("3_row")]
 layout_mode = 2
 Category = "Decorations"
@@ -547,21 +459,6 @@ text = "▾  Decorations · 3"
 
 [node name="EmptyCategoryLabel" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" index="0"]
 visible = false
-
-[node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" index="1" unique_id=1933480894 instance=ExtResource("2_card")]
-layout_mode = 2
-DisplayName = "S Flower 1"
-PreviewTexture = SubResource("Sample_3")
-
-[node name="SampleCard2" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" index="2" unique_id=904019207 instance=ExtResource("2_card")]
-layout_mode = 2
-DisplayName = "S Flower 2"
-PreviewTexture = SubResource("Sample_4")
-
-[node name="SampleCard3" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations/CategoryScroll/CategoryCards" index="3" unique_id=1470135945 instance=ExtResource("2_card")]
-layout_mode = 2
-DisplayName = "Square Charm"
-PreviewTexture = SubResource("Sample_5")
 
 [node name="Text" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves" unique_id=125105209 instance=ExtResource("3_row")]
 layout_mode = 2
@@ -575,9 +472,6 @@ text = "▾  Text · 1"
 [node name="EmptyCategoryLabel" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text/CategoryScroll/CategoryCards" index="0"]
 visible = false
 
-[node name="SampleCard1" parent="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text/CategoryScroll/CategoryCards" index="1" unique_id=1648123568 instance=ExtResource("2_card")]
-layout_mode = 2
-
 [node name="OutfitSaveStatus" type="Label" parent="Workspace/CatalogColumn" unique_id=2101595434]
 unique_name_in_owner = true
 layout_mode = 2
@@ -588,10 +482,7 @@ text = "Outfit saves automatically"
 text_overrun_behavior = 1
 
 [editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings"]
-[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard1"]
-[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Wings/CategoryScroll/CategoryCards/SampleCard2"]
 [editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Collars"]
 [editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses"]
-[editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Glasses/CategoryScroll/CategoryCards/SampleCard1"]
 [editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Decorations"]
 [editable path="Workspace/CatalogColumn/AccessoryCatalogScroll/AccessoryShelves/Text"]

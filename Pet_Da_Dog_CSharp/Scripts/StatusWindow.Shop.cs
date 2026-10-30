@@ -125,7 +125,7 @@ public partial class StatusWindow
 		{
 			var offer = catalog?.Offers.FirstOrDefault(candidate => candidate.Id == id);
 			button.Disabled = !ready || offer == null || (id == "dig" && remaining > TimeSpan.Zero);
-			if (offer != null) button.Text = $"{(CanAfford(offer) ? "Dig" : "Check & dig")} · {offer.Price:N0} {(offer.CurrencyItemDefId == 100 ? "Pets" : "Golden Bones")}";
+			if (offer != null) button.Text = $"{(CanAfford(offer) ? "Dig" : "Sync")} · {offer.Price:N0} {(offer.CurrencyItemDefId == 100 ? "Pets" : "Golden Bones")}";
 		}
 		GetNode<Label>("%DigCooldown").Text = backend?.IsAuthenticated != true ? "Connect to check availability."
 			: capabilities?.ShopEnabled != true ? "The new Shop is being prepared."
@@ -228,7 +228,7 @@ public partial class StatusWindow
 			var offer = catalog?.Offers.FirstOrDefault(item => item.Id == $"{cosmetic.Kind}:{cosmetic.ItemDefId}");
 			card.GetNode<Label>("%Owned").Text = recycle ? $"Owned: {owned} · In use: {equipped}\nSpare: {RecyclableQuantity(owned, equipped)}" : $"Owned: {owned}";
 			var button = card.GetNode<Button>("%Purchase");
-			button.Text = recycle ? $"Recycle 1 · +{catalog?.RecycleValue ?? 5} Bones" : offer == null ? "Unavailable" : $"{(CanAfford(offer) ? "Buy" : "Check & buy")} · {offer.Price:N0} Bones";
+			button.Text = recycle ? $"Recycle 1 · +{catalog?.RecycleValue ?? 5} Bones" : offer == null ? "Unavailable" : $"{(CanAfford(offer) ? "Buy" : "Sync")} · {offer.Price:N0} Bones";
 			button.Disabled = !ready || (recycle ? catalog == null || RecyclableQuantity(owned, equipped) == 0 : offer == null);
 		}
 		var empty = GetNode<Label>("%ShopEmpty");

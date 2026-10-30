@@ -119,8 +119,8 @@ public partial class SteamInventorySmokeTest : Node
 			await Settle();
 			Require(transport.BatchCalls == 1 && transport.ShopCalls >= 1 && backend.PendingGrantCount == 0 && backend.ConfirmedPets == 2,
 				"Opening Shop immediately settles a nonempty batch and reads confirmed inventory without the 30-second wait.");
-			Require(!menu.GetNode<Button>("%BuyDigBox").Disabled && menu.GetNode<Button>("%BuyDigBox").Text.StartsWith("Check & dig", StringComparison.Ordinal),
-				"A low displayed balance keeps Check & dig reachable so purchase-time synchronization can establish affordability.");
+			Require(!menu.GetNode<Button>("%BuyDigBox").Disabled && menu.GetNode<Button>("%BuyDigBox").Text.StartsWith("Sync", StringComparison.Ordinal),
+				"A low displayed balance keeps Sync reachable so purchase-time synchronization can establish affordability.");
 		}
 		finally { menu.Hide(); menu.ConfigureSteamInventory(original, wardrobe, CancellationToken.None); }
 	}
